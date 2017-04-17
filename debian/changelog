@@ -1,3 +1,9 @@
+wb-homa-adc (1.14) stable; urgency=medium
+
+  * adds suppport for WB6.1
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 05 May 2017 17:55:36 +0300
+
 wb-homa-adc (1.13.3) stable; urgency=medium
 
   * use WB5.5 config for WB5.8

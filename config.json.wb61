@@ -1,0 +1,50 @@
+// Configuration options
+{
+    "device_name" : "ADCs",
+    "debug" : false,
+    "iio_channels" : [
+         {
+                "id" : "A1",
+                "averaging_window": 1,
+                "channel_number" : 4,
+                "voltage_multiplier" : 8.3917,
+                "decimal_places" : 2
+        },
+        {
+                "id" : "A2",
+                "averaging_window": 1,
+                "channel_number" : 2,
+                "voltage_multiplier" : 8.3917,
+                "decimal_places" : 2
+        },
+        {
+                "id" : "A3",
+                "averaging_window": 1,
+                "channel_number" : 1,
+                "voltage_multiplier" : 8.3917,
+                "decimal_places" : 2
+        },
+        {
+                "id" : "A4",
+                "averaging_window": 1,
+                "channel_number" : 3,
+                "voltage_multiplier" : 8.3917,
+                "decimal_places" : 2
+        },
+		{
+                "id" : "Vin",
+                "averaging_window": 1,
+                "channel_number" : 8,
+                "voltage_multiplier" : 8.3917,
+                "decimal_places" : 2
+        },
+		{
+                "id" : "5Vout",
+                "averaging_window": 1,
+                "channel_number" : 5,
+                "voltage_multiplier" : 3.75,
+                "decimal_places" : 2
+        }
+    ]
+}
+
