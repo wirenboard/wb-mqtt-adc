@@ -21,6 +21,7 @@ namespace {
 void TSysfsAdc::SelectScale()
 {
     string scale_prefix = SysfsIIODir + "/in_voltage" + to_string(GetLradcChannel()) + "_scale";
+
     ifstream scale_file(scale_prefix + "_available");
     if (scale_file.is_open()) {
         string best_scale_str;
@@ -64,6 +65,14 @@ void TSysfsAdc::SelectScale()
         if (cur_scale.is_open()) {
             cur_scale >> IIOScale;
             cur_scale.close();
+        } else {
+            // if in_voltageX_scale file is not available, try to read group scale,
+            //  i.e. in_voltage_scale
+            ifstream cur_group_scale(SysfsIIODir + "/in_voltage_scale");
+            if (cur_group_scale.is_open()) {
+                cur_group_scale >> IIOScale;
+                cur_group_scale.close();
+            }
         }
     }
 }
