@@ -22,7 +22,7 @@ void TSysfsAdc::SelectScale()
 {
     string scale_prefix = SysfsIIODir + "/in_voltage" + to_string(GetLradcChannel()) + "_scale";
 
-    ifstream scale_file = ifstream(scale_prefix + "_available");
+    ifstream scale_file(scale_prefix + "_available");
     if (!scale_file.is_open()) {
         scale_file.close();
         scale_file.clear();
