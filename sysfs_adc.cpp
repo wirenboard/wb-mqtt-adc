@@ -24,11 +24,15 @@ void TSysfsAdc::SelectScale()
 
     ifstream scale_file = ifstream(scale_prefix + "_available");
     if (!scale_file.is_open()) {
-        scale_file = ifstream(SysfsIIODir + "in_voltage_scale_available");
+        scale_file.close();
+        scale_file.clear();
+        scale_file.open(SysfsIIODir + "in_voltage_scale_available");
     }
 
     if (!scale_file.is_open()) {
-        scale_file = ifstream(SysfsIIODir + "scale_available");
+        scale_file.close();
+        scale_file.clear();
+        scale_file.open(SysfsIIODir + "scale_available");
     }
 
     if (scale_file.is_open()) {
