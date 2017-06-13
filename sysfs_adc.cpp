@@ -26,13 +26,13 @@ void TSysfsAdc::SelectScale()
     if (!scale_file.is_open()) {
         scale_file.close();
         scale_file.clear();
-        scale_file.open(SysfsIIODir + "in_voltage_scale_available");
+        scale_file.open(SysfsIIODir + "/in_voltage_scale_available");
     }
 
     if (!scale_file.is_open()) {
         scale_file.close();
         scale_file.clear();
-        scale_file.open(SysfsIIODir + "scale_available");
+        scale_file.open(SysfsIIODir + "/scale_available");
     }
 
     if (scale_file.is_open()) {
