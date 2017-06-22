@@ -176,12 +176,14 @@ std::unique_ptr<TSysfsAdcChannel> TSysfsAdc::GetChannel(int i)
                                            ChannelConfig.Mux[i].DischargeChannel, ChannelConfig.Mux[i].Current, 
                                            ChannelConfig.Mux[i].Resistance1, ChannelConfig.Mux[i].Resistance2,
                                            /* current_source_always_on = */ resistance_channels_only,
-                                           ChannelConfig.Mux[i].CurrentCalibrationFactor
+                                           ChannelConfig.Mux[i].CurrentCalibrationFactor,
+                                           ChannelConfig.Mux[i].MqttType
                                            ));
     else
         return  std::unique_ptr<TSysfsAdcChannel>(new TSysfsAdcChannel(this, ChannelConfig.Mux[i].MuxChannelNumber,
                                        ChannelConfig.Mux[i].Id, ChannelConfig.Mux[i].ReadingsNumber,
                                        ChannelConfig.Mux[i].DecimalPlaces, ChannelConfig.Mux[i].DischargeChannel,
+                                       ChannelConfig.Mux[i].MqttType,
                                        ChannelConfig.Mux[i].Multiplier));
     return std::unique_ptr<TSysfsAdcChannel>(nullptr);
 }
@@ -308,9 +310,11 @@ void TSysfsAdcPhys::SelectMuxChannel(int index)
 }
 
 
-TSysfsAdcChannel::TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, int discharge_channel)
+TSysfsAdcChannel::TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, int discharge_channel, std::string mqtt_type, float multiplier)
     : DecimalPlaces(decimal_places)
     , d(new TSysfsAdcChannelPrivate())
+    , Multiplier(multiplier)
+    , MqttType(mqtt_type)
 {
     d->Owner = owner;
     d->Index = index;
@@ -319,12 +323,6 @@ TSysfsAdcChannel::TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::strin
     d->ChannelAveragingWindow = readings_number * d->Owner->AveragingWindow;
     d->Buffer.resize(d->ChannelAveragingWindow); // initializes with zeros
     d->DischargeChannel = discharge_channel;
-}
-
-TSysfsAdcChannel::TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, int discharge_channel, float multiplier)
-    :TSysfsAdcChannel(owner, index, name, readings_number, decimal_places, discharge_channel)
-{
-    Multiplier = multiplier;
 }
 
 int TSysfsAdcChannel::GetAverageValue()
@@ -372,14 +370,20 @@ float TSysfsAdcChannel::GetValue()
 }
 std::string TSysfsAdcChannel::GetType()
 {
+    return MqttType.empty() ? GetDefaultMqttType() : MqttType;
+}
+
+std::string TSysfsAdcChannel::GetDefaultMqttType()
+{
     return "voltage";
 }
 
 TSysfsAdcChannelRes::TSysfsAdcChannelRes(TSysfsAdc* owner, int index, const std::string& name,
                                          int readings_number, int decimal_places, int discharge_channel, 
                                          int current, int resistance1, int resistance2, 
-                                         bool source_always_on, float current_calibration_factor)
-    : TSysfsAdcChannel(owner, index, name, readings_number, decimal_places, discharge_channel)
+                                         bool source_always_on, float current_calibration_factor, 
+                                         std::string mqtt_type)
+    : TSysfsAdcChannel(owner, index, name, readings_number, decimal_places, discharge_channel, mqtt_type)
     , Current(current)
     , Resistance1(resistance1)
     , Resistance2(resistance2)
@@ -422,7 +426,7 @@ float TSysfsAdcChannelRes::GetValue()
     return result;
 }
 
-std::string TSysfsAdcChannelRes::GetType()
+std::string TSysfsAdcChannelRes::GetDefaultMqttType()
 {
     return "resistance";
 }

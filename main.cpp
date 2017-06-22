@@ -50,7 +50,11 @@ namespace {
 		}
 
 		if (item.isMember("type"))
-			mux_channel.Type = item["type"].asString();
+            mux_channel.Type = item["type"].asString();
+        
+        if (item.isMember("mqtt_type"))
+            mux_channel.MqttType = item["mqtt_type"].asString();
+        
 		if (item.isMember("current")){
 			int current = item["current"].asInt();
 			if ( (current < 0) || (current > 300) || ( (current % 20) != 0)) {

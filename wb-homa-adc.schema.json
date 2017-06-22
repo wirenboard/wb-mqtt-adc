@@ -66,6 +66,12 @@
           "default" : "voltage",
           "enum" : ["ohm_meter", "voltage"]
         },
+        "mqtt_type" :  {
+          "type" : "string",
+          "title" : "MQTT channel meta type",
+          "propertyOrder": 10,
+          "default" : ""
+        },        
         "resistance1" : {
           "type" : "string",
           "title" : "r1 constant",

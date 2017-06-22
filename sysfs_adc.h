@@ -17,6 +17,7 @@ struct TMUXChannel // config for mux channel
     std::string Id;
     float Multiplier = 1;
     std::string Type = "";
+    std::string MqttType;
     int Current = 40;// current in uA
     int Resistance1 = 1000;// resistance in Ohm
     int Resistance2 = 1000;// resistance in Ohm
@@ -127,10 +128,10 @@ class TSysfsAdcChannel
         int GetAverageValue();
         virtual float GetValue(); 
         const std::string& GetName() const;
-        virtual std::string GetType();
-        TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, int discharge_channel);
+        std::string GetType();
+        virtual std::string GetDefaultMqttType();
         TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number,int decimal_places,
-                         int discharge_channel, float multiplier);
+                         int discharge_channel, std::string mqtt_type="", float multiplier=0);
         int DecimalPlaces;
     protected:
         std::unique_ptr<TSysfsAdcChannelPrivate> d;
@@ -138,6 +139,7 @@ class TSysfsAdcChannel
     private:
         float Multiplier;
         float Scale;
+        std::string MqttType;
 };
 
 class TSysfsAdcChannelRes : public TSysfsAdcChannel// class, that measures resistance
@@ -145,9 +147,9 @@ class TSysfsAdcChannelRes : public TSysfsAdcChannel// class, that measures resis
     public : 
          TSysfsAdcChannelRes(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, 
 							 int discharge_channel, int current, int resistance1, int resistance2, bool source_always_on,
-							 float current_calibration_factor);
+							 float current_calibration_factor, std::string mqtt_type="");
          float GetValue();
-         std::string GetType();
+         std::string GetDefaultMqttType();
          void SetUpCurrentSource();
          void SwitchOffCurrentSource();
     private:
