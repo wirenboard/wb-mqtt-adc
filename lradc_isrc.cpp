@@ -3,6 +3,7 @@
 
 #include "lradc_isrc.h"
 #include "sysfs_adc.h"
+#include "sysfs_prefix.h"
 
 namespace {
         extern "C" int imx233_rd(long offset);
@@ -17,8 +18,8 @@ ESOCId GetSocId()
 {
 	std::ifstream socFd;
     std::string socName;
-
-	socFd.open("/sys/devices/soc0/soc_id");
+	
+	socFd.open(GetSysfsPrefix() + "/devices/soc0/soc_id");
 	
     if (!socFd.is_open()) {
         throw TAdcException("error opening soc id file");

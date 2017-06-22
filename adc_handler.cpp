@@ -4,18 +4,11 @@
 #include <stdio.h>
 #include <sstream>
 #include <iomanip>
-
+#include "sysfs_prefix.h"
 #include "adc_handler.h"
 
 using namespace std;
 
-namespace {
-    std::string GetSysfsPrefix()
-    {
-        const char* prefix = getenv("WB_SYSFS_PREFIX");
-        return prefix ? prefix : "/sys";
-    }
-}
 
 
 TMQTTAdcHandler::TMQTTAdcHandler(const TMQTTAdcHandler::TConfig& mqtt_config, THandlerConfig handler_config)

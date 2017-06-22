@@ -32,7 +32,7 @@ all : $(ADC_BIN)
 
 
 # ADC
-ADC_H=sysfs_adc.h adc_handler.h lradc_isrc.h
+ADC_H=sysfs_adc.h adc_handler.h lradc_isrc.h sysfs_prefix.h
 
 main.o : main.cpp $(ADC_H)
 	${CXX} -c $< -o $@ ${CFLAGS}
