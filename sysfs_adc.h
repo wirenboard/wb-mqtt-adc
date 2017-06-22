@@ -31,7 +31,7 @@ struct TChannel
     int AveragingWindow = 10;
     int PollInterval;
     string MatchIIO = "";
-    int ChannelNumber = 1;//IIO channel
+    std::string ChannelNumber = "1";//IIO channel
     int MinSwitchIntervalMs = 0;
     string Type = "";
     float MaxVoltage = ADC_DEFAULT_MAX_VOLTAGE;
@@ -58,7 +58,7 @@ public:
     inline int GetNumberOfChannels() { return NumberOfChannels; };
     double IIOScale; // Result = raw reading * IIOScale
     bool CheckVoltage(int value); // check if voltage on LRADC pin is bigger than ADC_MAX_VOLTAGE
-    int GetLradcChannel() { return ChannelConfig.ChannelNumber; }; // return LRADC channel number
+    std::string GetLradcChannel() { return ChannelConfig.ChannelNumber; }; // return LRADC channel number
 
     virtual void SelectMuxChannel(int index) = 0;
 

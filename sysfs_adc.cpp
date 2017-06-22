@@ -14,59 +14,67 @@
 
 #include "sysfs_adc.h"
 #include "lradc_isrc.h"
+#include "wbmqtt/utils.h"
 namespace {
         extern "C" void usleep(int value);
 };
 
+int TryOpen(std::vector<std::string> fnames, std::ifstream& file)
+{
+    for (auto& fname : fnames) {
+        file.close();
+        file.clear();
+        file.open(fname);
+        if (file.is_open()) {
+            return 0;
+        }
+    }
+    return -1;
+}
+
 void TSysfsAdc::SelectScale()
 {
-    string scale_prefix = SysfsIIODir + "/in_voltage" + to_string(GetLradcChannel()) + "_scale";
+    std::string scale_prefix = SysfsIIODir + "/in_" + GetLradcChannel() + "_scale";
 
-    ifstream scale_file(scale_prefix + "_available");
-    if (!scale_file.is_open()) {
-        scale_file.close();
-        scale_file.clear();
-        scale_file.open(SysfsIIODir + "/in_voltage_scale_available");
-    }
+    std::ifstream scale_file("/dev/null");
+    TryOpen({ scale_prefix + "_available", 
+              SysfsIIODir + "/in_voltage_scale_available",
+              SysfsIIODir + "/scale_available"
+            }, scale_file);
 
-    if (!scale_file.is_open()) {
-        scale_file.close();
-        scale_file.clear();
-        scale_file.open(SysfsIIODir + "/scale_available");
-    }
-
+    // read list of available scales
     if (scale_file.is_open()) {
+        auto contents = std::string((std::istreambuf_iterator<char>(scale_file)), std::istreambuf_iterator<char>());
+        auto available_scale_strs = StringSplit(contents, " ");
+
         string best_scale_str;
         double best_scale = 0;
 
-
-        char c;
-        string buf = "";
-        while(scale_file.get(c)) {
-            if (c == ' ') {
-                double val = stod(buf);
-                // best scale is either maximum scale or the one closest to user request
-
-                if (((ChannelConfig.Scale > 0) && (fabs(val - ChannelConfig.Scale) <= fabs(best_scale - ChannelConfig.Scale)))      // user request
-                    ||
-                    ((ChannelConfig.Scale <= 0) && (val >= best_scale))      // maximum scale
-                    )
-                {
-                        best_scale = val;
-                        best_scale_str = buf;
-                }
-
-                buf = "";
-            } else {
-                buf += c;
+        for (auto& scale_str : available_scale_strs) {
+            double val;
+            try {
+                val = stod(scale_str);
+            } catch (std::invalid_argument e) {
+                continue;
             }
+            // best scale is either maximum scale or the one closest to user request
+            if (((ChannelConfig.Scale > 0) && (fabs(val - ChannelConfig.Scale) <= fabs(best_scale - ChannelConfig.Scale)))      // user request
+                ||
+                ((ChannelConfig.Scale <= 0) && (val >= best_scale))      // maximum scale
+                )
+            {
+                best_scale = val;
+                best_scale_str = scale_str;
+            }
+        
         }
+
         scale_file.close();
         IIOScale = best_scale;
 
         ofstream write_scale(scale_prefix);
         if (!write_scale.is_open()) {
-            throw TAdcException("error opening sysfs Adc scale file");
+            throw TAdcException("error opening IIO sysfs scale file");
         }
         write_scale << best_scale_str;
         write_scale.close();
@@ -135,7 +143,7 @@ TSysfsAdc::TSysfsAdc(const std::string& sysfs_dir, bool debug, const TChannel& c
     }
     SysfsIIODir = iio_dev_dir + "/" + iio_dev_name;
 
-    string path_to_value = SysfsIIODir + "/in_voltage" + to_string(GetLradcChannel()) + "_raw";
+    string path_to_value = SysfsIIODir + "/in_" + GetLradcChannel() + "_raw";
     AdcValStream.open(path_to_value);
     if (!AdcValStream.is_open()) {
         throw TAdcException("error opening sysfs Adc file");

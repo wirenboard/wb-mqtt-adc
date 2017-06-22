@@ -68,17 +68,19 @@ void SwitchOffCurrentSource(int channel)
 }
 
 
-int GetCurrentSourceChannelNumber(int lradc_channel)
+int GetCurrentSourceChannelNumber(std::string lradc_channel)
 {
 	auto socId = GetSocId();
 	if (socId == ESOCId::SOC_IMX23) {
-		if ((lradc_channel == 0) || (lradc_channel == 1)) {
-			return lradc_channel;
+		if (lradc_channel == "0") {
+			return 0;
+		} else if (lradc_channel == "1") {
+			return 1;
 		}
 	} else if (socId == ESOCId::SOC_IMX28) {
-		if (lradc_channel == 0) {
+		if (lradc_channel == "0") {
 			return 0;
-		} else if (lradc_channel == 6) {
+		} else if (lradc_channel == "6") {
 			return 1;
 		}
 	}

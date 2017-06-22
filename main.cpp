@@ -121,8 +121,14 @@ namespace {
                 new_channel.MinSwitchIntervalMs = item["min_switch_interval_ms"].asInt();
             if (item.isMember("match_iio"))
                 new_channel.MatchIIO = item["match_iio"].asString();
-            if (item.isMember("channel_number"))
-                new_channel.ChannelNumber = item["channel_number"].asInt();
+            if (item.isMember("channel_number")) {
+                if (item["channel_number"].isInt()) {
+                    new_channel.ChannelNumber = "voltage" + to_string(item["channel_number"].asInt());
+                } else {
+                    new_channel.ChannelNumber = item["channel_number"].asString();
+                }
+            }
+
 
             if ( item.isMember("channels")){
                 const auto& channel_array = item["channels"];
