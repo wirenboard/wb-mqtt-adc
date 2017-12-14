@@ -26,10 +26,10 @@ namespace {
                 resistance *= 1000;
         return resistance;
     }
-	void PopulateMuxChannel(TMUXChannel& mux_channel, const Json::Value&  item)
-	{
-		if (item.isMember("id"))
-			mux_channel.Id = item["id"].asString();
+    void PopulateMuxChannel(TMUXChannel& mux_channel, const Json::Value&  item)
+    {
+        if (item.isMember("id"))
+            mux_channel.Id = item["id"].asString();
 
         if (item.isMember("multiplier"))
             mux_channel.Multiplier = item["multiplier"].asFloat() / MXS_LRADC_DEFAULT_SCALE_FACTOR;
@@ -37,43 +37,43 @@ namespace {
         if (item.isMember("voltage_multiplier"))
             mux_channel.Multiplier = item["voltage_multiplier"].asFloat();
 
-		if (item.isMember("readings_number")) {
-			mux_channel.ReadingsNumber = item["readings_number"].asInt();
-		}
+        if (item.isMember("readings_number")) {
+            mux_channel.ReadingsNumber = item["readings_number"].asInt();
+        }
 
-		if (item.isMember("decimal_places")) {
-			mux_channel.DecimalPlaces = item["decimal_places"].asInt();
-		}
+        if (item.isMember("decimal_places")) {
+            mux_channel.DecimalPlaces = item["decimal_places"].asInt();
+        }
 
-		if (item.isMember("discharge_channel")) {
-			mux_channel.DischargeChannel = item["discharge_channel"].asInt();
-		}
+        if (item.isMember("discharge_channel")) {
+            mux_channel.DischargeChannel = item["discharge_channel"].asInt();
+        }
 
-		if (item.isMember("type"))
+        if (item.isMember("type"))
             mux_channel.Type = item["type"].asString();
         
         if (item.isMember("mqtt_type"))
             mux_channel.MqttType = item["mqtt_type"].asString();
         
-		if (item.isMember("current")){
-			int current = item["current"].asInt();
-			if ( (current < 0) || (current > 300) || ( (current % 20) != 0)) {
-				cerr << "Error: wrong current value \n";
-				exit(EXIT_FAILURE);
-			}
-			mux_channel.Current = current;
-		}
-		if (item.isMember("resistance1")){
-			int resistance = ReadResistance(item["resistance1"].asString());
-			mux_channel.Resistance1 = resistance;
-		}
-		if (item.isMember("resistance2")){
-			int resistance = ReadResistance(item["resistance2"].asString());
-			mux_channel.Resistance2 = resistance;
-		}
+        if (item.isMember("current")){
+            int current = item["current"].asInt();
+            if ( (current < 0) || (current > 300) || ( (current % 20) != 0)) {
+                cerr << "Error: wrong current value \n";
+                exit(EXIT_FAILURE);
+            }
+            mux_channel.Current = current;
+        }
+        if (item.isMember("resistance1")){
+            int resistance = ReadResistance(item["resistance1"].asString());
+            mux_channel.Resistance1 = resistance;
+        }
+        if (item.isMember("resistance2")){
+            int resistance = ReadResistance(item["resistance2"].asString());
+            mux_channel.Resistance2 = resistance;
+        }
 
-		mux_channel.CurrentCalibrationFactor = item.get("current_calibration_factor", 1).asFloat();
-	}
+        mux_channel.CurrentCalibrationFactor = item.get("current_calibration_factor", 1).asFloat();
+    }
 
     void LoadConfig(const std::string& file_name, THandlerConfig& config)
     {
@@ -176,7 +176,7 @@ namespace {
 
 int main(int argc, char **argv)
 {
-	int rc;
+    int rc;
     string config_fname;
     bool debug = false;
     TMQTTAdcHandler::TConfig mqtt_config;
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
             printf ("?? getopt returned character code 0%o ??\n", c);
         }
     }
-	mosqpp::lib_init();
+    mosqpp::lib_init();
 
     try {
         THandlerConfig config;
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-	mosqpp::lib_cleanup();
+    mosqpp::lib_cleanup();
 
-	return 0;
+    return 0;
 }

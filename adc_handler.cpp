@@ -18,15 +18,15 @@ TMQTTAdcHandler::TMQTTAdcHandler(const TMQTTAdcHandler::TConfig& mqtt_config, TH
     for (auto& channel_config : Config.Channels){
         if (channel_config.Type == "mux") {
             AdcHandlers.emplace_back(new TSysfsAdcMux(GetSysfsPrefix(), Config.Debug, channel_config));
-		} else {
+        } else {
             AdcHandlers.emplace_back(new TSysfsAdcPhys(GetSysfsPrefix(), Config.Debug, channel_config));
         }
         for (int i = 0; i < AdcHandlers.back()->GetNumberOfChannels(); ++i) {
-			Channels.push_back(AdcHandlers.back()->GetChannel(i));
-		}
+            Channels.push_back(AdcHandlers.back()->GetChannel(i));
+        }
 
     }
-	Connect();
+    Connect();
 }
 
 void TMQTTAdcHandler::OnConnect(int rc)
@@ -76,8 +76,8 @@ void TMQTTAdcHandler::UpdateChannelValues()
         if (Config.Debug)
             std::cerr << "channel: " << channel->GetName() << " value: " << value << std::endl;
 
-		std::ostringstream out;
-		out << std::fixed << std::setprecision(channel->DecimalPlaces) << value;
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(channel->DecimalPlaces) << value;
         Publish(NULL, GetChannelTopic(*channel), out.str(), 0, true);
     }
 }
