@@ -184,11 +184,7 @@ int main(int argc, char **argv)
     mqtt_config.Port = 1883;
 
     int c;
-    //~ int digit_optind = 0;
-    //~ int aopt = 0, bopt = 0;
-    //~ char *copt = 0, *dopt = 0;
     while ( (c = getopt(argc, argv, "dc:h:p:")) != -1) {
-        //~ int this_option_optind = optind ? optind : 1;
         switch (c) {
         case 'd':
             debug = true;
@@ -196,10 +192,6 @@ int main(int argc, char **argv)
         case 'c':
             config_fname = optarg;
             break;
-        //~ case 'c':
-            //~ printf ("option c with value '%s'\n", optarg);
-            //~ config_fname = optarg;
-            //~ break;
         case 'p':
             mqtt_config.Port = stoi(optarg);
             break;
@@ -221,20 +213,7 @@ int main(int argc, char **argv)
 
         config.Debug = config.Debug || debug;
         mqtt_config.Id = "wb-adc";
-        /*for ( auto& i: config.Channels){
-            cout << "AVERAGE IS " << i.AveragingWindow << endl;
-            cout << "MINSWITCHINTERVAL IS " << i.MinSwitchIntervalMs << endl;
-            cout << "Type IS " << i.Type << endl;
-            if (i.Type == "mux" )
-                cout << "MUX " << endl;
-            for (auto& j : i.Mux){
-                cout << "ID IS " << j.Id << endl;
-                cout << "Multiplier IS " << j.Multiplier << endl;
-            }
-            for (auto& j : i.Gpios){
-                cout << "GPIO IS " << j << endl;
-            }
-        }*/
+
         auto mqtt_handler = make_shared<TMQTTAdcHandler>(mqtt_config, config);
         mqtt_handler->Init();
         while(1){
