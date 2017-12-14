@@ -14,4 +14,4 @@
 void SetUpCurrentSource(int channel, unsigned current_ua);
 void SwitchOffCurrentSource(int channel);
 
-int GetCurrentSourceChannelNumber(int lradc_channel);
+int GetCurrentSourceChannelNumber(std::string lradc_channel);

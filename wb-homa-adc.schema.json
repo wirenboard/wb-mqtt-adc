@@ -66,6 +66,12 @@
           "default" : "voltage",
           "enum" : ["ohm_meter", "voltage"]
         },
+        "mqtt_type" :  {
+          "type" : "string",
+          "title" : "MQTT channel meta type",
+          "propertyOrder": 10,
+          "default" : ""
+        },        
         "resistance1" : {
           "type" : "string",
           "title" : "r1 constant",
@@ -105,11 +111,20 @@
       },
       "properties": {
         "channel_number": {
-          "type": "integer",
-          "title": "SoC channel number",
-          "enum": [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15],
+          "title": "SoC channel",
           "propertyOrder": 2,
-          "default": 1
+          "oneOf": [
+            {
+              "type": "string",
+              "description" : "example: \"voltage10\" coresponds to \"in_voltage10\"",
+              "minLength": 1
+            },
+            {
+              "type": "integer",
+              "description" : "(deprecated) \"10\" coresponds to \"in_voltage10\"",
+              "minimum" : 0
+            }
+          ]          
         },
         "min_switch_interval_ms" : {
           "type" : "integer",

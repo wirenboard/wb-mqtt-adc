@@ -17,6 +17,7 @@ struct TMUXChannel // config for mux channel
     std::string Id;
     float Multiplier = 1;
     std::string Type = "";
+    std::string MqttType;
     int Current = 40;// current in uA
     int Resistance1 = 1000;// resistance in Ohm
     int Resistance2 = 1000;// resistance in Ohm
@@ -31,7 +32,7 @@ struct TChannel
     int AveragingWindow = 10;
     int PollInterval;
     string MatchIIO = "";
-    int ChannelNumber = 1;//IIO channel
+    std::string ChannelNumber = "1";//IIO channel
     int MinSwitchIntervalMs = 0;
     string Type = "";
     float MaxVoltage = ADC_DEFAULT_MAX_VOLTAGE;
@@ -58,7 +59,7 @@ public:
     inline int GetNumberOfChannels() { return NumberOfChannels; };
     double IIOScale; // Result = raw reading * IIOScale
     bool CheckVoltage(int value); // check if voltage on LRADC pin is bigger than ADC_MAX_VOLTAGE
-    int GetLradcChannel() { return ChannelConfig.ChannelNumber; }; // return LRADC channel number
+    std::string GetLradcChannel() { return ChannelConfig.ChannelNumber; }; // return LRADC channel number
 
     virtual void SelectMuxChannel(int index) = 0;
 
@@ -127,10 +128,10 @@ class TSysfsAdcChannel
         int GetAverageValue();
         virtual float GetValue(); 
         const std::string& GetName() const;
-        virtual std::string GetType();
-        TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, int discharge_channel);
+        std::string GetType();
+        virtual std::string GetDefaultMqttType();
         TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::string& name, int readings_number,int decimal_places,
-                         int discharge_channel, float multiplier);
+                         int discharge_channel, std::string mqtt_type="", float multiplier=0);
         int DecimalPlaces;
     protected:
         std::unique_ptr<TSysfsAdcChannelPrivate> d;
@@ -138,6 +139,7 @@ class TSysfsAdcChannel
     private:
         float Multiplier;
         float Scale;
+        std::string MqttType;
 };
 
 class TSysfsAdcChannelRes : public TSysfsAdcChannel// class, that measures resistance
@@ -145,9 +147,9 @@ class TSysfsAdcChannelRes : public TSysfsAdcChannel// class, that measures resis
     public : 
          TSysfsAdcChannelRes(TSysfsAdc* owner, int index, const std::string& name, int readings_number, int decimal_places, 
 							 int discharge_channel, int current, int resistance1, int resistance2, bool source_always_on,
-							 float current_calibration_factor);
+							 float current_calibration_factor, std::string mqtt_type="");
          float GetValue();
-         std::string GetType();
+         std::string GetDefaultMqttType();
          void SetUpCurrentSource();
          void SwitchOffCurrentSource();
     private:

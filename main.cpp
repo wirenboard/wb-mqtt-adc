@@ -26,10 +26,10 @@ namespace {
                 resistance *= 1000;
         return resistance;
     }
-	void PopulateMuxChannel(TMUXChannel& mux_channel, const Json::Value&  item)
-	{
-		if (item.isMember("id"))
-			mux_channel.Id = item["id"].asString();
+    void PopulateMuxChannel(TMUXChannel& mux_channel, const Json::Value&  item)
+    {
+        if (item.isMember("id"))
+            mux_channel.Id = item["id"].asString();
 
         if (item.isMember("multiplier"))
             mux_channel.Multiplier = item["multiplier"].asFloat() / MXS_LRADC_DEFAULT_SCALE_FACTOR;
@@ -37,39 +37,43 @@ namespace {
         if (item.isMember("voltage_multiplier"))
             mux_channel.Multiplier = item["voltage_multiplier"].asFloat();
 
-		if (item.isMember("readings_number")) {
-			mux_channel.ReadingsNumber = item["readings_number"].asInt();
-		}
+        if (item.isMember("readings_number")) {
+            mux_channel.ReadingsNumber = item["readings_number"].asInt();
+        }
 
-		if (item.isMember("decimal_places")) {
-			mux_channel.DecimalPlaces = item["decimal_places"].asInt();
-		}
+        if (item.isMember("decimal_places")) {
+            mux_channel.DecimalPlaces = item["decimal_places"].asInt();
+        }
 
-		if (item.isMember("discharge_channel")) {
-			mux_channel.DischargeChannel = item["discharge_channel"].asInt();
-		}
+        if (item.isMember("discharge_channel")) {
+            mux_channel.DischargeChannel = item["discharge_channel"].asInt();
+        }
 
-		if (item.isMember("type"))
-			mux_channel.Type = item["type"].asString();
-		if (item.isMember("current")){
-			int current = item["current"].asInt();
-			if ( (current < 0) || (current > 300) || ( (current % 20) != 0)) {
-				cerr << "Error: wrong current value \n";
-				exit(EXIT_FAILURE);
-			}
-			mux_channel.Current = current;
-		}
-		if (item.isMember("resistance1")){
-			int resistance = ReadResistance(item["resistance1"].asString());
-			mux_channel.Resistance1 = resistance;
-		}
-		if (item.isMember("resistance2")){
-			int resistance = ReadResistance(item["resistance2"].asString());
-			mux_channel.Resistance2 = resistance;
-		}
+        if (item.isMember("type"))
+            mux_channel.Type = item["type"].asString();
+        
+        if (item.isMember("mqtt_type"))
+            mux_channel.MqttType = item["mqtt_type"].asString();
+        
+        if (item.isMember("current")){
+            int current = item["current"].asInt();
+            if ( (current < 0) || (current > 300) || ( (current % 20) != 0)) {
+                cerr << "Error: wrong current value \n";
+                exit(EXIT_FAILURE);
+            }
+            mux_channel.Current = current;
+        }
+        if (item.isMember("resistance1")){
+            int resistance = ReadResistance(item["resistance1"].asString());
+            mux_channel.Resistance1 = resistance;
+        }
+        if (item.isMember("resistance2")){
+            int resistance = ReadResistance(item["resistance2"].asString());
+            mux_channel.Resistance2 = resistance;
+        }
 
-		mux_channel.CurrentCalibrationFactor = item.get("current_calibration_factor", 1).asFloat();
-	}
+        mux_channel.CurrentCalibrationFactor = item.get("current_calibration_factor", 1).asFloat();
+    }
 
     void LoadConfig(const std::string& file_name, THandlerConfig& config)
     {
@@ -121,8 +125,14 @@ namespace {
                 new_channel.MinSwitchIntervalMs = item["min_switch_interval_ms"].asInt();
             if (item.isMember("match_iio"))
                 new_channel.MatchIIO = item["match_iio"].asString();
-            if (item.isMember("channel_number"))
-                new_channel.ChannelNumber = item["channel_number"].asInt();
+            if (item.isMember("channel_number")) {
+                if (item["channel_number"].isInt()) {
+                    new_channel.ChannelNumber = "voltage" + to_string(item["channel_number"].asInt());
+                } else {
+                    new_channel.ChannelNumber = item["channel_number"].asString();
+                }
+            }
+
 
             if ( item.isMember("channels")){
                 const auto& channel_array = item["channels"];
@@ -166,7 +176,7 @@ namespace {
 
 int main(int argc, char **argv)
 {
-	int rc;
+    int rc;
     string config_fname;
     bool debug = false;
     TMQTTAdcHandler::TConfig mqtt_config;
@@ -174,11 +184,7 @@ int main(int argc, char **argv)
     mqtt_config.Port = 1883;
 
     int c;
-    //~ int digit_optind = 0;
-    //~ int aopt = 0, bopt = 0;
-    //~ char *copt = 0, *dopt = 0;
     while ( (c = getopt(argc, argv, "dc:h:p:")) != -1) {
-        //~ int this_option_optind = optind ? optind : 1;
         switch (c) {
         case 'd':
             debug = true;
@@ -186,10 +192,6 @@ int main(int argc, char **argv)
         case 'c':
             config_fname = optarg;
             break;
-        //~ case 'c':
-            //~ printf ("option c with value '%s'\n", optarg);
-            //~ config_fname = optarg;
-            //~ break;
         case 'p':
             mqtt_config.Port = stoi(optarg);
             break;
@@ -202,7 +204,7 @@ int main(int argc, char **argv)
             printf ("?? getopt returned character code 0%o ??\n", c);
         }
     }
-	mosqpp::lib_init();
+    mosqpp::lib_init();
 
     try {
         THandlerConfig config;
@@ -211,20 +213,7 @@ int main(int argc, char **argv)
 
         config.Debug = config.Debug || debug;
         mqtt_config.Id = "wb-adc";
-        /*for ( auto& i: config.Channels){
-            cout << "AVERAGE IS " << i.AveragingWindow << endl;
-            cout << "MINSWITCHINTERVAL IS " << i.MinSwitchIntervalMs << endl;
-            cout << "Type IS " << i.Type << endl;
-            if (i.Type == "mux" )
-                cout << "MUX " << endl;
-            for (auto& j : i.Mux){
-                cout << "ID IS " << j.Id << endl;
-                cout << "Multiplier IS " << j.Multiplier << endl;
-            }
-            for (auto& j : i.Gpios){
-                cout << "GPIO IS " << j << endl;
-            }
-        }*/
+
         auto mqtt_handler = make_shared<TMQTTAdcHandler>(mqtt_config, config);
         mqtt_handler->Init();
         while(1){
@@ -239,7 +228,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-	mosqpp::lib_cleanup();
+    mosqpp::lib_cleanup();
 
-	return 0;
+    return 0;
 }
