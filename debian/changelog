@@ -1,3 +1,9 @@
+wb-homa-adc (1.14.2) stable; urgency=medium
+
+  * use fnmatch for iio_match
+
+ -- Evgeny Boger <boger@contactless.ru>  Sun, 14 Jan 2018 23:21:05 +0300
+
 wb-homa-adc (1.14.1) stable; urgency=medium
 
   * support iio layout used by ads1015

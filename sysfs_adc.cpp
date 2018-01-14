@@ -12,6 +12,8 @@
 #include <dirent.h>
 #include <string.h>
 
+#include <fnmatch.h>
+
 #include "sysfs_adc.h"
 #include "lradc_isrc.h"
 #include "wbmqtt/utils.h"
@@ -111,6 +113,7 @@ TSysfsAdc::TSysfsAdc(const std::string& sysfs_dir, bool debug, const TChannel& c
     string iio_dev_dir = SysfsDir + "/bus/iio/devices";
     string iio_dev_name = "";
     if (!channel_config.MatchIIO.empty()) {
+        string Pattern = "*" + channel_config.MatchIIO + "*";
         DIR *dir;
         struct dirent *ent;
         if ((dir = opendir(iio_dev_dir.c_str())) != NULL) {
@@ -123,7 +126,9 @@ TSysfsAdc::TSysfsAdc(const std::string& sysfs_dir, bool debug, const TChannel& c
                 if ((len = readlink(d.c_str(), buf, 512)) < 0)
                     continue;
                 buf[len] = 0;
-                if (strstr(buf, channel_config.MatchIIO.c_str())) {
+
+                // POSIX shell-like matching
+                if (fnmatch(Pattern.c_str(), buf, 0) == 0) {
                     iio_dev_name = string(ent->d_name);
                     break;
                 }
