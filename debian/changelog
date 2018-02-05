@@ -1,3 +1,9 @@
+wb-homa-adc (1.14.3) stable; urgency=medium
+
+  * fixes current injection broken in 1.14.1
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 05 Feb 2018 23:07:47 +0300
+
 wb-homa-adc (1.14.2) stable; urgency=medium
 
   * use fnmatch for iio_match
