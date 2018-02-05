@@ -20,13 +20,13 @@ ESOCId GetSocId()
     std::string socName;
     
     socFd.open(GetSysfsPrefix() + "/devices/soc0/soc_id");
-    
+
     if (!socFd.is_open()) {
         throw TAdcException("error opening soc id file");
     }
     socFd >> socName;
     socFd.close();
-    
+
     if (socName == "i.MX23") {
         return ESOCId::SOC_IMX23;
     } else if (socName == "i.MX28") {
@@ -72,15 +72,15 @@ int GetCurrentSourceChannelNumber(std::string lradc_channel)
 {
     auto socId = GetSocId();
     if (socId == ESOCId::SOC_IMX23) {
-        if (lradc_channel == "0") {
+        if (lradc_channel == "voltage0") {
             return 0;
-        } else if (lradc_channel == "1") {
+        } else if (lradc_channel == "voltage1") {
             return 1;
         }
     } else if (socId == ESOCId::SOC_IMX28) {
-        if (lradc_channel == "0") {
+        if (lradc_channel == "voltage0") {
             return 0;
-        } else if (lradc_channel == "6") {
+        } else if (lradc_channel == "voltage6") {
             return 1;
         }
     }
