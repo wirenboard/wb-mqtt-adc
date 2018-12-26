@@ -131,11 +131,22 @@
           "title" : "Mux switch interval",
           "description" : "Time to wait after mux switch (ms) for multiplexed channels",
           "propertyOrder": 7
+        },
+        "voltage_multiplier" : {
+          "type" : "number",
+          "title" : "Voltage multiplier",
+          "description" : "The number to multiply sysfs ADC voltage reading to. Usually corresponds to voltage divider in front of ADC input",
+          "propertyOrder" : 8
+        },
+        "match_iio" : {
+          "type" : "string",
+          "title" : "IIO device match pattern",
+          "description": "Fnmatch-compatible pattern to match with iio:deviceN symlink target",
+          "propertyOrder" : 9
         }
-
       },
 
-      "defaultProperties": ["channel_number", "divider", "id", "type"]
+      "defaultProperties": ["channel_number", "voltage_multiplier", "id", "type"]
     },
 
 
@@ -256,7 +267,6 @@
       "type": "array",
       "title": "List of SoC channels",
       "items": { "$ref": "#/definitions/iio_channel" },
-      "minItems": 1,
       "_format": "tabs",
       "propertyOrder":3,
       "options" : {

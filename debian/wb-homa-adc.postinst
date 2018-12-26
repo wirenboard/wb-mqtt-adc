@@ -3,43 +3,46 @@
 
 CONFFILE=/etc/wb-homa-adc.conf
 
-case "$WB_VERSION" in
-    "61" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.wb61"
-    ;;
+if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
+    BOARD_CONF="devicetree"
+else
+    case "$WB_VERSION" in
+        "61" )
+            BOARD_CONF="wb61"
+        ;;
 
-    "55" | "58" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55"
-    ;;
+        "55" | "58" )
+            BOARD_CONF="wb55"
+        ;;
 
-    "52" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.wb5"
-    ;;
+        "52" )
+            BOARD_CONF="wb5"
+        ;;
 
-    "41" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.wb4"
-    ;;
+        "41" )
+            BOARD_CONF="wb4"
+        ;;
 
-    "32" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.wb3.5"
-    ;;
+        "32" )
+            BOARD_CONF="wb3.5"
+        ;;
 
-    "28" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.wb2.8"
-    ;;
+        "28" )
+            BOARD_CONF="wb2.8"
+        ;;
 
-    "KMON1" )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.netmon1"
-    ;;
+        "KMON1" )
+            BOARD_CONF="netmon1"
+        ;;
 
-    * )
-        BOARD_CONF="/usr/share/wb-homa-adc/wb-homa-adc.conf.default"
-    ;;
-esac
+        * )
+            BOARD_CONF="default"
+        ;;
+    esac
+fi
 
 
-ucf --debconf-ok $BOARD_CONF $CONFFILE
-
+ucf --debconf-ok /usr/share/wb-homa-adc/wb-homa-adc.conf.$BOARD_CONF $CONFFILE
 
 #DEBHELPER#
 
