@@ -66,6 +66,7 @@ install: all
 
 	install -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
 	install -m 0644  config.json $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.default
+	install -m 0644  config.json.devicetree $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.devicetree
 	install -m 0644  config.json.wb4 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb4
 	install -m 0644  config.json.wb5 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb5
 	install -m 0644  config.json.wb55 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55
