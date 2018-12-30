@@ -1,3 +1,9 @@
+wb-homa-adc (1.14.5) stable; urgency=medium
+
+  * fix deps on wheezy
+
+ -- Evgeny Boger <boger@contactless.ru>  Sun, 30 Dec 2018 20:32:00 +0300
+
 wb-homa-adc (1.14.4) unstable; urgency=medium
 
     * Use devicetree info when possible instead of board-specific configs.
