@@ -4,7 +4,7 @@ wb_source "of"
 
 CONFFILE=/etc/wb-homa-adc.conf
 
-if of_node_exists /wirenboard/analog-inputs then
+if of_node_exists /wirenboard/analog-inputs ; then
     BOARD_CONF="devicetree"
 else
     case "$WB_VERSION" in
