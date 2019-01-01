@@ -1,3 +1,10 @@
+wb-homa-adc (1.14.6) stable; urgency=medium
+
+  * fix analog-inputs node autodetect on create_rootfs stage
+  * use new wb_env.sh location
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 01 Jan 2019 14:47:27 +0300
+
 wb-homa-adc (1.14.5) stable; urgency=medium
 
   * fix deps on wheezy

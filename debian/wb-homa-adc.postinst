@@ -1,9 +1,10 @@
 #!/bin/bash
-. /etc/wb_env.sh
+. /usr/lib/wb-utils/wb_env.sh
+wb_source "of"
 
 CONFFILE=/etc/wb-homa-adc.conf
 
-if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
+if of_node_exists /wirenboard/analog-inputs then
     BOARD_CONF="devicetree"
 else
     case "$WB_VERSION" in
