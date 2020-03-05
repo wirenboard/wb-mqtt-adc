@@ -149,14 +149,10 @@ TSysfsAdc::TSysfsAdc(const std::string& sysfs_dir, bool debug, const TChannel& c
     SysfsIIODir = iio_dev_dir + "/" + iio_dev_name;
 
     string path_to_value = SysfsIIODir + "/in_" + GetLradcChannel() + "_raw";
-    try{
-        AdcValStream.open(path_to_value);
-        if (!AdcValStream.is_open()) {
+    AdcValStream.open(path_to_value);
+    if (!AdcValStream.is_open()) {
         throw TAdcException("error opening sysfs Adc file");
-        }
     }
-    
-    
     
     SelectScale();
 
