@@ -332,8 +332,7 @@ TSysfsAdcChannel::TSysfsAdcChannel(TSysfsAdc* owner, int index, const std::strin
 
 int TSysfsAdcChannel::GetAverageValue()
 {
-    try {
-        if (!d->Ready) {
+    if (!d->Ready) {
         for (int i = 0; i < d->ChannelAveragingWindow; ++i) {
             d->Owner->SelectMuxChannel(d->Index);
             int v = d->Owner->ReadValue();
@@ -354,10 +353,6 @@ int TSysfsAdcChannel::GetAverageValue()
         }
     }
     return round(d->Sum / d->ChannelAveragingWindow);
-    } catch (const TAdcException& e) {
-        std::cerr << "FATAL: " << e.what() << std::endl;
-        return 1;
-    }
 }
 
 const std::string& TSysfsAdcChannel::GetName() const
