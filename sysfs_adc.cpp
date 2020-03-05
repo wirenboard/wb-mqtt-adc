@@ -195,10 +195,12 @@ std::unique_ptr<TSysfsAdcChannel> TSysfsAdc::GetChannel(int i)
 
 int TSysfsAdc::ReadValue()
 {
-    int val;
-    AdcValStream.seekg(0);
-    AdcValStream >> val;
-    return val;
+    try{
+        int val;
+        AdcValStream.seekg(0);
+        AdcValStream >> val;
+        return val;
+    }
 }
 
 bool TSysfsAdc::CheckVoltage(int value)
