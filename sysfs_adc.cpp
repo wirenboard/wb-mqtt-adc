@@ -149,7 +149,10 @@ TSysfsAdc::TSysfsAdc(const std::string& sysfs_dir, bool debug, const TChannel& c
     SysfsIIODir = iio_dev_dir + "/" + iio_dev_name;
 
     string path_to_value = SysfsIIODir + "/in_" + GetLradcChannel() + "_raw";
-    AdcValStream.open(path_to_value);
+    try{
+        AdcValStream.open(path_to_value);
+    }
+    
     if (!AdcValStream.is_open()) {
         throw TAdcException("error opening sysfs Adc file");
     }
@@ -195,12 +198,10 @@ std::unique_ptr<TSysfsAdcChannel> TSysfsAdc::GetChannel(int i)
 
 int TSysfsAdc::ReadValue()
 {
-    try{
-        int val;
-        AdcValStream.seekg(0);
-        AdcValStream >> val;
-        return val;
-    }
+    int val;
+    AdcValStream.seekg(0);
+    AdcValStream >> val;
+    return val;
 }
 
 bool TSysfsAdc::CheckVoltage(int value)
