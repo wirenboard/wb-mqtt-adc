@@ -72,16 +72,12 @@ void TMQTTAdcHandler::UpdateValue()
 void TMQTTAdcHandler::UpdateChannelValues()
 {
     for (auto channel : Channels) {
-        try{
-            float value = channel->GetValue();
-            if (Config.Debug)
-                std::cerr << "channel: " << channel->GetName() << " value: " << value << std::endl;
+        float value = channel->GetValue();
+        if (Config.Debug)
+            std::cerr << "channel: " << channel->GetName() << " value: " << value << std::endl;
 
-            std::ostringstream out;
-            out << std::fixed << std::setprecision(channel->DecimalPlaces) << value;
-            Publish(NULL, GetChannelTopic(*channel), out.str(), 0, true);
-        } catch (const TAdcException& e) {
-            std::cerr << "FATAL: " << e.what() << std::endl;
-        }  
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(channel->DecimalPlaces) << value;
+        Publish(NULL, GetChannelTopic(*channel), out.str(), 0, true);
     }
 }
