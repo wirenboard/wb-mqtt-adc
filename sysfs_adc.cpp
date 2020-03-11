@@ -200,7 +200,7 @@ int TSysfsAdc::ReadValue()
         AdcValStream.seekg(0);
         AdcValStream >> val;
         return val;
-    } catch{
+    } catch (const std::ios_base::failure e){
         return 0;
     }
     
