@@ -82,7 +82,6 @@ void TMQTTAdcHandler::UpdateChannelValues()
             Publish(NULL, GetChannelTopic(*channel), out.str(), 0, true);
         } catch (const TAdcException& e) {
         std::cerr << "FATAL: " << e.what() << std::endl;
-        return 1;
         }  
     }
 }
