@@ -195,12 +195,12 @@ std::unique_ptr<TSysfsAdcChannel> TSysfsAdc::GetChannel(int i)
 
 int TSysfsAdc::ReadValue()
 {
-    try{
+    try {
         int val;
         AdcValStream.seekg(0);
         AdcValStream >> val;
         return val;
-    } catch (const std::ios_base::failure e){
+    } catch (const std::ios_base::failure e) {
         return 0;
     }
     
