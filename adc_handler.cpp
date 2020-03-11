@@ -80,8 +80,9 @@ void TMQTTAdcHandler::UpdateChannelValues()
             std::ostringstream out;
             out << std::fixed << std::setprecision(channel->DecimalPlaces) << value;
             Publish(NULL, GetChannelTopic(*channel), out.str(), 0, true);
-        }
-        
-        
+        } catch (const TAdcException& e) {
+        std::cerr << "FATAL: " << e.what() << std::endl;
+        return 1;
+        }  
     }
 }
