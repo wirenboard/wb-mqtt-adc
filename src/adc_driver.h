@@ -1,3 +1,4 @@
+/*
 #include <mosquittopp.h>
 #include <fstream>
 #include <wbmqtt/utils.h>
@@ -30,4 +31,35 @@ private:
     vector<std::unique_ptr<TSysfsAdc>> AdcHandlers;
     vector<std::shared_ptr<TSysfsAdcChannel>> Channels;
 };
+*/
 
+#pragma once
+
+#include <wblib/wbmqtt.h>
+
+#include <thread>
+
+#include "config.h"
+
+
+class TADCDriver
+{
+    public:
+
+        static const char * const Name;
+
+        TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config);
+        ~TADCDriver();
+
+        void Start();
+        void Stop();
+        void Clear() noexcept;
+
+    private:
+        WBMQTT::PDeviceDriver  MqttDriver;
+        WBMQTT::PLocalDevice   Device;
+
+        std::atomic_bool                    Active;
+        std::atomic_bool                    Cleaned;
+        std::unique_ptr<std::thread>        Worker;
+};
