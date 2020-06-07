@@ -17,14 +17,14 @@ namespace {
         return true;
     }
 
-    bool get(const Json::Value&  item, const char* key, float& value) 
+    bool get(const Json::Value&  item, const char* key, double& value) 
     {
         if (!item.isMember(key))
             return false;
         Json::Value v = item[key];
         if(!v.isDouble())
             throw std::runtime_error(std::string(key) + " is not a float value");
-        value = v.asFloat();
+        value = v.asDouble();
         return true;
     }
 
@@ -50,36 +50,32 @@ namespace {
         return true;
     }
 
-    void LoadChannel(const Json::Value& item, std::map<std::string, TADCChannel>& channels)
+    void LoadChannel(const Json::Value& item, std::vector<TADCChannelSettings>& channels)
     {
-        std::string id;
-        if(!get(item, "id", id)){
+        TADCChannelSettings channel;
+        if(!get(item, "id", channel.Id)){
             throw std::runtime_error("id field is missing in the config");
         }
 
-        TADCChannel channel;
-        get(item, "averaging_window", channel.AveragingWindow);
-        if (channel.AveragingWindow == 0) {
+        get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
+        if (channel.ReaderCfg.AveragingWindow == 0) {
             throw std::runtime_error("zero averaging window is specified in the config");
         }
 
-        if (get(item, "max_voltage", channel.MaxVoltage)) {
-            channel.MaxVoltage *= 1000;
-        }
-
-        get(item, "voltage_multiplier", channel.VoltageMultiplier);
-        get(item, "readings_number", channel.ReadingsCount);
-        get(item, "decimal_places", channel.DecimalPlaces);
-        get(item, "scale", channel.Scale);
+        get(item, "max_voltage", channel.ReaderCfg.MaxVoltageV);
+        get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
+        get(item, "readings_number", channel.ReaderCfg.ReadingsCount);
+        get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
+        get(item, "scale", channel.ReaderCfg.Scale);
 
         if (!item.isMember("channel_number")) {
             throw std::runtime_error("channel_number field is missing in the config");
         }
 
         Json::Value v = item["channel_number"];
-        channel.ChannelNumber = (v.isInt() ? ("voltage" + std::to_string(v.asInt())) : v.asString());
+        channel.ReaderCfg.ChannelNumber = (v.isInt() ? ("voltage" + std::to_string(v.asInt())) : v.asString());
 
-        channels[id] = channel;
+        channels.push_back(channel);
     }
 
     void append(const TConfig& src, TConfig& dst) 
@@ -88,7 +84,12 @@ namespace {
         dst.Debug = src.Debug;
 
         for(const auto& v: src.Channels) {
-            dst.Channels[v.first] = v.second;
+            auto el = std::find_if(dst.Channels.begin(), dst.Channels.end(), [&](auto& c){return c.Id == v.Id;});
+            if(el == dst.Channels.end()){
+                dst.Channels.push_back(v);
+            } else {
+                *el = v;
+            }
         }
     }
 
@@ -122,7 +123,7 @@ namespace {
     }
 }
 
-TConfig loadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile)
+TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile)
 {
     if(!optionalConfigFile.empty())
         return loadFromJSON(optionalConfigFile);

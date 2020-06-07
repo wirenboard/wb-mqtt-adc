@@ -2,15 +2,17 @@
 #include <getopt.h>
 #include <chrono>
 
+#include <functional>
 #include <wblib/wbmqtt.h>
+#include <wblib/log.h>
 #include <wblib/signal_handling.h>
-#include <wblib/utils.h>
 
 #include "config.h"
-#include "log.h"
-#include "onewire_driver.h"
+#include "adc_driver.h"
 
 using namespace std;
+
+WBMQTT::TLogger Error("ERROR: ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED);
 #define LOG(logger) ::logger.Log() << "[wb-adc] "
 
 namespace 
@@ -71,7 +73,7 @@ int main(int argc, char *argv[])
                 break;
             }
             case 'd': {
-                сout << "debug mode is enabled" << endl;
+                cout << "debug mode is enabled" << endl;
                 forceDebug = true;
                 break;
             }
@@ -103,10 +105,10 @@ int main(int argc, char *argv[])
         if (forceDebug)
             config.Debug = true;
 
-        TOneWireDriver w1_driver(mqttDriver, poll_interval);
+        TADCDriver driver(mqttDriver, config);
 
         WBMQTT::SignalHandling::OnSignals({ SIGINT, SIGTERM }, [&]{
-            w1_driver.Stop();
+            driver.Stop();
         });
 
         initialized.Complete();
