@@ -1,57 +1,57 @@
-ifeq ($(DEB_TARGET_ARCH),armel)
-CROSS_COMPILE=arm-linux-gnueabi-
-endif
-
 CXX=$(CROSS_COMPILE)g++
-CXX_PATH := $(shell which $(CROSS_COMPILE)g++-4.7)
-
 CC=$(CROSS_COMPILE)gcc
-CC_PATH := $(shell which $(CROSS_COMPILE)gcc-4.7)
 
-ifneq ($(CXX_PATH),)
-	CXX=$(CROSS_COMPILE)g++-4.7
-endif
+CFLAGS=-Wall -std=c++14 -Os -I.
 
-ifneq ($(CC_PATH),)
-	CC=$(CROSS_COMPILE)gcc-4.7
-endif
+ADC_SOURCES= 					\
+			src/adc_driver.cpp	\
+			src/config.cpp		\
+			src/sysfs_adc.cpp	\
 
-#CFLAGS=-Wall -ggdb -std=c++0x -O0 -I.
-DEBUG_CFLAGS=-Wall -ggdb -std=c++0x -O0 -I.
-NORMAL_CFLAGS=-Wall -std=c++11 -Os -I.
-CFLAGS=$(if $(or $(DEBUG),), $(DEBUG_CFLAGS),$(NORMAL_CFLAGS))
-
-LDFLAGS= -lmosquittopp -lmosquitto -ljsoncpp -lwbmqtt
-
+ADC_OBJECTS=$(ADC_SOURCES:.cpp=.o)
 ADC_BIN=wb-homa-adc
+ADC_LIBS= -lwbmqtt1 -lpthread -ljsoncpp 
 
+ADC_TEST_SOURCES= 							\
+			$(TEST_DIR)/test_main.cpp		\
+			$(TEST_DIR)/sysfs_w1_test.cpp	\
+    		$(TEST_DIR)/onewire_driver_test.cpp	\
+			
+TEST_DIR=test
+export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
 
-.PHONY: all clean
+ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:.cpp=.o)
+TEST_BIN=wb-homa-adc-test
+TEST_LIBS=-lgtest -lwbmqtt_test_utils
+
 
 all : $(ADC_BIN)
 
-
 # ADC
-ADC_H=sysfs_adc.h adc_handler.h lradc_isrc.h sysfs_prefix.h
-
-main.o : main.cpp $(ADC_H)
+%.o : %.cpp
 	${CXX} -c $< -o $@ ${CFLAGS}
 
-adc_handler.o : adc_handler.cpp $(ADC_H)
-	${CXX} -c $< -o $@ ${CFLAGS}
-sysfs_adc.o : sysfs_adc.cpp $(ADC_H)
-	${CXX} -c $< -o $@ ${CFLAGS}
-imx233.o : imx233.c
-	${CC} -c $< -o $@
-lradc_isrc.o : lradc_isrc.cpp
-	${CXX} -c $< -o $@ ${CFLAGS}
+$(ADC_BIN) : src/main.o $(ADC_OBJECTS)
+	${CXX} $^ ${ADC_LIBS} -o $@
 
-$(ADC_BIN) : main.o sysfs_adc.o adc_handler.o imx233.o lradc_isrc.o
-	${CXX} $^ ${LDFLAGS} -o $@
+$(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
+	${CXX} $^ $(ADC_LIBS) $(TEST_LIBS) -o $@
 
+test: $(TEST_DIR)/$(TEST_BIN)
+
+	rm -f $(TEST_DIR)/*.dat.out
+	if [ "$(shell arch)" = "armv7l" ]; then \
+          $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || $(TEST_DIR)/abt.sh show; \
+        else \
+          valgrind --error-exitcode=180 -q $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
+            if [ $$? = 180 ]; then \
+              echo "*** VALGRIND DETECTED ERRORS ***" 1>& 2; \
+              exit 1; \
+            else $(TEST_DIR)/abt.sh show; exit 1; fi; \
+        fi
 clean :
-	-rm -f *.o $(ADC_BIN)
-
+	-rm -f src/*.o $(ADC_BIN)
+	-rm -f $(TEST_DIR)/*.o $(TEST_DIR)/$(TEST_BIN)
 
 
 install: all
@@ -65,16 +65,11 @@ install: all
 	mkdir -p $(DESTDIR)/etc/wb-configs.d
 
 	install -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
-	install -m 0644  config.json $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.default
-	install -m 0644  config.json.devicetree $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.devicetree
-	install -m 0644  config.json.wb4 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb4
-	install -m 0644  config.json.wb5 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb5
-	install -m 0644  config.json.wb55 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55
-	install -m 0644  config.json.wb61 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb61
-	install -m 0644  config.json.wb2.8 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb2.8
-	install -m 0644  config.json.wb3.5 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb3.5
-	install -m 0644  config.json.netmon1 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.netmon1
+	install -m 0644  data/config.json $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.default
+	install -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.devicetree
+	install -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55
+	install -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb61
 
-	install -m 0644  wb-homa-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-homa-adc
+	install -m 0644  data/wb-homa-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-homa-adc
 
-	install -m 0644  wb-homa-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json
+	install -m 0644  data/wb-homa-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json

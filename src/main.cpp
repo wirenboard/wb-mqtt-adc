@@ -84,22 +84,22 @@ int main(int argc, char *argv[])
     }
     cout << "MQTT broker " << mqttConfig.Host << ':' << mqttConfig.Port << endl;
 
-    auto mqttDriver = WBMQTT::NewDriver(WBMQTT::TDriverArgs{}
-        .SetBackend(WBMQTT::NewDriverBackend(WBMQTT::NewMosquittoMqttClient(mqttConfig)))
-        .SetId(mqttConfig.Id)
-        .SetUseStorage(false)
-        .SetReownUnknownDevices(true)
-    );
-
-    mqttDriver->StartLoop();
-    WBMQTT::SignalHandling::OnSignals({ SIGINT, SIGTERM }, [&]{
-        mqttDriver->StopLoop();
-        mqttDriver->Close();
-    });
-
-    mqttDriver->WaitForReady();
-
     try {
+        auto mqttDriver = WBMQTT::NewDriver(WBMQTT::TDriverArgs{}
+            .SetBackend(WBMQTT::NewDriverBackend(WBMQTT::NewMosquittoMqttClient(mqttConfig)))
+            .SetId(mqttConfig.Id)
+            .SetUseStorage(false)
+            .SetReownUnknownDevices(true)
+        );
+
+        mqttDriver->StartLoop();
+        WBMQTT::SignalHandling::OnSignals({ SIGINT, SIGTERM }, [&]{
+            mqttDriver->StopLoop();
+            mqttDriver->Close();
+        });
+
+        mqttDriver->WaitForReady();
+
         TConfig config = LoadConfig("/etc/wb-homa-adc.conf", customConfig);
 
         if (forceDebug)
@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
 
     } catch (const std::exception & e) {
         LOG(Error) << "FATAL: " << e.what();
+        WBMQTT::SignalHandling::Stop();
         return 1;
     }
 

@@ -42,7 +42,7 @@ class TChannelReader
             uint32_t    DecimalPlaces     = 3;                                 //! Count of figures after point
         };
 
-        TChannelReader(double defaultIIOScale, uint32_t maxADCvalue, const TChannelReader::TSettings& channelCfg, uint32_t delayBetweenMeasurementsmS, const std::string& sysFsPrefix = std::string());
+        TChannelReader(double defaultIIOScale, uint32_t maxADCvalue, const TChannelReader::TSettings& channelCfg, uint32_t delayBetweenMeasurementsmS, const std::string& sysFsPrefix = "/sys");
 
         double GetValue() const;
         void Measure();
