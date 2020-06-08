@@ -62,7 +62,7 @@ namespace {
             throw std::runtime_error("zero averaging window is specified in the config");
         }
 
-        get(item, "max_voltage", channel.ReaderCfg.MaxVoltageV);
+        get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage);
         get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
         get(item, "readings_number", channel.ReaderCfg.ReadingsCount);
         get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);

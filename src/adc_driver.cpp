@@ -24,7 +24,6 @@ namespace
 
     void AdcWorker(bool* active, WBMQTT::PLocalDevice device, WBMQTT::PDeviceDriver mqttDriver, std::shared_ptr<std::vector<TChannelDesc> > channels)
     {
-    //  LOG(Info) << "Started";
         while (*active) {
             for (auto& channel: *channels) {
                 channel.Reader.Measure();
@@ -32,15 +31,19 @@ namespace
 
             auto tx = mqttDriver->BeginTx();
             for (const auto& channel: *channels) {
-                //LOG(Info) << "Publish: " << names[i];
-                device->GetControl(channel.MqttId)->SetValue(tx, channel.Reader.GetValue());
+                std::ostringstream out;
+                out.precision(2);
+                out << std::fixed << channel.Reader.GetValue();
+                device->GetControl(channel.MqttId)->SetRawValue(tx, out.str());
             }
         }
-    //  LOG(Info) << "Stopped";
     }
 }
 
-TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config): MqttDriver(mqttDriver)
+TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config, WBMQTT::TLogger& debugLogger, WBMQTT::TLogger& infoLogger): 
+    MqttDriver(mqttDriver),
+    DebugLogger(debugLogger),
+    InfoLogger(infoLogger)
 {
     auto tx = MqttDriver->BeginTx();
     Device = tx->CreateDevice(WBMQTT::TLocalDeviceArgs{}
@@ -63,8 +66,8 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& c
                     );
         ++n;
 
-        // FIXME: maxADCvalue ??? delay ???
-        readers->push_back(TChannelDesc{channel.Id, {MXS_LRADC_DEFAULT_SCALE_FACTOR, 3100, channel.ReaderCfg, 10}});
+        // FIXME: delay ???
+        readers->push_back(TChannelDesc{channel.Id, {MXS_LRADC_DEFAULT_SCALE_FACTOR, ADC_DEFAULT_MAX_VOLTAGE, channel.ReaderCfg, 10, DebugLogger}});
         futureControl.Wait();
     }
 

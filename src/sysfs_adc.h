@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <wblib/wbmqtt.h>
+#include <wblib/log.h>
 
 #include <thread>
 #include <fstream>
@@ -33,16 +34,21 @@ class TChannelReader
         //! ADC channel measurement settings
         struct TSettings
         {
-            std::string ChannelNumber     = "voltage1";                        //! IIO channel "voltageX"
-            uint32_t    ReadingsCount     = 10;                                //! Count of value readings during one selection
-            double      MaxVoltageV       = ADC_DEFAULT_MAX_VOLTAGE / 1000.0f; //! Maximum measurable voltage in V
-            double      Scale             = 0;                                 //! The ADC scale to use. The closest supported scale (from _scale_available list) will be used. It affects the accuracy and the measurement range. If 0, the maximum available scale is used.",
-            double      VoltageMultiplier = 1;                                 //! The ADC voltage is multiplied by this factor to get the resulting value
-            uint32_t    AveragingWindow   = 10;                                //! Count of consecutive readings to average
-            uint32_t    DecimalPlaces     = 3;                                 //! Count of figures after point
+            std::string ChannelNumber     = "voltage1";              //! IIO channel "voltageX"
+            uint32_t    ReadingsCount     = 10;                      //! Count of value readings during one selection
+            double      MaxScaledVoltage  = ADC_DEFAULT_MAX_VOLTAGE; //! Maximum result after multiplying readed value from ADC to Scale
+            double      Scale             = 0;                       //! The ADC scale to use. The closest supported scale (from _scale_available list) will be used. It affects the accuracy and the measurement range. If 0, the maximum available scale is used.",
+            double      VoltageMultiplier = 1;                       //! The ADC voltage is multiplied by this factor to get the resulting value
+            uint32_t    AveragingWindow   = 10;                      //! Count of consecutive readings to average
+            uint32_t    DecimalPlaces     = 3;                       //! Count of figures after point
         };
 
-        TChannelReader(double defaultIIOScale, uint32_t maxADCvalue, const TChannelReader::TSettings& channelCfg, uint32_t delayBetweenMeasurementsmS, const std::string& sysFsPrefix = "/sys");
+        TChannelReader(double defaultIIOScale, 
+                       uint32_t maxADCvalue, 
+                       const TChannelReader::TSettings& channelCfg, 
+                       uint32_t delayBetweenMeasurementsmS, 
+                       WBMQTT::TLogger& debugLogger,
+                       const std::string& sysFsPrefix = "/sys");
 
         double GetValue() const;
         void Measure();
@@ -81,6 +87,8 @@ class TChannelReader
         TAverageCounter AverageCounter;
 
         std::ifstream AdcValStream;
+
+        WBMQTT::TLogger& DebugLogger;
 
         uint32_t ReadFromADC();
         void SelectScale();

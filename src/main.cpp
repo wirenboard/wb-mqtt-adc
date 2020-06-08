@@ -12,8 +12,8 @@
 
 using namespace std;
 
-WBMQTT::TLogger Error("ERROR: ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED);
-#define LOG(logger) ::logger.Log() << "[wb-adc] "
+WBMQTT::TLogger ErrorLogger("ERROR: [wb-adc] ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED);
+WBMQTT::TLogger DebugLogger("DEBUG: [wb-adc] ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::WHITE, false);
 
 namespace 
 {
@@ -41,14 +41,14 @@ int main(int argc, char *argv[])
         else if timed out: exit with error
     */
     WBMQTT::SignalHandling::SetWaitFor(DRIVER_INIT_TIMEOUT_S, initialized.GetFuture(), [&]{
-        LOG(Error) << "Driver takes too long to initialize. Exiting.";
+        ErrorLogger.Log() << "Driver takes too long to initialize. Exiting.";
         cerr << "Error: DRIVER_INIT_TIMEOUT_S" << endl;
         exit(1); 
     });
 
     /* if handling of signal takes too much time: exit with error */
     WBMQTT::SignalHandling::SetOnTimeout(DRIVER_STOP_TIMEOUT_S, [&]{
-        LOG(Error) << "Driver takes too long to stop. Exiting.";
+        ErrorLogger.Log() << "Driver takes too long to stop. Exiting.";
         cerr << "Error: DRIVER_STOP_TIMEOUT_S" << endl;
         exit(2);
     });
@@ -102,10 +102,9 @@ int main(int argc, char *argv[])
 
         TConfig config = LoadConfig("/etc/wb-homa-adc.conf", customConfig);
 
-        if (forceDebug)
-            config.Debug = true;
+        DebugLogger.SetEnabled(forceDebug || config.Debug);
 
-        TADCDriver driver(mqttDriver, config);
+        TADCDriver driver(mqttDriver, config, DebugLogger, ErrorLogger);
 
         WBMQTT::SignalHandling::OnSignals({ SIGINT, SIGTERM }, [&]{
             driver.Stop();
@@ -115,7 +114,7 @@ int main(int argc, char *argv[])
         WBMQTT::SignalHandling::Wait();
 
     } catch (const std::exception & e) {
-        LOG(Error) << "FATAL: " << e.what();
+        ErrorLogger.Log() << "FATAL: " << e.what();
         WBMQTT::SignalHandling::Stop();
         return 1;
     }

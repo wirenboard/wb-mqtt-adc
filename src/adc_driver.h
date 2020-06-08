@@ -12,16 +12,19 @@ class TADCDriver
 {
     public:
 
-        TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config);
+        TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config, WBMQTT::TLogger& debugLogger, WBMQTT::TLogger& infoLogger);
         ~TADCDriver();
 
         void Stop();
 
     private:
-        WBMQTT::PDeviceDriver  MqttDriver;
-        WBMQTT::PLocalDevice   Device;
+        WBMQTT::PDeviceDriver        MqttDriver;
+        WBMQTT::PLocalDevice         Device;
 
-        bool                   Active;
-        std::atomic_bool                    Cleaned;
-        std::unique_ptr<std::thread>        Worker;
+        bool                         Active;
+        std::atomic_bool             Cleaned;
+        std::unique_ptr<std::thread> Worker;
+
+        WBMQTT::TLogger&             DebugLogger;
+        WBMQTT::TLogger&             InfoLogger;
 };

@@ -15,7 +15,6 @@ using namespace std;
 
 #define MXS_LRADC_DEFAULT_SCALE_FACTOR 0.451660156 // default scale for file "in_voltageNUMBER_scale"
 
-
 bool TryOpen(const std::vector<std::string>& fnames, std::ifstream& file)
 {
     for (auto& fname : fnames) {
@@ -122,30 +121,39 @@ void TChannelReader::SelectScale()
 
     if (scaleFile.is_open()) {
         auto contents = std::string((std::istreambuf_iterator<char>(scaleFile)), std::istreambuf_iterator<char>());
+        DebugLogger.Log() << "Available scales: " << contents;
 
         string bestScaleStr = FindBestScale(WBMQTT::StringSplit(contents, " "), Cfg.Scale);
 
         if(!bestScaleStr.empty()) {
             IIOScale = stod(bestScaleStr);
             WriteToFile(scalePrefix, bestScaleStr);
+            DebugLogger.Log() << scalePrefix << " is set to " << bestScaleStr;
+            return;
         }
-        return;
     }
 
     // scale_available file is not present read the current scale(in_voltageX_scale) from sysfs or from group scale(in_voltage_scale)
     TryOpen({ scalePrefix, SysfsIIODir + "/in_voltage_scale" }, scaleFile);
     if (scaleFile.is_open()) {
         scaleFile >> IIOScale;
+        DebugLogger.Log() << scalePrefix << " = " << IIOScale;
     }
 }
 
-TChannelReader::TChannelReader(double defaultIIOScale, uint32_t maxADCvalue, const TChannelReader::TSettings& cfg, uint32_t delayBetweenMeasurementsmS, const std::string& SysFsPrefix): 
+TChannelReader::TChannelReader(double defaultIIOScale, 
+                               uint32_t maxADCvalue, 
+                               const TChannelReader::TSettings& cfg, 
+                               uint32_t delayBetweenMeasurementsmS,
+                               WBMQTT::TLogger& debugLogger,
+                               const std::string& SysFsPrefix): 
     Cfg(cfg),
     MeasuredV(0.0f),
     IIOScale(defaultIIOScale),
     MaxADCValue(maxADCvalue),
     DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
-    AverageCounter(cfg.AveragingWindow)
+    AverageCounter(cfg.AveragingWindow),
+    DebugLogger(debugLogger)
 {
     SysfsIIODir = SysFsPrefix + "/bus/iio/devices/iio:device0";
 
@@ -164,20 +172,28 @@ void TChannelReader::Measure()
     MeasuredV = std::nan("");
 
     for (uint32_t i = 0; i < Cfg.ReadingsCount; ++i) {
-        AverageCounter.AddValue(ReadFromADC());
+        uint32_t adcMeasurement = ReadFromADC();
+        DebugLogger.Log() << Cfg.ChannelNumber << " = " << adcMeasurement;
+        AverageCounter.AddValue(adcMeasurement);
         this_thread::sleep_for(chrono::milliseconds(DelayBetweenMeasurementsmS));
     }
 
-    if(!AverageCounter.IsReady())
+    if(!AverageCounter.IsReady()) {
+        DebugLogger.Log() << Cfg.ChannelNumber << " average is not ready";
         return;
+    }
 
     uint32_t value = AverageCounter.Average();
-    if (value > MaxADCValue) 
+    if (value > MaxADCValue) {
+        DebugLogger.Log() << Cfg.ChannelNumber << " average (" << value <<") is bigger than maximum (" << MaxADCValue <<")";
         return;
-    
-    // FIXME: check why is it divided by 1000
-    double v = IIOScale * value * Cfg.VoltageMultiplier / 1000;
-    if (v <= Cfg.MaxVoltageV) {
-        MeasuredV = v;
     }
+
+    double v = IIOScale * value;
+    if (v > Cfg.MaxScaledVoltage) {
+        DebugLogger.Log() << Cfg.ChannelNumber << " scaled value (" << v <<") is bigger than maximum (" << Cfg.MaxScaledVoltage <<")";
+    }
+
+    //got mV let's divide it by 1000 to obtain V
+    MeasuredV = v * Cfg.VoltageMultiplier / 1000.0;
 }
