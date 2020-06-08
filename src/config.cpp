@@ -64,7 +64,7 @@ namespace {
 
         get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage);
         get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
-        get(item, "readings_number", channel.ReaderCfg.ReadingsCount);
+        get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
         get(item, "scale", channel.ReaderCfg.Scale);
 

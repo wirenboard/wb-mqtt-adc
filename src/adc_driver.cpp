@@ -54,7 +54,6 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& c
     
     std::shared_ptr<std::vector<TChannelDesc> > readers(new std::vector<TChannelDesc>());
     for (const auto & channel: config.Channels) {
-
         auto futureControl = Device->CreateControl(tx, WBMQTT::TControlArgs{}
                         .SetId(channel.Id)
                         .SetType("voltage")

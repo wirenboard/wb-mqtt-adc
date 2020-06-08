@@ -1,19 +1,12 @@
 #include "sysfs_adc.h"
 
-#include <fstream>
 #include <math.h>
 #include <sstream>
+#include <iomanip>
+
+#include <wblib/utils.h>
 
 using namespace std;
-
-/*
-    "/devices/" TADCDriver::Name "/meta/name"                                       = Config.DeviceName
-    "/devices/" TADCDriver::Name "/controls/" Config.Channels[i].Id                 = measured voltage
-    "/devices/" TADCDriver::Name "/controls/" Config.Channels[i].Id "/meta/order"   = i from Config.Channels[i]
-    "/devices/" TADCDriver::Name "/controls/" Config.Channels[i].Id "/meta/type"    = string "voltage"
-*/
-
-#define MXS_LRADC_DEFAULT_SCALE_FACTOR 0.451660156 // default scale for file "in_voltageNUMBER_scale"
 
 bool TryOpen(const std::vector<std::string>& fnames, std::ifstream& file)
 {
@@ -52,15 +45,7 @@ std::string FindBestScale(const std::vector<std::string>& scales, double desired
     return bestScaleStr;
 }
 
-void OpenWithException(std::ofstream& f, const std::string& fileName)
-{
-    f.open(fileName);
-    if (!f.is_open()) {
-        throw std::runtime_error("Can't open file:" + fileName);
-    }
-}
-
-void OpenWithException(std::ifstream& f, const std::string& fileName)
+template<class T> void OpenWithException(T& f, const std::string& fileName)
 {
     f.open(fileName);
     if (!f.is_open()) {
@@ -75,30 +60,61 @@ void WriteToFile(const std::string& fileName, const std::string& value)
     f << value;
 }
 
-TAverageCounter::TAverageCounter(size_t windowSize): Sum(0), Pos(0), Ready(false) {
-    LastValues.resize(windowSize);
+TChannelReader::TChannelReader(double defaultIIOScale, 
+                               uint32_t maxADCvalue, 
+                               const TChannelReader::TSettings& cfg, 
+                               uint32_t delayBetweenMeasurementsmS,
+                               WBMQTT::TLogger& debugLogger,
+                               const std::string& SysFsPrefix): 
+    Cfg(cfg),
+    MeasuredV(0.0),
+    IIOScale(defaultIIOScale),
+    MaxADCValue(maxADCvalue),
+    DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
+    AverageCounter(cfg.AveragingWindow),
+    DebugLogger(debugLogger)
+{
+    SysfsIIODir = SysFsPrefix + "/bus/iio/devices/iio:device0";
+    SelectScale();
+    OpenWithException(AdcValStream, SysfsIIODir + "/in_" + Cfg.ChannelNumber + "_raw");
 }
 
-void TAverageCounter::AddValue(uint32_t value)
+std::string TChannelReader::GetValue() const
 {
-    Sum -= (Ready ? LastValues[Pos] : 0);
-    LastValues[Pos] = value;
-    Sum += value;
-    ++Pos;
-    Pos %= LastValues.size();
-    if(Pos == 0) {
-        Ready = true;
+    std::ostringstream out;
+    out << std::setprecision(Cfg.DecimalPlaces) << std::fixed << MeasuredV;
+    return out.str();
+}
+
+void TChannelReader::Measure()
+{
+    MeasuredV = std::nan("");
+
+    for (uint32_t i = 0; i < Cfg.ReadingsNumber; ++i) {
+        uint32_t adcMeasurement = ReadFromADC();
+        DebugLogger.Log() << Cfg.ChannelNumber << " = " << adcMeasurement;
+        AverageCounter.AddValue(adcMeasurement);
+        this_thread::sleep_for(chrono::milliseconds(DelayBetweenMeasurementsmS));
     }
-}
 
-uint32_t TAverageCounter::Average() const
-{
-    return round(Sum / (double)LastValues.size());
-}
+    if(!AverageCounter.IsReady()) {
+        DebugLogger.Log() << Cfg.ChannelNumber << " average is not ready";
+        return;
+    }
 
-bool TAverageCounter::IsReady() const
-{
-    return Ready;
+    uint32_t value = AverageCounter.Average();
+    if (value > MaxADCValue) {
+        DebugLogger.Log() << Cfg.ChannelNumber << " average (" << value <<") is bigger than maximum (" << MaxADCValue <<")";
+        return;
+    }
+
+    double v = IIOScale * value;
+    if (v > Cfg.MaxScaledVoltage) {
+        DebugLogger.Log() << Cfg.ChannelNumber << " scaled value (" << v <<") is bigger than maximum (" << Cfg.MaxScaledVoltage <<")";
+        return;
+    }
+
+    MeasuredV = v * Cfg.VoltageMultiplier / 1000.0;   //got mV let's divide it by 1000 to obtain V
 }
 
 uint32_t TChannelReader::ReadFromADC()
@@ -137,66 +153,6 @@ void TChannelReader::SelectScale()
     TryOpen({ scalePrefix, SysfsIIODir + "/in_voltage_scale" }, scaleFile);
     if (scaleFile.is_open()) {
         scaleFile >> IIOScale;
-        DebugLogger.Log() << scalePrefix << " = " << IIOScale;
     }
-}
-
-TChannelReader::TChannelReader(double defaultIIOScale, 
-                               uint32_t maxADCvalue, 
-                               const TChannelReader::TSettings& cfg, 
-                               uint32_t delayBetweenMeasurementsmS,
-                               WBMQTT::TLogger& debugLogger,
-                               const std::string& SysFsPrefix): 
-    Cfg(cfg),
-    MeasuredV(0.0f),
-    IIOScale(defaultIIOScale),
-    MaxADCValue(maxADCvalue),
-    DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
-    AverageCounter(cfg.AveragingWindow),
-    DebugLogger(debugLogger)
-{
-    SysfsIIODir = SysFsPrefix + "/bus/iio/devices/iio:device0";
-
-    OpenWithException(AdcValStream, SysfsIIODir + "/in_" + Cfg.ChannelNumber + "_raw");
-
-    SelectScale();
-}
-
-std::string TChannelReader::GetValue() const
-{
-    std::ostringstream out;
-    out.precision(Cfg.DecimalPlaces);
-    out << std::fixed << MeasuredV;
-    return out.str();
-}
-
-void TChannelReader::Measure()
-{
-    MeasuredV = std::nan("");
-
-    for (uint32_t i = 0; i < Cfg.ReadingsCount; ++i) {
-        uint32_t adcMeasurement = ReadFromADC();
-        DebugLogger.Log() << Cfg.ChannelNumber << " = " << adcMeasurement;
-        AverageCounter.AddValue(adcMeasurement);
-        this_thread::sleep_for(chrono::milliseconds(DelayBetweenMeasurementsmS));
-    }
-
-    if(!AverageCounter.IsReady()) {
-        DebugLogger.Log() << Cfg.ChannelNumber << " average is not ready";
-        return;
-    }
-
-    uint32_t value = AverageCounter.Average();
-    if (value > MaxADCValue) {
-        DebugLogger.Log() << Cfg.ChannelNumber << " average (" << value <<") is bigger than maximum (" << MaxADCValue <<")";
-        return;
-    }
-
-    double v = IIOScale * value;
-    if (v > Cfg.MaxScaledVoltage) {
-        DebugLogger.Log() << Cfg.ChannelNumber << " scaled value (" << v <<") is bigger than maximum (" << Cfg.MaxScaledVoltage <<")";
-    }
-
-    //got mV let's divide it by 1000 to obtain V
-    MeasuredV = v * Cfg.VoltageMultiplier / 1000.0;
+    DebugLogger.Log() << scalePrefix << " = " << IIOScale;
 }
