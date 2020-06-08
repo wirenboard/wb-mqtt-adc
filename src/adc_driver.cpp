@@ -31,10 +31,7 @@ namespace
 
             auto tx = mqttDriver->BeginTx();
             for (const auto& channel: *channels) {
-                std::ostringstream out;
-                out.precision(2);
-                out << std::fixed << channel.Reader.GetValue();
-                device->GetControl(channel.MqttId)->SetRawValue(tx, out.str());
+                device->GetControl(channel.MqttId)->SetRawValue(tx, channel.Reader.GetValue());
             }
         }
     }

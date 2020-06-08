@@ -162,9 +162,12 @@ TChannelReader::TChannelReader(double defaultIIOScale,
     SelectScale();
 }
 
-double TChannelReader::GetValue() const
+std::string TChannelReader::GetValue() const
 {
-    return MeasuredV;
+    std::ostringstream out;
+    out.precision(Cfg.DecimalPlaces);
+    out << std::fixed << MeasuredV;
+    return out.str();
 }
 
 void TChannelReader::Measure()

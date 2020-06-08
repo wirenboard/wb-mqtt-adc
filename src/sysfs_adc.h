@@ -34,6 +34,7 @@ class TChannelReader
         //! ADC channel measurement settings
         struct TSettings
         {
+            std::string MatchIIO;                                    //!
             std::string ChannelNumber     = "voltage1";              //! IIO channel "voltageX"
             uint32_t    ReadingsCount     = 10;                      //! Count of value readings during one selection
             double      MaxScaledVoltage  = ADC_DEFAULT_MAX_VOLTAGE; //! Maximum result after multiplying readed value from ADC to Scale
@@ -50,7 +51,7 @@ class TChannelReader
                        WBMQTT::TLogger& debugLogger,
                        const std::string& sysFsPrefix = "/sys");
 
-        double GetValue() const;
+        std::string GetValue() const;
         void Measure();
 
     private:
