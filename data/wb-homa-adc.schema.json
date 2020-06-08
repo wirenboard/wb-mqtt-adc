@@ -51,6 +51,12 @@
           "type": "integer",
           "title": "Number of ADC reading per sample",
           "propertyOrder": 7
+        },
+        "match_iio" : {
+          "type" : "string",
+          "title" : "IIO device match pattern",
+          "description": "Fnmatch-compatible pattern to match with iio:deviceN symlink target",
+          "propertyOrder" : 9
         }
       }
     },
