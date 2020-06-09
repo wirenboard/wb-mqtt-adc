@@ -4,6 +4,8 @@
 #include <jsoncpp/json/json.h>
 #include <wblib/utils.h>
 
+#include "file_utils.h"
+
 namespace {
 
     bool get(const Json::Value&  item, const char* key, std::string& value) 
@@ -127,5 +129,11 @@ TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optiona
 {
     if(!optionalConfigFile.empty())
         return loadFromJSON(optionalConfigFile);
-    return loadFromJSON(mainConfigFile);
+    TConfig cfg;
+    try {   
+        IterateDir(mainConfigFile+".d", ".conf", [&](const std::string& f){ append(loadFromJSON(f), cfg); return false; });
+    }
+    catch(const TNoDirError& er) {}
+    append(loadFromJSON(mainConfigFile), cfg);
+    return cfg;
 }

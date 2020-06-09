@@ -1,31 +1,17 @@
 #include "sysfs_adc.h"
 
 #include <math.h>
-#include <sstream>
 #include <iomanip>
-#include <cstring>
-#include <functional>
 
-#include <dirent.h>
 #include <fnmatch.h>
 #include <unistd.h>
 
 #include <wblib/utils.h>
 
+#include "file_utils.h"
+
 namespace
 {
-    bool TryOpen(const std::vector<std::string>& fnames, std::ifstream& file)
-    {
-        for (auto& fname : fnames) {
-            file.open(fname);
-            if (file.is_open()) {
-                return true;
-            }
-            file.clear();
-        }
-        return false;
-    }
-
     std::string FindBestScale(const std::vector<std::string>& scales, double desiredScale)
     {
         std::string bestScaleStr;
@@ -51,43 +37,7 @@ namespace
         return bestScaleStr;
     }
 
-    template<class T> void OpenWithException(T& f, const std::string& fileName)
-    {
-        f.open(fileName);
-        if (!f.is_open()) {
-            throw std::runtime_error("Can't open file:" + fileName);
-        }
-    }
-
-    void WriteToFile(const std::string& fileName, const std::string& value)
-    {
-        std::ofstream f;
-        OpenWithException(f, fileName);
-        f << value;
-    }
-
-    std::string IterateDir(const std::string& dirName, const std::string& pattern, std::function<bool (const std::string& )> fn)
-    {
-        DIR* dir = opendir(dirName.c_str());
-
-        if(dir == NULL) {
-            throw std::runtime_error("Can't open directory: " + dirName);
-        }
-
-        std::unique_ptr<DIR, decltype(&closedir)> dirPtr(dir, closedir);
-        dirent* ent;
-        while ((ent = readdir (dirPtr.get())) != NULL) {
-            if (!std::strstr(ent->d_name, pattern.c_str()))
-                continue;
-            std::string d(dirName + "/" + std::string(ent->d_name));
-            if(fn(d)){
-                return d;
-            }
-        }
-        return std::string();
-    }
-
-    std::string FindSysfsIIODir2(const std::string& sysFsPrefix, const std::string& matchIIO)
+    std::string FindSysfsIIODir(const std::string& sysFsPrefix, const std::string& matchIIO)
     {
         if (matchIIO.empty()) {
             return sysFsPrefix + "/bus/iio/devices/iio:device0";
@@ -112,47 +62,6 @@ namespace
         }
 
         return iioDevName;
-    }
-
-
-    std::string FindSysfsIIODir(const std::string& sysFsPrefix, const std::string& matchIIO)
-    {
-        if (matchIIO.empty()) {
-            return sysFsPrefix + "/bus/iio/devices/iio:device0";
-        }
-
-        std::string iioDevDir = sysFsPrefix + "/bus/iio/devices";
-
-        DIR* dir = opendir(iioDevDir.c_str());
-        if(dir == NULL) {
-            throw std::runtime_error("Can't open directory: " + iioDevDir);
-        }
-
-        std::string iioDevName;
-        std::string pattern = "*" + matchIIO + "*";
-        dirent* ent;
-        while ((ent = readdir (dir)) != NULL) {
-            if (!std::strstr(ent->d_name, "iio:device"))
-                continue;
-            std::string d = iioDevDir + "/" + std::string(ent->d_name);
-            char buf[512];
-            int len;
-            if ((len = readlink(d.c_str(), buf, 512)) < 0)
-                continue;
-            buf[len] = 0;
-
-            if (fnmatch(pattern.c_str(), buf, 0) == 0) {
-                iioDevName = ent->d_name;
-                break;
-            }
-        }
-        closedir(dir);
-
-        if (iioDevName.empty()) {
-            throw std::runtime_error("Can't fild matching sysfs IIO: " + matchIIO);
-        }
-
-        return iioDevDir + "/" + iioDevName;
     }
 }
 
