@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  * @brief The class calculates moving average from given values.
