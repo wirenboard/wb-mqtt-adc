@@ -38,3 +38,4 @@ debian/wb-homa-adc
 debian/files
 debian/*.substvars
 wb-homa-adc
+debhelper-build-stamp

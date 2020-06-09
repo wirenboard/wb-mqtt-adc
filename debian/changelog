@@ -1,3 +1,9 @@
+wb-homa-adc (2.0.0) unstable; urgency=medium
+
+  * port to libwbmqtt1
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 09 Jun 2020 14:06:40 +0300
+
 wb-homa-adc (1.14.6) stable; urgency=medium
 
   * fix analog-inputs node autodetect on create_rootfs stage

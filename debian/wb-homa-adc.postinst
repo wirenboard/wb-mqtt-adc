@@ -16,26 +16,6 @@ else
             BOARD_CONF="wb55"
         ;;
 
-        "52" )
-            BOARD_CONF="wb5"
-        ;;
-
-        "41" )
-            BOARD_CONF="wb4"
-        ;;
-
-        "32" )
-            BOARD_CONF="wb3.5"
-        ;;
-
-        "28" )
-            BOARD_CONF="wb2.8"
-        ;;
-
-        "KMON1" )
-            BOARD_CONF="netmon1"
-        ;;
-
         * )
             BOARD_CONF="default"
         ;;
@@ -46,4 +26,3 @@ fi
 ucf --debconf-ok /usr/share/wb-homa-adc/wb-homa-adc.conf.$BOARD_CONF $CONFFILE
 
 #DEBHELPER#
-

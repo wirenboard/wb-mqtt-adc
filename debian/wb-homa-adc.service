@@ -1,0 +1,14 @@
+[Unit]
+Description=MQTT Driver for ADC
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/wb-homa-adc
+ExecStartPre=/usr/lib/wb-homa-adc/generate-system-config.sh
+
+[Install]
+WantedBy=multi-user.target
