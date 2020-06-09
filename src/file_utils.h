@@ -17,6 +17,9 @@ template<class T> void OpenWithException(T& f, const std::string& fileName)
 
 void WriteToFile(const std::string& fileName, const std::string& value);
 
+/**
+ * @brief Exception class thrown on open directory failure.
+ */
 class TNoDirError: public std::runtime_error
 {
     public:

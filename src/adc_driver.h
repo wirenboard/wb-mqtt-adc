@@ -12,7 +12,7 @@ class TADCDriver
 {
     public:
 
-        TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config, WBMQTT::TLogger& debugLogger, WBMQTT::TLogger& infoLogger);
+        TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config, WBMQTT::TLogger& debugLogger, WBMQTT::TLogger& errorLogger);
         ~TADCDriver();
 
         void Stop();
@@ -26,5 +26,5 @@ class TADCDriver
         std::unique_ptr<std::thread> Worker;
 
         WBMQTT::TLogger&             DebugLogger;
-        WBMQTT::TLogger&             InfoLogger;
+        WBMQTT::TLogger&             ErrorLogger;
 };

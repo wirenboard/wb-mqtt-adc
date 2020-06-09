@@ -99,22 +99,20 @@ namespace {
     {
         TConfig config;
 
-        std::ifstream file(fileName);
-        if (!file.is_open()) {
-            throw std::runtime_error(std::string("Can't open file: ") + fileName);
-        }
+        std::ifstream file;
+        OpenWithException(file, fileName);
 
         Json::Value root;
         Json::Reader reader;
 
         // Report failures and their locations in the document.
         if(!reader.parse(file, root, false))
-            throw std::runtime_error(std::string("Failed to parse config JSON: ") + reader.getFormattedErrorMessages());
+            throw std::runtime_error(std::string("Failed to parse config ") + fileName + ":" + reader.getFormattedErrorMessages());
         if (!root.isObject())
-            throw std::runtime_error("Bad config file (the root is not an object)");
+            throw std::runtime_error("Bad config " + fileName +": the root is not an object");
 
         if(!get(root, "device_name", config.DeviceName))
-            throw std::runtime_error("Device name is not specified in config file");
+            throw std::runtime_error("Device name is not specified in config " + fileName);
 
         get(root, "debug", config.Debug);
 
