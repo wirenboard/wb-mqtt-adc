@@ -133,7 +133,7 @@ TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optiona
     try {   
         IterateDir(mainConfigFile+".d", ".conf", [&](const std::string& f){ append(loadFromJSON(f), cfg); return false; });
     }
-    catch(const TNoDirError& er) {}
+    catch(const TNoDirError&) {}
     append(loadFromJSON(mainConfigFile), cfg);
     return cfg;
 }
