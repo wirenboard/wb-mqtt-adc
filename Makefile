@@ -66,7 +66,7 @@ install: all
 	install -d $(DESTDIR)/etc/wb-homa-adc.conf.d
 
 	install -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
-	install -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-homa-adc/generate-system_config.sh
+	install -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-homa-adc/generate-system-config.sh
 
 	install -m 0644  data/config.json $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.default
 	install -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55
