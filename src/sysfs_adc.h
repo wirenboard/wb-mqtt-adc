@@ -86,7 +86,7 @@ class TChannelReader
         WBMQTT::TLogger& DebugLogger;
         WBMQTT::TLogger& InfoLogger;
 
-        uint32_t ReadFromADC();
+        int32_t ReadFromADC();
         void SelectScale();
 
         TChannelReader();

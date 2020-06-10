@@ -98,7 +98,7 @@ void TChannelReader::Measure()
     MeasuredV = std::nan("");
 
     for (uint32_t i = 0; i < Cfg.ReadingsNumber; ++i) {
-        uint32_t adcMeasurement = ReadFromADC();
+        int32_t adcMeasurement = ReadFromADC();
         DebugLogger.Log() << Cfg.ChannelNumber << " = " << adcMeasurement;
         AverageCounter.AddValue(adcMeasurement);
         std::this_thread::sleep_for(std::chrono::milliseconds(DelayBetweenMeasurementsmS));
@@ -124,9 +124,9 @@ void TChannelReader::Measure()
     MeasuredV = v * Cfg.VoltageMultiplier / 1000.0;   //got mV let's divide it by 1000 to obtain V
 }
 
-uint32_t TChannelReader::ReadFromADC()
+int32_t TChannelReader::ReadFromADC()
 {
-    uint32_t val;
+    int32_t val;
     AdcValStream.seekg(0);
     AdcValStream >> val;
     return val;

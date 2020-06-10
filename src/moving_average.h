@@ -9,10 +9,10 @@
  */
 class TMovingAverageCalculator
 {
-        std::vector<uint32_t> LastValues;
-        uint32_t              Sum;
-        size_t                Pos;
-        bool                  Ready;
+        std::vector<int32_t> LastValues;
+        int32_t              Sum;
+        size_t               Pos;
+        bool                 Ready;
     public:
         /**
          * @brief Construct a new TMovingAverageCalculator object
@@ -24,7 +24,7 @@ class TMovingAverageCalculator
         /**
          * @brief Add new value to data set.
          */
-        void AddValue(uint32_t value);
+        void AddValue(int32_t value);
 
         /**
          * @brief Get average value. The value is valid only if IsReady() == true.

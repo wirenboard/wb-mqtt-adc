@@ -6,7 +6,7 @@ TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize): Sum(0), P
     LastValues.resize(windowSize);
 }
 
-void TMovingAverageCalculator::AddValue(uint32_t value)
+void TMovingAverageCalculator::AddValue(int32_t value)
 {
     Sum -= (Ready ? LastValues[Pos] : 0);
     LastValues[Pos] = value;
