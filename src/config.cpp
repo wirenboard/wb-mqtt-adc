@@ -11,83 +11,104 @@
 
 #include "file_utils.h"
 
+using namespace Json;
+using namespace valijson;
+using namespace std;
+
 namespace
 {
-
-    bool get(const Json::Value& item, const char* key, std::string& value)
+    bool Get(const Value& item, const string& key, string& value)
     {
-        if (!item.isMember(key)) return false;
-        Json::Value v = item[key];
-        if (!v.isString()) throw std::runtime_error(std::string(key) + " is not a string value");
+        if (!item.isMember(key)) {
+            return false;
+        }
+        Value v = item[key];
+        if (!v.isString()) {
+            throw runtime_error(key + " is not a string value");
+        }
         value = v.asString();
         return true;
     }
 
-    bool get(const Json::Value& item, const char* key, double& value)
+    bool Get(const Value& item, const string& key, double& value)
     {
-        if (!item.isMember(key)) return false;
-        Json::Value v = item[key];
-        if (!v.isDouble()) throw std::runtime_error(std::string(key) + " is not a float value");
+        if (!item.isMember(key)) {
+            return false;
+        }
+        Value v = item[key];
+        if (!v.isDouble()) {
+            throw runtime_error(key + " is not a float value");
+        }
         value = v.asDouble();
         return true;
     }
 
-    bool get(const Json::Value& item, const char* key, uint32_t& value)
+    bool Get(const Value& item, const string& key, uint32_t& value)
     {
-        if (!item.isMember(key)) return false;
-        Json::Value v = item[key];
-        if (!v.isUInt())
-            throw std::runtime_error(std::string(key) + " is not an unsigned integer value");
+        if (!item.isMember(key)) {
+            return false;
+        }
+        Value v = item[key];
+        if (!v.isUInt()) {
+            throw runtime_error(key + " is not an unsigned integer value");
+        }
         value = v.asUInt();
         return true;
     }
 
-    bool get(const Json::Value& item, const char* key, bool& value)
+    bool Get(const Value& item, const string& key, bool& value)
     {
-        if (!item.isMember(key)) return false;
-        Json::Value v = item[key];
-        if (!v.isBool()) throw std::runtime_error(std::string(key) + " is not a boolean value");
+        if (!item.isMember(key)) {
+            return false;
+        }
+        Value v = item[key];
+        if (!v.isBool()) {
+            throw runtime_error(key + " is not a boolean value");
+        }
         value = v.asBool();
         return true;
     }
 
-    void LoadChannel(const Json::Value& item, std::vector<TADCChannelSettings>& channels)
+    void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
-        if (!get(item, "id", channel.Id)) {
-            throw std::runtime_error("id field is missing in the config");
+        if (!Get(item, "id", channel.Id)) {
+            throw runtime_error("id field is missing in the config");
         }
 
-        get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
+        Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
         if (channel.ReaderCfg.AveragingWindow == 0) {
-            throw std::runtime_error("zero averaging window is specified in the config");
+            throw runtime_error("zero averaging window is specified in the config");
         }
 
-        get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage);
-        get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
-        get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
-        get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
-        get(item, "scale", channel.ReaderCfg.Scale);
+        Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage);
+        Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
+        Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
+        Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
+        Get(item, "scale", channel.ReaderCfg.Scale);
 
         if (!item.isMember("channel_number")) {
-            throw std::runtime_error("channel_number field is missing in the config");
+            throw runtime_error("channel_number field is missing in the config");
         }
 
-        Json::Value v = item["channel_number"];
-        channel.ReaderCfg.ChannelNumber =
-            (v.isInt() ? ("voltage" + std::to_string(v.asInt())) : v.asString());
-
+        Value v = item["channel_number"];
+        if (v.isInt()) {
+            channel.ReaderCfg.ChannelNumber = "voltage" + to_string(v.asInt());
+        } else {
+            channel.ReaderCfg.ChannelNumber = v.asString();
+        }
         channels.push_back(channel);
     }
 
-    void append(const TConfig& src, TConfig& dst)
+    void Append(const TConfig& src, TConfig& dst)
     {
         dst.DeviceName          = src.DeviceName;
         dst.EnableDebugMessages = src.EnableDebugMessages;
 
         for (const auto& v : src.Channels) {
-            auto el = std::find_if(dst.Channels.begin(), dst.Channels.end(),
-                                   [&](auto& c) { return c.Id == v.Id; });
+            auto el = find_if(dst.Channels.begin(), dst.Channels.end(), [&](auto& c) {
+                return c.Id == v.Id;
+            });
             if (el == dst.Channels.end()) {
                 dst.Channels.push_back(v);
             } else {
@@ -96,84 +117,86 @@ namespace
         }
     }
 
-    void validateJson(const Json::Value& root, const Json::Value& schema_js)
+    void ValidateJson(const Value& root, const Value& schema_js)
     {
-        valijson::adapters::JsonCppAdapter doc(root);
-        valijson::adapters::JsonCppAdapter schema_doc(schema_js);
+        adapters::JsonCppAdapter doc(root);
+        adapters::JsonCppAdapter schema_doc(schema_js);
 
-        valijson::SchemaParser parser(valijson::SchemaParser::kDraft4);
-        valijson::Schema       schema;
+        SchemaParser parser(SchemaParser::kDraft4);
+        Schema       schema;
         parser.populateSchema(schema_doc, schema);
-        valijson::Validator         validator(valijson::Validator::kStrongTypes);
-        valijson::ValidationResults results;
+        Validator         validator(Validator::kStrongTypes);
+        ValidationResults results;
         if (!validator.validate(schema, doc, &results)) {
-            std::stringstream err_oss;
-            err_oss << "Validation failed." << std::endl;
-            valijson::ValidationResults::Error error;
-            int                                error_num = 1;
+            stringstream err_oss;
+            err_oss << "Validation failed." << endl;
+            ValidationResults::Error error;
+            int                      error_num = 1;
             while (results.popError(error)) {
-                err_oss << "Error " << error_num << std::endl << "  context: ";
+                err_oss << "Error " << error_num << endl << "  context: ";
                 for (const auto& er : error.context) {
                     err_oss << er;
                 }
-                err_oss << std::endl << "  desc: " << error.description << std::endl;
+                err_oss << endl << "  desc: " << error.description << endl;
                 ++error_num;
             }
-            throw std::runtime_error(err_oss.str());
+            throw runtime_error(err_oss.str());
         }
     }
 
-    Json::Value ParseJson(const std::string& fileName)
+    Value ParseJson(const string& fileName)
     {
-        std::ifstream file;
+        ifstream file;
         OpenWithException(file, fileName);
 
-        Json::Value  root;
-        Json::Reader reader;
+        Value  root;
+        Reader reader;
 
         // Report failures and their locations in the document.
-        if (!reader.parse(file, root, false))
-            throw std::runtime_error(std::string("Failed to parse JSON ") + fileName + ":" +
-                                     reader.getFormattedErrorMessages());
-        if (!root.isObject())
-            throw std::runtime_error("Bad JSON " + fileName + ": the root is not an object");
+        if (!reader.parse(file, root, false)) {
+            throw runtime_error("Failed to parse JSON " + fileName + ":" +
+                                reader.getFormattedErrorMessages());
+        }
+        if (!root.isObject()) {
+            throw runtime_error("Bad JSON " + fileName + ": the root is not an object");
+        }
         return root;
     }
 
-    TConfig loadFromJSON(const std::string& fileName, const std::string& shemaFileName)
+    TConfig loadFromJSON(const string& fileName, const string& shemaFileName)
     {
         TConfig config;
 
-        Json::Value configJson(ParseJson(fileName));
+        Value configJson(ParseJson(fileName));
 
-        validateJson(configJson, ParseJson(shemaFileName));
+        ValidateJson(configJson, ParseJson(shemaFileName));
 
-        if (!get(configJson, "device_name", config.DeviceName))
-            throw std::runtime_error("Device name is not specified in config " + fileName);
+        if (!Get(configJson, "device_name", config.DeviceName))
+            throw runtime_error("Device name is not specified in config " + fileName);
 
-        get(configJson, "debug", config.EnableDebugMessages);
+        Get(configJson, "debug", config.EnableDebugMessages);
 
-        const auto& array = configJson["iio_channels"];
+        const auto& ch = configJson["iio_channels"];
+        for_each(ch.begin(), ch.end(), [&](const Value& v) { LoadChannel(v, config.Channels); });
 
-        std::for_each(array.begin(), array.end(),
-                      [&](const Json::Value& v) { LoadChannel(v, config.Channels); });
         return config;
     }
 } // namespace
 
-TConfig LoadConfig(const std::string& mainConfigFile,
-                   const std::string& optionalConfigFile,
-                   const std::string& shemaFile)
+TConfig LoadConfig(const string& mainConfigFile,
+                   const string& optionalConfigFile,
+                   const string& shemaFile)
 {
-    if (!optionalConfigFile.empty()) return loadFromJSON(optionalConfigFile, shemaFile);
+    if (!optionalConfigFile.empty())
+        return loadFromJSON(optionalConfigFile, shemaFile);
     TConfig cfg;
     try {
-        IterateDir(mainConfigFile + ".d", ".conf", [&](const std::string& f) {
-            append(loadFromJSON(f, shemaFile), cfg);
+        IterateDir(mainConfigFile + ".d", ".conf", [&](const string& f) {
+            Append(loadFromJSON(f, shemaFile), cfg);
             return false;
         });
     } catch (const TNoDirError&) {
     }
-    append(loadFromJSON(mainConfigFile, shemaFile), cfg);
+    Append(loadFromJSON(mainConfigFile, shemaFile), cfg);
     return cfg;
 }
