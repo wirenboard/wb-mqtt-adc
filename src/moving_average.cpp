@@ -1,8 +1,13 @@
 #include "moving_average.h"
 
 #include <math.h>
+#include <stdexcept>
 
-TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize): Sum(0), Pos(0), Ready(false) {
+TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize) : Sum(0), Pos(0), Ready(false)
+{
+    if(windowSize == 0) {
+        throw std::runtime_error("Moving average window size can't be zero");
+    }
     LastValues.resize(windowSize);
 }
 
@@ -13,12 +18,12 @@ void TMovingAverageCalculator::AddValue(int32_t value)
     Sum += value;
     ++Pos;
     Pos %= LastValues.size();
-    if(Pos == 0) {
+    if (Pos == 0) {
         Ready = true;
     }
 }
 
-uint32_t TMovingAverageCalculator::Average() const
+uint32_t TMovingAverageCalculator::GetAverage() const
 {
     return std::round(Sum / (double)LastValues.size());
 }
