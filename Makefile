@@ -1,7 +1,7 @@
 CXX=$(CROSS_COMPILE)g++
 CC=$(CROSS_COMPILE)gcc
 
-CFLAGS=-Wall -std=c++14 -Os -I.
+CFLAGS=-Wall -std=c++14 -Os -I. -I./thirdparty/valijson-0.2/include
 
 ADC_SOURCES= 						\
 			src/adc_driver.cpp		\

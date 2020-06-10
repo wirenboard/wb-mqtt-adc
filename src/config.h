@@ -24,5 +24,6 @@ struct TConfig
  * 
  * @param mainConfigFile - path and name of a main config file. The function also reads files from mainConfigFile + ".d" folder
  * @param optionalConfigFile - path and name of an optional config file. It will be loaded instead of main config file
+ * @param shemaFile - path and name of a file with JSONShema for configs
  */
-TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile);
+TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile, const std::string& shemaFile);

@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
         mqttDriver->WaitForReady();
 
-        TConfig config = LoadConfig("/etc/wb-homa-adc.conf", customConfig);
+        TConfig config = LoadConfig("/etc/wb-homa-adc.conf", customConfig, "/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json");
 
         DebugLogger.SetEnabled(forceDebug || config.Debug);
 

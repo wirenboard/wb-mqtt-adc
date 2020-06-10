@@ -1,8 +1,13 @@
 #include "config.h"
 #include <fstream>
 #include <algorithm>
-#include <jsoncpp/json/json.h>
 #include <wblib/utils.h>
+
+#include <valijson/adapters/jsoncpp_adapter.hpp>
+#include <valijson/schema.hpp>
+#include <valijson/schema_parser.hpp>
+#include <valijson/validation_results.hpp>
+#include <valijson/validator.hpp>
 
 #include "file_utils.h"
 
@@ -95,10 +100,36 @@ namespace {
         }
     }
 
-    TConfig loadFromJSON(const std::string& fileName) 
+    void validateJson(const Json::Value& root, const Json::Value& schema_js)
     {
-        TConfig config;
+        valijson::adapters::JsonCppAdapter doc(root);
+        valijson::adapters::JsonCppAdapter schema_doc(schema_js);
 
+        valijson::SchemaParser parser(valijson::SchemaParser::kDraft4);
+        valijson::Schema schema;
+        parser.populateSchema(schema_doc, schema);
+        valijson::Validator validator(valijson::Validator::kStrongTypes);
+        valijson::ValidationResults results;
+        if (!validator.validate(schema, doc, &results))
+        {
+            std::stringstream err_oss;
+            err_oss << "Validation failed." << std::endl;
+            valijson::ValidationResults::Error error;
+            int error_num = 1;
+            while (results.popError(error)) {
+                err_oss << "Error " << error_num << std::endl << "  context: ";
+                for(const auto& er: error.context) {
+                    err_oss << er;
+                }
+                err_oss << std::endl << "  desc: " << error.description << std::endl;
+                ++error_num;
+            }
+            throw std::runtime_error(err_oss.str());
+        }
+    }
+
+    Json::Value ParseJson(const std::string& fileName)
+    {
         std::ifstream file;
         OpenWithException(file, fileName);
 
@@ -107,31 +138,41 @@ namespace {
 
         // Report failures and their locations in the document.
         if(!reader.parse(file, root, false))
-            throw std::runtime_error(std::string("Failed to parse config ") + fileName + ":" + reader.getFormattedErrorMessages());
+            throw std::runtime_error(std::string("Failed to parse JSON ") + fileName + ":" + reader.getFormattedErrorMessages());
         if (!root.isObject())
-            throw std::runtime_error("Bad config " + fileName +": the root is not an object");
+            throw std::runtime_error("Bad JSON " + fileName +": the root is not an object");
+        return root;
+    }
 
-        if(!get(root, "device_name", config.DeviceName))
+    TConfig loadFromJSON(const std::string& fileName, const std::string& shemaFileName) 
+    {
+        TConfig config;
+
+        Json::Value configJson(ParseJson(fileName));
+
+        validateJson(configJson, ParseJson(shemaFileName));
+
+        if(!get(configJson, "device_name", config.DeviceName))
             throw std::runtime_error("Device name is not specified in config " + fileName);
 
-        get(root, "debug", config.Debug);
+        get(configJson, "debug", config.Debug);
 
-        const auto& array = root["iio_channels"];
+        const auto& array = configJson["iio_channels"];
 
         std::for_each(array.begin(), array.end(), [&](const Json::Value& v) {LoadChannel(v, config.Channels);});
         return config;
     }
 }
 
-TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile)
+TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile, const std::string& shemaFile)
 {
     if(!optionalConfigFile.empty())
-        return loadFromJSON(optionalConfigFile);
+        return loadFromJSON(optionalConfigFile, shemaFile);
     TConfig cfg;
     try {   
-        IterateDir(mainConfigFile+".d", ".conf", [&](const std::string& f){ append(loadFromJSON(f), cfg); return false; });
+        IterateDir(mainConfigFile+".d", ".conf", [&](const std::string& f){ append(loadFromJSON(f, shemaFile), cfg); return false; });
     }
     catch(const TNoDirError&) {}
-    append(loadFromJSON(mainConfigFile), cfg);
+    append(loadFromJSON(mainConfigFile, shemaFile), cfg);
     return cfg;
 }
