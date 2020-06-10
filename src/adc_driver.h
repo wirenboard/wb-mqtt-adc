@@ -7,24 +7,24 @@
 
 #include "config.h"
 
-
 class TADCDriver
 {
-    public:
+public:
+    TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
+               const TConfig&               config,
+               WBMQTT::TLogger&             errorLogger,
+               WBMQTT::TLogger&             debugLogger,
+               WBMQTT::TLogger&             infoLogger);
 
-        TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver, const TConfig& config, WBMQTT::TLogger& errorLogger, WBMQTT::TLogger& debugLogger, WBMQTT::TLogger& infoLogger);
+    void Stop();
 
-        void Stop();
-
-    private:
-        WBMQTT::PDeviceDriver        MqttDriver;
-        WBMQTT::PLocalDevice         Device;
-
-        bool                         Active;
-        std::mutex                   ActiveMutex;
-        std::unique_ptr<std::thread> Worker;
-
-        WBMQTT::TLogger&             ErrorLogger;
-        WBMQTT::TLogger&             DebugLogger;
-        WBMQTT::TLogger&             InfoLogger;
+private:
+    WBMQTT::PDeviceDriver        MqttDriver;
+    WBMQTT::PLocalDevice         Device;
+    bool                         Active;
+    std::mutex                   ActiveMutex;
+    std::unique_ptr<std::thread> Worker;
+    WBMQTT::TLogger&             ErrorLogger;
+    WBMQTT::TLogger&             DebugLogger;
+    WBMQTT::TLogger&             InfoLogger;
 };
