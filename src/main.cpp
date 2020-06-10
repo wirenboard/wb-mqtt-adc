@@ -11,11 +11,11 @@
 #include "config.h"
 
 using namespace std;
+using namespace WBMQTT;
 
-WBMQTT::TLogger ErrorLogger("ERROR: [wb-adc] ", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED);
-WBMQTT::TLogger
-                DebugLogger("DEBUG: [wb-adc] ", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::WHITE, false);
-WBMQTT::TLogger InfoLogger("INFO: [wb-adc] ", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::GREY);
+TLogger ErrorLogger("ERROR: [wb-adc] ", TLogger::StdErr, TLogger::RED);
+TLogger DebugLogger("DEBUG: [wb-adc] ", TLogger::StdErr, TLogger::WHITE, false);
+TLogger InfoLogger("INFO: [wb-adc] ", TLogger::StdErr, TLogger::GREY);
 
 namespace
 {
@@ -28,31 +28,31 @@ namespace
 
 int main(int argc, char* argv[])
 {
-    WBMQTT::TMosquittoMqttConfig mqttConfig{};
+    TMosquittoMqttConfig mqttConfig{};
     mqttConfig.Id = "wb-adc";
-    WBMQTT::TPromise<void> initialized;
+    TPromise<void> initialized;
 
-    WBMQTT::SetThreadName("main");
-    WBMQTT::SignalHandling::Handle({SIGINT, SIGTERM});
-    WBMQTT::SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { WBMQTT::SignalHandling::Stop(); });
+    SetThreadName("main");
+    SignalHandling::Handle({SIGINT, SIGTERM});
+    SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { SignalHandling::Stop(); });
 
     /* if signal arrived before driver is initialized:
         wait some time to initialize and then exit gracefully
         else if timed out: exit with error
     */
-    WBMQTT::SignalHandling::SetWaitFor(DRIVER_INIT_TIMEOUT_S, initialized.GetFuture(), [&] {
+    SignalHandling::SetWaitFor(DRIVER_INIT_TIMEOUT_S, initialized.GetFuture(), [&] {
         ErrorLogger.Log() << "Driver takes too long to initialize. Exiting.";
         cerr << "Error: DRIVER_INIT_TIMEOUT_S" << endl;
         exit(1);
     });
 
     /* if handling of signal takes too much time: exit with error */
-    WBMQTT::SignalHandling::SetOnTimeout(DRIVER_STOP_TIMEOUT_S, [&] {
+    SignalHandling::SetOnTimeout(DRIVER_STOP_TIMEOUT_S, [&] {
         ErrorLogger.Log() << "Driver takes too long to stop. Exiting.";
         cerr << "Error: DRIVER_STOP_TIMEOUT_S" << endl;
         exit(2);
     });
-    WBMQTT::SignalHandling::Start();
+    SignalHandling::Start();
 
     bool   forceDebug = false;
     string customConfig;
@@ -85,15 +85,15 @@ int main(int argc, char* argv[])
     cout << "MQTT broker " << mqttConfig.Host << ':' << mqttConfig.Port << endl;
 
     try {
-        auto mqttDriver = WBMQTT::NewDriver(
-            WBMQTT::TDriverArgs{}
-                .SetBackend(WBMQTT::NewDriverBackend(WBMQTT::NewMosquittoMqttClient(mqttConfig)))
-                .SetId(mqttConfig.Id)
-                .SetUseStorage(false)
-                .SetReownUnknownDevices(true));
+        auto mqttDriver =
+            NewDriver(TDriverArgs{}
+                          .SetBackend(NewDriverBackend(NewMosquittoMqttClient(mqttConfig)))
+                          .SetId(mqttConfig.Id)
+                          .SetUseStorage(false)
+                          .SetReownUnknownDevices(true));
 
         mqttDriver->StartLoop();
-        WBMQTT::SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] {
+        SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] {
             mqttDriver->StopLoop();
             mqttDriver->Close();
         });
@@ -108,14 +108,14 @@ int main(int argc, char* argv[])
 
         TADCDriver driver(mqttDriver, config, ErrorLogger, DebugLogger, InfoLogger);
 
-        WBMQTT::SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { driver.Stop(); });
+        SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { driver.Stop(); });
 
         initialized.Complete();
-        WBMQTT::SignalHandling::Wait();
+        SignalHandling::Wait();
 
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
         ErrorLogger.Log() << "FATAL: " << e.what();
-        WBMQTT::SignalHandling::Stop();
+        SignalHandling::Stop();
         return 1;
     }
 
