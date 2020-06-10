@@ -33,12 +33,14 @@
         },
         "averaging_window": {
           "type": "integer",
+          "minimum": 1,
           "title": "Averaging window",
           "description" : "Number of samples to use while calculating moving average",
           "propertyOrder": 4
         },
         "decimal_places": {
           "type": "integer",
+          "minimum": 0,
           "title": "Decimal places in value",
           "propertyOrder": 5
         },
@@ -49,6 +51,7 @@
         },
         "readings_number" : {
           "type": "integer",
+          "minimum":1,
           "title": "Number of ADC reading per sample",
           "propertyOrder": 7
         },
