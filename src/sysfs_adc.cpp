@@ -70,6 +70,7 @@ TChannelReader::TChannelReader(double defaultIIOScale,
                                const TChannelReader::TSettings& cfg, 
                                uint32_t delayBetweenMeasurementsmS,
                                WBMQTT::TLogger& debugLogger,
+                               WBMQTT::TLogger& infoLogger,
                                const std::string& sysFsPrefix): 
     Cfg(cfg),
     MeasuredV(0.0),
@@ -77,7 +78,8 @@ TChannelReader::TChannelReader(double defaultIIOScale,
     MaxADCValue(maxADCvalue),
     DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
     AverageCounter(cfg.AveragingWindow),
-    DebugLogger(debugLogger)
+    DebugLogger(debugLogger),
+    InfoLogger(infoLogger)
 {
     SysfsIIODir = FindSysfsIIODir(sysFsPrefix, cfg.MatchIIO);
     SelectScale();
@@ -109,13 +111,13 @@ void TChannelReader::Measure()
 
     uint32_t value = AverageCounter.Average();
     if (value > MaxADCValue) {
-        DebugLogger.Log() << Cfg.ChannelNumber << " average (" << value <<") is bigger than maximum (" << MaxADCValue <<")";
+        InfoLogger.Log() << Cfg.ChannelNumber << " average (" << value <<") is bigger than maximum (" << MaxADCValue <<")";
         return;
     }
 
     double v = IIOScale * value;
     if (v > Cfg.MaxScaledVoltage) {
-        DebugLogger.Log() << Cfg.ChannelNumber << " scaled value (" << v <<") is bigger than maximum (" << Cfg.MaxScaledVoltage <<")";
+        InfoLogger.Log() << Cfg.ChannelNumber << " scaled value (" << v <<") is bigger than maximum (" << Cfg.MaxScaledVoltage <<")";
         return;
     }
 
@@ -142,14 +144,14 @@ void TChannelReader::SelectScale()
 
     if (scaleFile.is_open()) {
         auto contents = std::string((std::istreambuf_iterator<char>(scaleFile)), std::istreambuf_iterator<char>());
-        DebugLogger.Log() << "Available scales: " << contents;
+        InfoLogger.Log() << "Available scales: " << contents;
 
         std::string bestScaleStr = FindBestScale(WBMQTT::StringSplit(contents, " "), Cfg.Scale);
 
         if(!bestScaleStr.empty()) {
             IIOScale = std::stod(bestScaleStr);
             WriteToFile(scalePrefix, bestScaleStr);
-            DebugLogger.Log() << scalePrefix << " is set to " << bestScaleStr;
+            InfoLogger.Log() << scalePrefix << " is set to " << bestScaleStr;
             return;
         }
     }
@@ -159,5 +161,5 @@ void TChannelReader::SelectScale()
     if (scaleFile.is_open()) {
         scaleFile >> IIOScale;
     }
-    DebugLogger.Log() << scalePrefix << " = " << IIOScale;
+    InfoLogger.Log() << scalePrefix << " = " << IIOScale;
 }

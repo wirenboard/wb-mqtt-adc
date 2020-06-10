@@ -14,6 +14,7 @@ using namespace std;
 
 WBMQTT::TLogger ErrorLogger("ERROR: [wb-adc] ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED);
 WBMQTT::TLogger DebugLogger("DEBUG: [wb-adc] ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::WHITE, false);
+WBMQTT::TLogger InfoLogger("INFO: [wb-adc] ",   WBMQTT::TLogger::StdErr, WBMQTT::TLogger::GREY);
 
 namespace 
 {
@@ -104,7 +105,7 @@ int main(int argc, char *argv[])
 
         DebugLogger.SetEnabled(forceDebug || config.Debug);
 
-        TADCDriver driver(mqttDriver, config, DebugLogger, ErrorLogger);
+        TADCDriver driver(mqttDriver, config, ErrorLogger, DebugLogger, InfoLogger);
 
         WBMQTT::SignalHandling::OnSignals({ SIGINT, SIGTERM }, [&]{
             driver.Stop();

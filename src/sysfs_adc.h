@@ -42,6 +42,7 @@ class TChannelReader
                        const TChannelReader::TSettings& channelCfg, 
                        uint32_t delayBetweenMeasurementsmS, 
                        WBMQTT::TLogger& debugLogger,
+                       WBMQTT::TLogger& infoLogger,
                        const std::string& sysFsPrefix = "/sys");
 
         std::string GetValue() const;
@@ -83,6 +84,7 @@ class TChannelReader
         std::ifstream AdcValStream;
 
         WBMQTT::TLogger& DebugLogger;
+        WBMQTT::TLogger& InfoLogger;
 
         uint32_t ReadFromADC();
         void SelectScale();
