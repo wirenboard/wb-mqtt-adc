@@ -1,6 +1,6 @@
 #include "config.h"
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 #include <wblib/utils.h>
 
 #include <valijson/adapters/jsoncpp_adapter.hpp>
@@ -11,48 +11,42 @@
 
 #include "file_utils.h"
 
-namespace {
+namespace
+{
 
-    bool get(const Json::Value&  item, const char* key, std::string& value) 
+    bool get(const Json::Value& item, const char* key, std::string& value)
     {
-        if (!item.isMember(key))
-            return false;
+        if (!item.isMember(key)) return false;
         Json::Value v = item[key];
-        if(!v.isString())
-            throw std::runtime_error(std::string(key) + " is not a string value");
+        if (!v.isString()) throw std::runtime_error(std::string(key) + " is not a string value");
         value = v.asString();
         return true;
     }
 
-    bool get(const Json::Value&  item, const char* key, double& value) 
+    bool get(const Json::Value& item, const char* key, double& value)
     {
-        if (!item.isMember(key))
-            return false;
+        if (!item.isMember(key)) return false;
         Json::Value v = item[key];
-        if(!v.isDouble())
-            throw std::runtime_error(std::string(key) + " is not a float value");
+        if (!v.isDouble()) throw std::runtime_error(std::string(key) + " is not a float value");
         value = v.asDouble();
         return true;
     }
 
-    bool get(const Json::Value&  item, const char* key, uint32_t& value) 
+    bool get(const Json::Value& item, const char* key, uint32_t& value)
     {
-        if (!item.isMember(key))
-            return false;
+        if (!item.isMember(key)) return false;
         Json::Value v = item[key];
-        if(!v.isUInt())
+        if (!v.isUInt())
             throw std::runtime_error(std::string(key) + " is not an unsigned integer value");
         value = v.asUInt();
         return true;
     }
 
-    bool get(const Json::Value&  item, const char* key, bool& value) 
+    bool get(const Json::Value& item, const char* key, bool& value)
     {
-        if (!item.isMember(key))
-            return false;
+        if (!item.isMember(key)) return false;
         Json::Value v = item[key];
-        if(!v.isBool())
-            throw std::runtime_error(std::string(key) + " is not a boolean value");
+        if (!v.isBool()) throw std::runtime_error(std::string(key) + " is not a boolean value");
         value = v.asBool();
         return true;
     }
@@ -60,7 +54,7 @@ namespace {
     void LoadChannel(const Json::Value& item, std::vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
-        if(!get(item, "id", channel.Id)){
+        if (!get(item, "id", channel.Id)) {
             throw std::runtime_error("id field is missing in the config");
         }
 
@@ -80,19 +74,21 @@ namespace {
         }
 
         Json::Value v = item["channel_number"];
-        channel.ReaderCfg.ChannelNumber = (v.isInt() ? ("voltage" + std::to_string(v.asInt())) : v.asString());
+        channel.ReaderCfg.ChannelNumber =
+            (v.isInt() ? ("voltage" + std::to_string(v.asInt())) : v.asString());
 
         channels.push_back(channel);
     }
 
-    void append(const TConfig& src, TConfig& dst) 
+    void append(const TConfig& src, TConfig& dst)
     {
-        dst.DeviceName = src.DeviceName;
-        dst.Debug = src.Debug;
+        dst.DeviceName          = src.DeviceName;
+        dst.EnableDebugMessages = src.EnableDebugMessages;
 
-        for(const auto& v: src.Channels) {
-            auto el = std::find_if(dst.Channels.begin(), dst.Channels.end(), [&](auto& c){return c.Id == v.Id;});
-            if(el == dst.Channels.end()){
+        for (const auto& v : src.Channels) {
+            auto el = std::find_if(dst.Channels.begin(), dst.Channels.end(),
+                                   [&](auto& c) { return c.Id == v.Id; });
+            if (el == dst.Channels.end()) {
                 dst.Channels.push_back(v);
             } else {
                 *el = v;
@@ -106,19 +102,18 @@ namespace {
         valijson::adapters::JsonCppAdapter schema_doc(schema_js);
 
         valijson::SchemaParser parser(valijson::SchemaParser::kDraft4);
-        valijson::Schema schema;
+        valijson::Schema       schema;
         parser.populateSchema(schema_doc, schema);
-        valijson::Validator validator(valijson::Validator::kStrongTypes);
+        valijson::Validator         validator(valijson::Validator::kStrongTypes);
         valijson::ValidationResults results;
-        if (!validator.validate(schema, doc, &results))
-        {
+        if (!validator.validate(schema, doc, &results)) {
             std::stringstream err_oss;
             err_oss << "Validation failed." << std::endl;
             valijson::ValidationResults::Error error;
-            int error_num = 1;
+            int                                error_num = 1;
             while (results.popError(error)) {
                 err_oss << "Error " << error_num << std::endl << "  context: ";
-                for(const auto& er: error.context) {
+                for (const auto& er : error.context) {
                     err_oss << er;
                 }
                 err_oss << std::endl << "  desc: " << error.description << std::endl;
@@ -133,18 +128,19 @@ namespace {
         std::ifstream file;
         OpenWithException(file, fileName);
 
-        Json::Value root;
+        Json::Value  root;
         Json::Reader reader;
 
         // Report failures and their locations in the document.
-        if(!reader.parse(file, root, false))
-            throw std::runtime_error(std::string("Failed to parse JSON ") + fileName + ":" + reader.getFormattedErrorMessages());
+        if (!reader.parse(file, root, false))
+            throw std::runtime_error(std::string("Failed to parse JSON ") + fileName + ":" +
+                                     reader.getFormattedErrorMessages());
         if (!root.isObject())
-            throw std::runtime_error("Bad JSON " + fileName +": the root is not an object");
+            throw std::runtime_error("Bad JSON " + fileName + ": the root is not an object");
         return root;
     }
 
-    TConfig loadFromJSON(const std::string& fileName, const std::string& shemaFileName) 
+    TConfig loadFromJSON(const std::string& fileName, const std::string& shemaFileName)
     {
         TConfig config;
 
@@ -152,27 +148,32 @@ namespace {
 
         validateJson(configJson, ParseJson(shemaFileName));
 
-        if(!get(configJson, "device_name", config.DeviceName))
+        if (!get(configJson, "device_name", config.DeviceName))
             throw std::runtime_error("Device name is not specified in config " + fileName);
 
-        get(configJson, "debug", config.Debug);
+        get(configJson, "debug", config.EnableDebugMessages);
 
         const auto& array = configJson["iio_channels"];
 
-        std::for_each(array.begin(), array.end(), [&](const Json::Value& v) {LoadChannel(v, config.Channels);});
+        std::for_each(array.begin(), array.end(),
+                      [&](const Json::Value& v) { LoadChannel(v, config.Channels); });
         return config;
     }
-}
+} // namespace
 
-TConfig LoadConfig(const std::string& mainConfigFile, const std::string& optionalConfigFile, const std::string& shemaFile)
+TConfig LoadConfig(const std::string& mainConfigFile,
+                   const std::string& optionalConfigFile,
+                   const std::string& shemaFile)
 {
-    if(!optionalConfigFile.empty())
-        return loadFromJSON(optionalConfigFile, shemaFile);
+    if (!optionalConfigFile.empty()) return loadFromJSON(optionalConfigFile, shemaFile);
     TConfig cfg;
-    try {   
-        IterateDir(mainConfigFile+".d", ".conf", [&](const std::string& f){ append(loadFromJSON(f, shemaFile), cfg); return false; });
+    try {
+        IterateDir(mainConfigFile + ".d", ".conf", [&](const std::string& f) {
+            append(loadFromJSON(f, shemaFile), cfg);
+            return false;
+        });
+    } catch (const TNoDirError&) {
     }
-    catch(const TNoDirError&) {}
     append(loadFromJSON(mainConfigFile, shemaFile), cfg);
     return cfg;
 }
