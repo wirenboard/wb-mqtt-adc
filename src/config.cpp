@@ -153,13 +153,13 @@ namespace
         return root;
     }
 
-    TConfig loadFromJSON(const string& fileName, const string& shemaFileName)
+    TConfig loadFromJSON(const string& fileName, const Value& shema)
     {
         TConfig config;
 
         Value configJson(ParseJson(fileName));
 
-        ValidateJson(configJson, ParseJson(shemaFileName));
+        ValidateJson(configJson, shema);
 
         Get(configJson, "device_name", config.DeviceName);
         Get(configJson, "debug", config.EnableDebugMessages);
@@ -169,23 +169,38 @@ namespace
 
         return config;
     }
+
+    void removeDeviceNameRequirement(Value& shema)
+    {
+        Value newArray = arrayValue;
+        for (auto& v : shema["required"]) {
+            if (v.asString() != "device_name") {
+                newArray.append(v);
+            }
+        }
+        shema["required"] = newArray;
+    }
 } // namespace
 
 TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
                    const string& shemaFile)
 {
+    Value shema             = ParseJson(shemaFile);
+    Value noDeviceNameShema = shema;
+    removeDeviceNameRequirement(noDeviceNameShema);
+
     if (!optionalConfigFile.empty())
-        return loadFromJSON(optionalConfigFile, shemaFile);
+        return loadFromJSON(optionalConfigFile, shema);
     TConfig cfg;
     try {
         IterateDir(mainConfigFile + ".d", ".conf", [&](const string& f) {
-            Append(loadFromJSON(f, shemaFile), cfg);
+            Append(loadFromJSON(f, noDeviceNameShema), cfg);
             return false;
         });
     } catch (const TNoDirError&) {
     }
-    Append(loadFromJSON(mainConfigFile, shemaFile), cfg);
+    Append(loadFromJSON(mainConfigFile, shema), cfg);
     return cfg;
 }
 

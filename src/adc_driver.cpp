@@ -74,7 +74,7 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
                                                        .SetReadonly(true));
         ++n;
 
-        std::string sysfsIIODir = FindSysfsIIODir("/sys", channel.MatchIIO);
+        std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
         // FIXME: delay ???
         readers->push_back(TChannelDesc{channel.Id,
                                         {MXS_LRADC_DEFAULT_SCALE_FACTOR,

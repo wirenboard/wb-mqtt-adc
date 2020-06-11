@@ -14,7 +14,7 @@ if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
 	WB_OF_ROOT="/wirenboard"
 	node="${WB_OF_ROOT}/analog-inputs"
 
-	ADCSYSCONF='{\n "device_name" : "ADCs",\n "debug" : false,\n "iio_channels": ['
+	ADCSYSCONF='{\n "iio_channels": ['
 	first=1
 	for ch_name in  $(of_node_children "$node" | sort); do
 		phandle=$(of_get_prop_ulong "$node/$ch_name" "iio-device")
