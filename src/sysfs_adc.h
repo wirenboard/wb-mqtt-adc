@@ -51,7 +51,7 @@ public:
             It affects the accuracy and the measurement range.
             If 0, the maximum available scale is used.
         */
-        double Scale = 0;
+        double DesiredScale = 0;
 
         //! The ADC voltage is multiplied by this factor to get the resulting value
         double VoltageMultiplier = 1;

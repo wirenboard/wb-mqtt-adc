@@ -87,7 +87,8 @@ void TChannelReader::SelectScale()
                                     std::istreambuf_iterator<char>());
         InfoLogger.Log() << "Available scales: " << contents;
 
-        std::string bestScaleStr = FindBestScale(WBMQTT::StringSplit(contents, " "), Cfg.Scale);
+        std::string bestScaleStr =
+            FindBestScale(WBMQTT::StringSplit(contents, " "), Cfg.DesiredScale);
 
         if (!bestScaleStr.empty()) {
             IIOScale = std::stod(bestScaleStr);

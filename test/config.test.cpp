@@ -60,7 +60,7 @@ TEST_F(TConfigTest, optional_config)
     ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.Scale, 5);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 5);
 }
 
 TEST_F(TConfigTest, empty_main_config)
@@ -76,7 +76,7 @@ TEST_F(TConfigTest, empty_main_config)
     ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.Scale, 5);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 5);
 }
 
 TEST_F(TConfigTest, full_main_config)
@@ -92,5 +92,5 @@ TEST_F(TConfigTest, full_main_config)
     ASSERT_EQ(cfg.Channels[0].MatchIIO, "path0");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 30);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 170);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.Scale, 50);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 50);
 }

@@ -78,7 +78,7 @@ namespace
         Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
         Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
-        Get(item, "scale", channel.ReaderCfg.Scale);
+        Get(item, "scale", channel.ReaderCfg.DesiredScale);
         Get(item, "match_iio", channel.MatchIIO);
 
         Value v = item["channel_number"];

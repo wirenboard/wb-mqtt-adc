@@ -19,6 +19,7 @@ ADC_TEST_SOURCES= 							\
 			$(TEST_DIR)/moving_average.test.cpp	\
 			$(TEST_DIR)/file_utils.test.cpp	\
 			$(TEST_DIR)/config.test.cpp	\
+			$(TEST_DIR)/sysfs_adc.test.cpp	\
 
 TEST_DIR=test
 export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
