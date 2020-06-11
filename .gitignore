@@ -39,3 +39,5 @@ debian/files
 debian/*.substvars
 wb-homa-adc
 debhelper-build-stamp
+.vscode/
+test/wb-homa-adc-test
