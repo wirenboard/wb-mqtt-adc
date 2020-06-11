@@ -7,8 +7,14 @@
 //! ADC channel settings
 struct TADCChannelSettings
 {
-    std::string               Id;        //! Topic name "/devices/DRIVER_NAME/controls/ + Id"
-    TChannelReader::TSettings ReaderCfg; //! Parameters of reading and converting measured value
+    //! Topic name "/devices/DRIVER_NAME/controls/ + Id"
+    std::string Id;
+
+    //! Fnmatch-compatible pattern to match with iio:deviceN symlink target
+    std::string MatchIIO;
+
+    //! Parameters of reading and converting measured value
+    TChannelReader::TSettings ReaderCfg;
 };
 
 //! Programm settings

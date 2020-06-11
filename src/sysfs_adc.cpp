@@ -1,67 +1,13 @@
 #include "sysfs_adc.h"
 
+#include <fnmatch.h>
 #include <iomanip>
 #include <math.h>
-
-#include <fnmatch.h>
 #include <unistd.h>
 
 #include <wblib/utils.h>
 
 #include "file_utils.h"
-
-namespace
-{
-    std::string FindBestScale(const std::vector<std::string>& scales, double desiredScale)
-    {
-        std::string bestScaleStr;
-        double      bestScaleDouble = 0;
-
-        for (auto& scaleStr : scales) {
-            double val;
-            try {
-                val = stod(scaleStr);
-            } catch (std::invalid_argument e) {
-                continue;
-            }
-            // best scale is either maximum scale or the one closest to user request
-            if (((desiredScale > 0) &&
-                 (fabs(val - desiredScale) <= fabs(bestScaleDouble - desiredScale))) // user request
-                || ((desiredScale <= 0) && (val >= bestScaleDouble)) // maximum scale
-            ) {
-                bestScaleDouble = val;
-                bestScaleStr    = scaleStr;
-            }
-        }
-        return bestScaleStr;
-    }
-
-    std::string FindSysfsIIODir(const std::string& sysFsPrefix, const std::string& matchIIO)
-    {
-        if (matchIIO.empty()) {
-            return sysFsPrefix + "/bus/iio/devices/iio:device0";
-        }
-
-        std::string pattern = "*" + matchIIO + "*";
-
-        auto fn = [&](const std::string& d) {
-            char buf[512];
-            int  len;
-            if ((len = readlink(d.c_str(), buf, 512)) < 0)
-                return false;
-            buf[len] = 0;
-            return (fnmatch(pattern.c_str(), buf, 0) == 0);
-        };
-
-        std::string iioDevName = IterateDir(sysFsPrefix + "/bus/iio/devices", "iio:device", fn);
-
-        if (iioDevName.empty()) {
-            throw std::runtime_error("Can't fild matching sysfs IIO: " + matchIIO);
-        }
-
-        return iioDevName;
-    }
-} // namespace
 
 TChannelReader::TChannelReader(double                           defaultIIOScale,
                                uint32_t                         maxADCvalue,
@@ -69,12 +15,11 @@ TChannelReader::TChannelReader(double                           defaultIIOScale,
                                uint32_t                         delayBetweenMeasurementsmS,
                                WBMQTT::TLogger&                 debugLogger,
                                WBMQTT::TLogger&                 infoLogger,
-                               const std::string&               sysFsPrefix)
-    : Cfg(cfg), MeasuredV(0.0), IIOScale(defaultIIOScale), MaxADCValue(maxADCvalue),
-      DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS), AverageCounter(cfg.AveragingWindow),
-      DebugLogger(debugLogger), InfoLogger(infoLogger)
+                               const std::string&               sysfsIIODir)
+    : Cfg(cfg), MeasuredV(0.0), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale),
+      MaxADCValue(maxADCvalue), DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
+      AverageCounter(cfg.AveragingWindow), DebugLogger(debugLogger), InfoLogger(infoLogger)
 {
-    SysfsIIODir = FindSysfsIIODir(sysFsPrefix, cfg.MatchIIO);
     SelectScale();
     OpenWithException(AdcValStream, SysfsIIODir + "/in_" + Cfg.ChannelNumber + "_raw");
 }
@@ -159,4 +104,54 @@ void TChannelReader::SelectScale()
         scaleFile >> IIOScale;
     }
     InfoLogger.Log() << scalePrefix << " = " << IIOScale;
+}
+
+std::string FindSysfsIIODir(const std::string& matchIIO, const std::string& sysFsPrefix)
+{
+    if (matchIIO.empty()) {
+        return sysFsPrefix + "/bus/iio/devices/iio:device0";
+    }
+
+    std::string pattern = "*" + matchIIO + "*";
+
+    auto fn = [&](const std::string& d) {
+        char buf[512];
+        int  len;
+        if ((len = readlink(d.c_str(), buf, 512)) < 0)
+            return false;
+        buf[len] = 0;
+        return (fnmatch(pattern.c_str(), buf, 0) == 0);
+    };
+
+    std::string iioDevName = IterateDir(sysFsPrefix + "/bus/iio/devices", "iio:device", fn);
+
+    if (iioDevName.empty()) {
+        throw std::runtime_error("Can't fild matching sysfs IIO: " + matchIIO);
+    }
+
+    return iioDevName;
+}
+
+std::string FindBestScale(const std::vector<std::string>& scales, double desiredScale)
+{
+    std::string bestScaleStr;
+    double      bestScaleDouble = 0;
+
+    for (auto& scaleStr : scales) {
+        double val;
+        try {
+            val = stod(scaleStr);
+        } catch (std::invalid_argument e) {
+            continue;
+        }
+        // best scale is either maximum scale or the one closest to user request
+        if (((desiredScale > 0) &&
+             (fabs(val - desiredScale) <= fabs(bestScaleDouble - desiredScale))) // user request
+            || ((desiredScale <= 0) && (val >= bestScaleDouble))                 // maximum scale
+        ) {
+            bestScaleDouble = val;
+            bestScaleStr    = scaleStr;
+        }
+    }
+    return bestScaleStr;
 }

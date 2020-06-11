@@ -9,6 +9,27 @@
 #define ADC_DEFAULT_MAX_VOLTAGE 3100 // voltage in mV
 
 /**
+ * @brief Iterate over /sys/bus/iio/devices and find folder symlinked to matchIIO value. Throws
+ * runtime_error on search failure.
+ *
+ * @param matchIIO Symlink origin
+ * @param sysFsFolder Sys fs folder. By default = /sys
+ * @return std::string Found folder or sysFsPrefix + /bus/iio/devices/iio:device0 if matchIIO is
+ * empty
+ */
+std::string FindSysfsIIODir(const std::string& matchIIO, const std::string& sysFsFolder = "/sys");
+
+/**
+ * @brief Find best scale from given list. The best scale is either maximum scale or the one closest
+ * to user request.
+ *
+ * @param scales Vector of strings with available scales
+ * @param desiredScale Desired scale
+ * @return std::string Best found scale or empty string
+ */
+std::string FindBestScale(const std::vector<std::string>& scales, double desiredScale);
+
+/**
  * @brief The class is responsible for single ADC channel measurements.
  */
 class TChannelReader
@@ -17,9 +38,6 @@ public:
     //! ADC channel measurement settings
     struct TSettings
     {
-        //! Fnmatch-compatible pattern to match with iio:deviceN symlink target
-        std::string MatchIIO;
-
         //! IIO channel "voltageX"
         std::string ChannelNumber = "voltage1";
 
@@ -52,6 +70,9 @@ public:
      * @param maxADCvalue Maximum possible value from ADC
      * @param channelCfg Channel settings from conf file
      * @param delayBetweenMeasurementsmS Delay between mesurements in mS
+     * @param debugLogger Logger for debug messages
+     * @param infoLogger Logger for info messages
+     * @param sysfsIIODir Sysfs device's folder
      */
     TChannelReader(double                           defaultIIOScale,
                    uint32_t                         maxADCvalue,
@@ -59,7 +80,7 @@ public:
                    uint32_t                         delayBetweenMeasurementsmS,
                    WBMQTT::TLogger&                 debugLogger,
                    WBMQTT::TLogger&                 infoLogger,
-                   const std::string&               sysFsPrefix = "/sys");
+                   const std::string&               sysfsIIODir);
 
     //! Get last measured value
     std::string GetValue() const;

@@ -56,7 +56,7 @@ TEST_F(TConfigTest, optional_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 1);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 2);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.MatchIIO, "path");
+    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.Scale, 5);
@@ -72,7 +72,7 @@ TEST_F(TConfigTest, empty_main_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 1);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 2);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.MatchIIO, "path");
+    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.Scale, 5);
@@ -88,7 +88,7 @@ TEST_F(TConfigTest, full_main_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 10);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage80");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 20);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.MatchIIO, "path0");
+    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path0");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 30);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 170);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.Scale, 50);

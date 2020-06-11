@@ -79,7 +79,7 @@ namespace
         Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
         Get(item, "scale", channel.ReaderCfg.Scale);
-        Get(item, "match_iio", channel.ReaderCfg.MatchIIO);
+        Get(item, "match_iio", channel.MatchIIO);
 
         Value v = item["channel_number"];
         if (v.isInt()) {
