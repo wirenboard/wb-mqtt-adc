@@ -61,7 +61,8 @@
           "description": "Fnmatch-compatible pattern to match with iio:deviceN symlink target",
           "propertyOrder" : 9
         }
-      }
+      },
+      "required": ["id", "voltage_multiplier"]
     },
 
     "iio_channel_base": {
@@ -89,7 +90,8 @@
         }
       },
 
-      "defaultProperties": ["channel_number", "voltage_multiplier", "id"]
+      "defaultProperties": ["channel_number", "voltage_multiplier", "id"],
+      "required": ["channel_number"]
     },
 
     "iio_channel": {

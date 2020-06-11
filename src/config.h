@@ -19,8 +19,15 @@ struct TConfig
     std::vector<TADCChannelSettings> Channels; //! ADC channels list
 };
 
+//! Validation error class
+class TBadConfigError : public std::runtime_error
+{
+public:
+    TBadConfigError(const std::string& msg);
+};
+
 /**
- * @brief Load configuration from config files
+ * @brief Load configuration from config files. Throws TBadConfigError on validation error.
  *
  * @param mainConfigFile - path and name of a main config file. The function also reads files from
  * mainConfigFile + ".d" folder

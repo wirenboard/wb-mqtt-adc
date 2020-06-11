@@ -24,7 +24,7 @@ namespace
         }
         Value v = item[key];
         if (!v.isString()) {
-            throw runtime_error(key + " is not a string value");
+            throw TBadConfigError(key + " is not a string value");
         }
         value = v.asString();
         return true;
@@ -37,7 +37,7 @@ namespace
         }
         Value v = item[key];
         if (!v.isDouble()) {
-            throw runtime_error(key + " is not a float value");
+            throw TBadConfigError(key + " is not a float value");
         }
         value = v.asDouble();
         return true;
@@ -50,7 +50,7 @@ namespace
         }
         Value v = item[key];
         if (!v.isUInt()) {
-            throw runtime_error(key + " is not an unsigned integer value");
+            throw TBadConfigError(key + " is not an unsigned integer value");
         }
         value = v.asUInt();
         return true;
@@ -63,7 +63,7 @@ namespace
         }
         Value v = item[key];
         if (!v.isBool()) {
-            throw runtime_error(key + " is not a boolean value");
+            throw TBadConfigError(key + " is not a boolean value");
         }
         value = v.asBool();
         return true;
@@ -72,24 +72,14 @@ namespace
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
-        if (!Get(item, "id", channel.Id)) {
-            throw runtime_error("id field is missing in the config");
-        }
-
+        Get(item, "id", channel.Id);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
-        if (channel.ReaderCfg.AveragingWindow == 0) {
-            throw runtime_error("zero averaging window is specified in the config");
-        }
-
         Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage);
         Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
         Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
         Get(item, "scale", channel.ReaderCfg.Scale);
-
-        if (!item.isMember("channel_number")) {
-            throw runtime_error("channel_number field is missing in the config");
-        }
+        Get(item, "match_iio", channel.ReaderCfg.MatchIIO);
 
         Value v = item["channel_number"];
         if (v.isInt()) {
@@ -140,7 +130,7 @@ namespace
                 err_oss << endl << "  desc: " << error.description << endl;
                 ++error_num;
             }
-            throw runtime_error(err_oss.str());
+            throw TBadConfigError(err_oss.str());
         }
     }
 
@@ -154,11 +144,11 @@ namespace
 
         // Report failures and their locations in the document.
         if (!reader.parse(file, root, false)) {
-            throw runtime_error("Failed to parse JSON " + fileName + ":" +
-                                reader.getFormattedErrorMessages());
+            throw TBadConfigError("Failed to parse JSON " + fileName + ":" +
+                                  reader.getFormattedErrorMessages());
         }
         if (!root.isObject()) {
-            throw runtime_error("Bad JSON " + fileName + ": the root is not an object");
+            throw TBadConfigError("Bad JSON " + fileName + ": the root is not an object");
         }
         return root;
     }
@@ -171,9 +161,7 @@ namespace
 
         ValidateJson(configJson, ParseJson(shemaFileName));
 
-        if (!Get(configJson, "device_name", config.DeviceName))
-            throw runtime_error("Device name is not specified in config " + fileName);
-
+        Get(configJson, "device_name", config.DeviceName);
         Get(configJson, "debug", config.EnableDebugMessages);
 
         const auto& ch = configJson["iio_channels"];
@@ -200,3 +188,5 @@ TConfig LoadConfig(const string& mainConfigFile,
     Append(loadFromJSON(mainConfigFile, shemaFile), cfg);
     return cfg;
 }
+
+TBadConfigError::TBadConfigError(const string& msg) : runtime_error(msg) {}

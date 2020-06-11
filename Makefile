@@ -16,8 +16,9 @@ ADC_LIBS= -lwbmqtt1 -lpthread -ljsoncpp
 
 ADC_TEST_SOURCES= 							\
 			$(TEST_DIR)/test_main.cpp		\
-			$(TEST_DIR)/sysfs_w1_test.cpp	\
-			$(TEST_DIR)/onewire_driver_test.cpp	\
+			$(TEST_DIR)/moving_average.test.cpp	\
+			$(TEST_DIR)/file_utils.test.cpp	\
+			$(TEST_DIR)/config.test.cpp	\
 
 TEST_DIR=test
 export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
@@ -40,16 +41,6 @@ $(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
 	${CXX} $^ $(ADC_LIBS) $(TEST_LIBS) -o $@
 
 test: $(TEST_DIR)/$(TEST_BIN)
-	rm -f $(TEST_DIR)/*.dat.out
-	if [ "$(shell arch)" = "armv7l" ]; then \
-          $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || $(TEST_DIR)/abt.sh show; \
-        else \
-          valgrind --error-exitcode=180 -q $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
-            if [ $$? = 180 ]; then \
-              echo "*** VALGRIND DETECTED ERRORS ***" 1>& 2; \
-              exit 1; \
-            else $(TEST_DIR)/abt.sh show; exit 1; fi; \
-        fi
 
 clean :
 	-rm -f src/*.o $(ADC_BIN)
