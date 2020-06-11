@@ -12,19 +12,20 @@ protected:
     void SetUp()
     {
         char* d = getenv("TEST_DIR_ABS");
-        if (d == NULL) {
-            testRootDir = "config_test_data";
-        } else {
+        if (d != NULL) {
             testRootDir = d;
+            testRootDir += '/';
         }
+        testRootDir += "config_test_data";
+
         shemaFile = testRootDir + "/../../data/wb-homa-adc.schema.json";
         WBMQTT::Testing::TLoggedFixture::SetUp();
-    };
+    }
 
     void TearDown()
     {
         WBMQTT::Testing::TLoggedFixture::TearDown();
-    };
+    }
 };
 
 TEST_F(TConfigTest, no_file)

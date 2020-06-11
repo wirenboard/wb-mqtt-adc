@@ -11,11 +11,12 @@ protected:
     void SetUp()
     {
         char* d = getenv("TEST_DIR_ABS");
-        if (d == NULL) {
-            testRootDir = "file_utils_test_data";
-        } else {
+        if (d != NULL) {
             testRootDir = d;
+            testRootDir += '/';
         }
+        testRootDir += "file_utils_test_data";
+
         WBMQTT::Testing::TLoggedFixture::SetUp();
     };
 
