@@ -19,28 +19,39 @@ public:
     {
         //! Fnmatch-compatible pattern to match with iio:deviceN symlink target
         std::string MatchIIO;
-        std::string ChannelNumber    = "voltage1"; //! IIO channel "voltageX"
-        uint32_t    ReadingsNumber   = 10;         //! Number of value readings during one selection
-        double      MaxScaledVoltage = ADC_DEFAULT_MAX_VOLTAGE; //! Maximum result after multiplying
-                                                                //! readed value from ADC to Scale
-        double Scale = 0; //! The ADC scale to use. The closest supported scale (from
-                          //! _scale_available list) will be used. It affects the accuracy and the
-                          //! measurement range. If 0, the maximum available scale is used.",
-        double VoltageMultiplier =
-            1; //! The ADC voltage is multiplied by this factor to get the resulting value
-        uint32_t AveragingWindow = 10; //! Number of consecutive readings to average
-        uint32_t DecimalPlaces   = 3;  //! Number of figures after point
+
+        //! IIO channel "voltageX"
+        std::string ChannelNumber = "voltage1";
+
+        //! Number of value readings during one selection
+        uint32_t ReadingsNumber = 10;
+
+        //! Maximum result after multiplying readed value from ADC to Scale
+        double MaxScaledVoltage = ADC_DEFAULT_MAX_VOLTAGE;
+
+        /*! The ADC scale to use. The closest supported scale will be used.
+            It affects the accuracy and the measurement range.
+            If 0, the maximum available scale is used.
+        */
+        double Scale = 0;
+
+        //! The ADC voltage is multiplied by this factor to get the resulting value
+        double VoltageMultiplier = 1;
+
+        //! Number of consecutive readings to average
+        uint32_t AveragingWindow = 10;
+
+        //! Number of figures after point
+        uint32_t DecimalPlaces = 3;
     };
 
     /**
      * @brief Construct a new TChannelReader object
      *
-     * @param defaultIIOScale
-     * @param maxADCvalue
-     * @param channelCfg
-     * @param delayBetweenMeasurementsmS
-     * @param debugLogger
-     * @param sysFsPrefix
+     * @param defaultIIOScale Default channel scale if can't get it from sysfs
+     * @param maxADCvalue Maximum possible value from ADC
+     * @param channelCfg Channel settings from conf file
+     * @param delayBetweenMeasurementsmS Delay between mesurements in mS
      */
     TChannelReader(double                           defaultIIOScale,
                    uint32_t                         maxADCvalue,
@@ -50,8 +61,11 @@ public:
                    WBMQTT::TLogger&                 infoLogger,
                    const std::string&               sysFsPrefix = "/sys");
 
+    //! Get last measured value
     std::string GetValue() const;
-    void        Measure();
+
+    //! Read and convert value from ADC
+    void Measure();
 
 private:
     //! Settings for the channel
