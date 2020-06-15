@@ -15,7 +15,7 @@
  * @param matchIIO Symlink origin
  * @param sysFsFolder Sys fs folder. By default = /sys
  * @return std::string Found folder or sysFsPrefix + /bus/iio/devices/iio:device0 if matchIIO is
- * empty
+ * empty or empty string if nothing found
  */
 std::string FindSysfsIIODir(const std::string& matchIIO, const std::string& sysFsFolder = "/sys");
 

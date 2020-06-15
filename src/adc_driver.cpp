@@ -73,19 +73,24 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
                                                        .SetOrder(n)
                                                        .SetReadonly(true));
         ++n;
+        futureControl.Wait();
 
         std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
-        // FIXME: delay ???
-        readers->push_back(TChannelDesc{channel.Id,
-                                        {MXS_LRADC_DEFAULT_SCALE_FACTOR,
-                                         ADC_DEFAULT_MAX_VOLTAGE,
-                                         channel.ReaderCfg,
-                                         10,
-                                         DebugLogger,
-                                         InfoLogger,
-                                         sysfsIIODir}});
-        futureControl.Wait();
-        infoLogger.Log() << "Channel " << channel.Id << " MQTT controls are created";
+        if (sysfsIIODir.empty()) {
+            futureControl.GetValue()->SetError(tx, "r");
+            ErrorLogger.Log() << "Can't fild matching sysfs IIO: " + channel.MatchIIO;
+        } else {
+            // FIXME: delay ???
+            readers->push_back(TChannelDesc{channel.Id,
+                                            {MXS_LRADC_DEFAULT_SCALE_FACTOR,
+                                             ADC_DEFAULT_MAX_VOLTAGE,
+                                             channel.ReaderCfg,
+                                             10,
+                                             DebugLogger,
+                                             InfoLogger,
+                                             sysfsIIODir}});
+            infoLogger.Log() << "Channel " << channel.Id << " MQTT controls are created";
+        }
     }
 
     Active = true;
