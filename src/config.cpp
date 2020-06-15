@@ -74,7 +74,8 @@ namespace
         TADCChannelSettings channel;
         Get(item, "id", channel.Id);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
-        Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage);
+        if (Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage))
+            channel.ReaderCfg.MaxScaledVoltage *= 1000;
         Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
         Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
