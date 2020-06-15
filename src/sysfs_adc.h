@@ -17,7 +17,7 @@
  * @return std::string Found folder or sysFsPrefix + /bus/iio/devices/iio:device0 if matchIIO is
  * empty or empty string if nothing found
  */
-std::string FindSysfsIIODir(const std::string& matchIIO, const std::string& sysFsFolder = "/sys");
+std::string FindSysfsIIODir(const std::string& matchIIO);
 
 /**
  * @brief Find best scale from given list. The best scale is either maximum scale or the one closest
@@ -93,7 +93,7 @@ private:
     TChannelReader::TSettings Cfg;
 
     //! Last measured voltage in V
-    double MeasuredV;
+    std::string MeasuredV;
 
     //! Folder in sysfs corresponding to the channel
     std::string SysfsIIODir;
@@ -120,12 +120,10 @@ private:
     uint32_t DelayBetweenMeasurementsmS;
 
     TMovingAverageCalculator AverageCounter;
-    std::ifstream            AdcValStream;
     WBMQTT::TLogger&         DebugLogger;
-    WBMQTT::TLogger&         InfoLogger;
 
     int32_t ReadFromADC();
-    void    SelectScale();
+    void    SelectScale(WBMQTT::TLogger& infoLogger);
 
     TChannelReader();
 };

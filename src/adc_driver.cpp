@@ -1,7 +1,8 @@
 #include "adc_driver.h"
 
-#include "sysfs_adc.h"
 #include <vector>
+
+#include "sysfs_adc.h"
 
 /*
 "/devices/" DriverId "/meta/name"                                       = Config.DeviceName
@@ -20,6 +21,7 @@ namespace
     struct TChannelDesc
     {
         std::string    MqttId;
+        bool           Error;
         TChannelReader Reader;
     };
 
@@ -27,17 +29,31 @@ namespace
                    WBMQTT::PLocalDevice                       device,
                    WBMQTT::PDeviceDriver                      mqttDriver,
                    std::shared_ptr<std::vector<TChannelDesc>> channels,
-                   WBMQTT::TLogger&                           infoLogger)
+                   WBMQTT::TLogger&                           infoLogger,
+                   WBMQTT::TLogger&                           errorLogger)
     {
         infoLogger.Log() << "ADC worker thread is started";
         while (*active) {
             for (auto& channel : *channels) {
-                channel.Reader.Measure();
+                try {
+                    channel.Reader.Measure();
+                    channel.Error = false;
+                } catch (const std::exception& er) {
+                    channel.Error = true;
+                    errorLogger.Log() << er.what();
+                }
             }
 
             auto tx = mqttDriver->BeginTx();
-            for (const auto& channel : *channels) {
-                device->GetControl(channel.MqttId)->SetRawValue(tx, channel.Reader.GetValue());
+            for (auto& channel : *channels) {
+                WBMQTT::PControl control = device->GetControl(channel.MqttId);
+                if (channel.Error) {
+                    auto future = control->SetError(tx, "r");
+                    future.Wait();
+                } else {
+                    auto future = control->SetRawValue(tx, channel.Reader.GetValue());
+                    future.Wait();
+                }
             }
         }
         infoLogger.Log() << "ADC worker thread is stopped";
@@ -65,23 +81,24 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
 
     std::shared_ptr<std::vector<TChannelDesc>> readers(new std::vector<TChannelDesc>());
     for (const auto& channel : config.Channels) {
-        infoLogger.Log() << "Adding MQTT controls";
+        std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
+        if (sysfsIIODir.empty()) {
+            ErrorLogger.Log() << "Can't fild matching sysfs IIO: " + channel.MatchIIO;
+        }
         auto futureControl = Device->CreateControl(tx,
                                                    WBMQTT::TControlArgs{}
                                                        .SetId(channel.Id)
                                                        .SetType("voltage")
                                                        .SetOrder(n)
-                                                       .SetReadonly(true));
+                                                       .SetReadonly(true)
+                                                       .SetError(sysfsIIODir.empty() ? "r" : ""));
         ++n;
         futureControl.Wait();
 
-        std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
-        if (sysfsIIODir.empty()) {
-            futureControl.GetValue()->SetError(tx, "r");
-            ErrorLogger.Log() << "Can't fild matching sysfs IIO: " + channel.MatchIIO;
-        } else {
+        if (!sysfsIIODir.empty()) {
             // FIXME: delay ???
             readers->push_back(TChannelDesc{channel.Id,
+                                            false,
                                             {MXS_LRADC_DEFAULT_SCALE_FACTOR,
                                              ADC_DEFAULT_MAX_VOLTAGE,
                                              channel.ReaderCfg,
@@ -94,9 +111,9 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
     }
 
     Active = true;
-    Worker =
-        WBMQTT::MakeThread("ADC worker",
-                           {[=] { AdcWorker(&Active, Device, MqttDriver, readers, InfoLogger); }});
+    Worker = WBMQTT::MakeThread(
+        "ADC worker",
+        {[=] { AdcWorker(&Active, Device, MqttDriver, readers, InfoLogger, ErrorLogger); }});
 }
 
 void TADCDriver::Stop()
