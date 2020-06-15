@@ -61,6 +61,7 @@ TEST_F(TConfigTest, optional_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 5);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.MaxScaledVoltage, 12500);
 }
 
 TEST_F(TConfigTest, empty_main_config)
