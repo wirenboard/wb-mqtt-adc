@@ -61,20 +61,21 @@ void TChannelReader::Measure()
 
 int32_t TChannelReader::ReadFromADC()
 {
-    std::ifstream adcValStream;
-    std::string   fileName = SysfsIIODir + "/in_" + Cfg.ChannelNumber + "_raw";
-    OpenWithException(adcValStream, fileName);
-    int32_t val;
+    std::string fileName = SysfsIIODir + "/in_" + Cfg.ChannelNumber + "_raw";
     for (size_t i = 0; i < 3; ++i) { // workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53984
-        try {
-            adcValStream >> val;
-            if (adcValStream.good())
-                return val;
-        } catch (const std::underflow_error&) {
+        {
+            std::ifstream adcValStream;
+            OpenWithException(adcValStream, fileName);
+            int32_t val;
+            try {
+                adcValStream >> val;
+                if (adcValStream.good())
+                    return val;
+            } catch (const std::ios_base::failure& er) {
+                DebugLogger.Log() << er.what() << " " << fileName;
+            }
         }
-        adcValStream.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        adcValStream.seekg(0);
     }
     throw std::runtime_error("Can't read from " + fileName);
 }
