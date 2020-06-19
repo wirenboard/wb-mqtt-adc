@@ -24,6 +24,112 @@ namespace
 
     //! Maximun time to start application. Exceded timeout will case application termination.
     const auto DRIVER_INIT_TIMEOUT_S = chrono::seconds(5);
+
+    void PrintUsage()
+    {
+        cout << "Usage:" << endl
+             << " wb-mqtt-adc [options]" << endl
+             << "Options:" << endl
+             << "  -d level     enable debuging output:" << endl
+             << "                 1 - adc only;" << endl
+             << "                 2 - mqtt only;" << endl
+             << "                 3 - both;" << endl
+             << "                 negative values - silent mode (-1, -2, -3))" << endl
+             << "  -c config    config file" << endl
+             << "  -p port      MQTT broker port (default: 1883)" << endl
+             << "  -h IP        MQTT broker IP (default: localhost)" << endl
+             << "  -u user      MQTT user (optional)" << endl
+             << "  -P password  MQTT user password (optional)" << endl
+             << "  -T prefix    MQTT topic prefix (optional)" << endl;
+    }
+
+    void ParseCommadLine(int                   argc,
+                         char*                 argv[],
+                         TMosquittoMqttConfig& mqttConfig,
+                         string&               customConfig)
+    {
+        int debugLevel = 0;
+        int c;
+
+        while ((c = getopt(argc, argv, "d:c:h:p:u:P:T:")) != -1) {
+            switch (c) {
+            case 'd':
+                debugLevel = stoi(optarg);
+                break;
+            case 'c':
+                customConfig = optarg;
+                break;
+            case 'p':
+                mqttConfig.Port = stoi(optarg);
+                break;
+            case 'h':
+                mqttConfig.Host = optarg;
+                break;
+            case 'T':
+                mqttConfig.Prefix = optarg;
+                break;
+            case 'u':
+                mqttConfig.User = optarg;
+                break;
+            case 'P':
+                mqttConfig.Password = optarg;
+                break;
+
+            case '?':
+            default:
+                PrintUsage();
+                exit(2);
+            }
+        }
+
+        switch (debugLevel) {
+        case -1:
+            Info.SetEnabled(false);
+            break;
+
+        case -2:
+            WBMQTT::Info.SetEnabled(false);
+            break;
+
+        case -3:
+            WBMQTT::Info.SetEnabled(false);
+            Info.SetEnabled(false);
+            break;
+
+        case 1:
+            DebugLogger.SetEnabled(true);
+            break;
+
+        case 2:
+            WBMQTT::Debug.SetEnabled(true);
+            break;
+
+        case 3:
+            WBMQTT::Debug.SetEnabled(true);
+            DebugLogger.SetEnabled(true);
+            break;
+
+        default:
+            cout << "Invalid -d parameter value " << debugLevel << endl;
+            PrintUsage();
+            exit(2);
+        }
+
+        if (optind < argc) {
+            for (int index = optind; index < argc; ++index) {
+                cout << "Skipping unknown argument " << argv[index] << endl;
+            }
+        }
+    }
+
+    void PrintStartupInfo(const TMosquittoMqttConfig& mqttConfig, const string& customConfig)
+    {
+        cout << "MQTT broker " << mqttConfig.Host << ':' << mqttConfig.Port << endl;
+        if (!customConfig.empty()) {
+            cout << "Custom config " << customConfig << endl;
+        }
+    }
+
 } // namespace
 
 int main(int argc, char* argv[])
@@ -54,35 +160,9 @@ int main(int argc, char* argv[])
     });
     SignalHandling::Start();
 
-    bool   forceDebug = false;
     string customConfig;
-    int    c;
-    while ((c = getopt(argc, argv, "dc:h:p:")) != -1) {
-        switch (c) {
-        case 'c': {
-            customConfig = optarg;
-            cout << "custom config file " << customConfig << endl;
-            break;
-        }
-        case 'p': {
-            mqttConfig.Port = stoi(optarg);
-            break;
-        }
-        case 'h': {
-            mqttConfig.Host = optarg;
-            break;
-        }
-        case 'd': {
-            cout << "debug mode is enabled" << endl;
-            forceDebug = true;
-            break;
-        }
-        case '?':
-        default:
-            break;
-        }
-    }
-    cout << "MQTT broker " << mqttConfig.Host << ':' << mqttConfig.Port << endl;
+    ParseCommadLine(argc, argv, mqttConfig, customConfig);
+    PrintStartupInfo(mqttConfig, customConfig);
 
     try {
         auto mqttDriver =
@@ -104,7 +184,8 @@ int main(int argc, char* argv[])
                                     customConfig,
                                     "/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json");
 
-        DebugLogger.SetEnabled(forceDebug || config.EnableDebugMessages);
+        if (config.EnableDebugMessages)
+            DebugLogger.SetEnabled(true);
 
         TADCDriver driver(mqttDriver, config, ErrorLogger, DebugLogger, InfoLogger);
 
