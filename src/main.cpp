@@ -83,6 +83,8 @@ namespace
         }
 
         switch (debugLevel) {
+        case 0:
+            break;
         case -1:
             Info.SetEnabled(false);
             break;
