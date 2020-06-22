@@ -1,9 +1,8 @@
 #include "src/config.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include <wblib/testing/testlog.h>
 
-class TConfigTest : public WBMQTT::Testing::TLoggedFixture
+class TConfigTest : public testing::Test
 {
 protected:
     std::string testRootDir;
@@ -19,12 +18,6 @@ protected:
         testRootDir += "config_test_data";
 
         shemaFile = testRootDir + "/../../data/wb-homa-adc.schema.json";
-        WBMQTT::Testing::TLoggedFixture::SetUp();
-    }
-
-    void TearDown()
-    {
-        WBMQTT::Testing::TLoggedFixture::TearDown();
     }
 };
 

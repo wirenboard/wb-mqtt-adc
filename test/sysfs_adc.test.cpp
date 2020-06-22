@@ -1,9 +1,8 @@
 #include "src/sysfs_adc.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include <wblib/testing/testlog.h>
 
-class TSysfsTest : public WBMQTT::Testing::TLoggedFixture
+class TSysfsTest : public testing::Test
 {
 protected:
     std::string testRootDir;
@@ -17,12 +16,6 @@ protected:
             testRootDir += '/';
         }
         testRootDir += "sysfs_test_data";
-        WBMQTT::Testing::TLoggedFixture::SetUp();
-    }
-
-    void TearDown()
-    {
-        WBMQTT::Testing::TLoggedFixture::TearDown();
     }
 };
 

@@ -26,7 +26,7 @@ export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
 
 ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:.cpp=.o)
 TEST_BIN=wb-homa-adc-test
-TEST_LIBS=-lgtest -lwbmqtt_test_utils
+TEST_LIBS=-lgtest
 
 
 all : $(ADC_BIN)

@@ -1,26 +1,12 @@
 #include "src/moving_average.h"
 #include <gtest/gtest.h>
-#include <wblib/testing/testlog.h>
 
-class TMovingAverageTest : public WBMQTT::Testing::TLoggedFixture
-{
-protected:
-    void SetUp()
-    {
-        WBMQTT::Testing::TLoggedFixture::SetUp();
-    };
-    void TearDown()
-    {
-        WBMQTT::Testing::TLoggedFixture::TearDown();
-    };
-};
-
-TEST_F(TMovingAverageTest, zero_window)
+TEST(TMovingAverageTest, zero_window)
 {
     ASSERT_THROW(TMovingAverageCalculator c(0), std::runtime_error);
 }
 
-TEST_F(TMovingAverageTest, one_window)
+TEST(TMovingAverageTest, one_window)
 {
     TMovingAverageCalculator c(1);
     EXPECT_EQ(c.IsReady(), false);
@@ -31,7 +17,7 @@ TEST_F(TMovingAverageTest, one_window)
     }
 }
 
-TEST_F(TMovingAverageTest, ten_window)
+TEST(TMovingAverageTest, ten_window)
 {
     const uint32_t           windowSize = 10;
     TMovingAverageCalculator c(windowSize);
@@ -50,7 +36,7 @@ TEST_F(TMovingAverageTest, ten_window)
     EXPECT_EQ(c.GetAverage(), (100 + 100 + 100 + 100 + 100 + 90 + 80 + 70 + 60 + 50) / 10);
 }
 
-TEST_F(TMovingAverageTest, rounding)
+TEST(TMovingAverageTest, rounding)
 {
     TMovingAverageCalculator c(3);
     c.AddValue(10);

@@ -1,9 +1,8 @@
 #include "src/file_utils.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include <wblib/testing/testlog.h>
 
-class TFileUtilsTest : public WBMQTT::Testing::TLoggedFixture
+class TFileUtilsTest : public testing::Test
 {
 protected:
     std::string testRootDir;
@@ -16,13 +15,6 @@ protected:
             testRootDir += '/';
         }
         testRootDir += "file_utils_test_data";
-
-        WBMQTT::Testing::TLoggedFixture::SetUp();
-    };
-
-    void TearDown()
-    {
-        WBMQTT::Testing::TLoggedFixture::TearDown();
     };
 };
 
