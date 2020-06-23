@@ -1,6 +1,7 @@
 [Unit]
 Description=MQTT Driver for ADC
-After=network.target
+Wants=wb-hwconf-magager.service
+After=network.target wb-hwconf-magager.service
 
 [Service]
 Type=simple
