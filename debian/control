@@ -8,7 +8,7 @@ Build-Depends: debhelper (>= 10),
                libjsoncpp-dev,
                libmosquitto-dev,
                libmosquittopp-dev,
-               libwbmqtt1-dev (>= 0.1),
+               libwbmqtt1-dev (>= 0.2),
                pkg-config
 
 Package: wb-homa-adc
@@ -16,7 +16,7 @@ Architecture: any
 Depends: bc,
          jq (>= 1.4),
          libjsoncpp0 | libjsoncpp1,
-         libwbmqtt1 (>= 0.1),
+         libwbmqtt1 (>= 0.2),
          ucf,
          wb-utils (>= 2.0.4),
          ${misc:Depends},

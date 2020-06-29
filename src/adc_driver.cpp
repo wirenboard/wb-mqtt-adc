@@ -110,6 +110,8 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
         }
     }
 
+    Device->RemoveUnusedControls(tx);
+
     Active = true;
     Worker = WBMQTT::MakeThread(
         "ADC worker",
