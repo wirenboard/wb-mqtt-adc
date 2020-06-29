@@ -28,7 +28,7 @@ namespace
     void PrintUsage()
     {
         cout << "Usage:" << endl
-             << " wb-mqtt-adc [options]" << endl
+             << " wb-homa-adc [options]" << endl
              << "Options:" << endl
              << "  -d level     enable debuging output:" << endl
              << "                 1 - adc only;" << endl
