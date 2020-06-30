@@ -1,7 +1,7 @@
 [Unit]
 Description=MQTT Driver for ADC
-Wants=wb-hwconf-magager.service wb-modules.service
-After=network.target wb-hwconf-magager.service wb-modules.service wb-modules.service
+Wants=wb-hwconf-manager.service wb-modules.service
+After=network.target wb-hwconf-manager.service wb-modules.service
 
 [Service]
 Type=simple
