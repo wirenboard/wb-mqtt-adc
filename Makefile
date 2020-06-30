@@ -1,7 +1,4 @@
-CXX=$(CROSS_COMPILE)g++
-CC=$(CROSS_COMPILE)gcc
-
-CFLAGS=-Wall -std=c++14 -Os -I. -I./thirdparty/valijson-0.2/include
+CXXFLAGS=-Wall -std=c++14 -Os -I. -I./thirdparty/valijson-0.2/include
 
 ADC_SOURCES= 						\
 			src/adc_driver.cpp		\
@@ -33,7 +30,7 @@ all : $(ADC_BIN)
 
 # ADC
 %.o : %.cpp
-	${CXX} -c $< -o $@ ${CFLAGS}
+	${CXX} -c $< -o $@ ${CXXFLAGS}
 
 $(ADC_BIN) : src/main.o $(ADC_OBJECTS)
 	${CXX} $^ ${ADC_LIBS} -o $@
@@ -42,6 +39,16 @@ $(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
 	${CXX} $^ $(ADC_LIBS) $(TEST_LIBS) -o $@
 
 test: $(TEST_DIR)/$(TEST_BIN)
+	rm -f $(TEST_DIR)/*.dat.out
+	if [ "$(shell arch)" = "armv7l" ]; then \
+        $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || { $(TEST_DIR)/abt.sh show; exit 1; } \
+    else \
+		valgrind --error-exitcode=180 -q $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
+		if [ $$? = 180 ]; then \
+			echo "*** VALGRIND DETECTED ERRORS ***" 1>& 2; \
+			exit 1; \
+		else $(TEST_DIR)/abt.sh show; exit 1; fi; \
+	fi
 
 clean :
 	-rm -f src/*.o $(ADC_BIN)

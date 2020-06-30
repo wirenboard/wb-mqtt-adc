@@ -19,7 +19,7 @@ test/wb-homa-test
 *.tar.gz
 *.debhelper.log
 *.debhelper
-*/debian/*.substvars
+debian/*.substvars
 wb-mqtt-timestamper/debian/wb-mqtt-timestamper/
 wb-mqtt-timestamper/wb-mqtt-timestamper
 wb-mqtt-db/wb-mqtt-db
@@ -36,8 +36,8 @@ wb-mqtt-db/debian/wb-mqtt-db/
 .d
 debian/wb-homa-adc
 debian/files
-debian/*.substvars
 wb-homa-adc
 debhelper-build-stamp
 .vscode/
 test/wb-homa-adc-test
+.clang-format

@@ -9,7 +9,8 @@ Build-Depends: debhelper (>= 10),
                libmosquitto-dev,
                libmosquittopp-dev,
                libwbmqtt1-dev (>= 0.2),
-               pkg-config
+               pkg-config,
+               libwbmqtt1-test-utils (>= 0.2)
 
 Package: wb-homa-adc
 Architecture: any

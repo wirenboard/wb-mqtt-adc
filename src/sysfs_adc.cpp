@@ -139,7 +139,7 @@ std::string FindBestScale(const std::vector<std::string>& scales, double desired
         double val;
         try {
             val = stod(scaleStr);
-        } catch (std::invalid_argument e) {
+        } catch (const std::invalid_argument& e) {
             continue;
         }
         // best scale is either maximum scale or the one closest to user request
