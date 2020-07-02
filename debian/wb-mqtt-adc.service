@@ -8,8 +8,8 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/usr/bin/wb-homa-adc
-ExecStartPre=/usr/lib/wb-homa-adc/generate-system-config.sh
+ExecStart=/usr/bin/wb-mqtt-adc
+ExecStartPre=/usr/lib/wb-mqtt-adc/generate-system-config.sh
 
 [Install]
 WantedBy=multi-user.target

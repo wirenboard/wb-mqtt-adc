@@ -8,7 +8,7 @@ ADC_SOURCES= 						\
 			src/file_utils.cpp		\
 
 ADC_OBJECTS=$(ADC_SOURCES:.cpp=.o)
-ADC_BIN=wb-homa-adc
+ADC_BIN=wb-mqtt-adc
 ADC_LIBS= -lwbmqtt1 -lpthread -ljsoncpp 
 
 ADC_TEST_SOURCES= 							\
@@ -22,7 +22,7 @@ TEST_DIR=test
 export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
 
 ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:.cpp=.o)
-TEST_BIN=wb-homa-adc-test
+TEST_BIN=wb-mqtt-adc-test
 TEST_LIBS=-lgtest
 
 
@@ -59,20 +59,20 @@ install: all
 	install -d $(DESTDIR)/etc
 	install -d $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
 	install -d $(DESTDIR)/usr/bin
-	install -d $(DESTDIR)/usr/lib/wb-homa-adc
-	install -d $(DESTDIR)/usr/share/wb-homa-adc
+	install -d $(DESTDIR)/usr/lib/wb-mqtt-adc
+	install -d $(DESTDIR)/usr/share/wb-mqtt-adc
 	install -d $(DESTDIR)/etc/wb-configs.d
-	install -d $(DESTDIR)/etc/wb-homa-adc.conf.d
+	install -d $(DESTDIR)/etc/wb-mqtt-adc.conf.d
 
 	install -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
-	install -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-homa-adc/generate-system-config.sh
+	install -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-mqtt-adc/generate-system-config.sh
 
-	install -m 0644  data/config.json $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.default
-	install -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55
-	install -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb61
+	install -m 0644  data/config.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
+	install -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
+	install -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
 
-	install -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.devicetree
+	install -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
 
-	install -m 0644  data/wb-homa-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-homa-adc
+	install -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
 
-	install -m 0644  data/wb-homa-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json
+	install -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json

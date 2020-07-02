@@ -35,9 +35,13 @@ wb-mqtt-lirc/debian/wb-mqtt-lirc/
 wb-mqtt-db/debian/wb-mqtt-db/
 .d
 debian/wb-homa-adc
+debian/wb-mqtt-adc
+debian/tmp
 debian/files
 wb-homa-adc
+wb-mqtt-adc
 debhelper-build-stamp
 .vscode/
 test/wb-homa-adc-test
+test/wb-mqtt-adc-test
 .clang-format

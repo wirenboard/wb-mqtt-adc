@@ -28,7 +28,7 @@ namespace
     void PrintUsage()
     {
         cout << "Usage:" << endl
-             << " wb-homa-adc [options]" << endl
+             << " wb-mqtt-adc [options]" << endl
              << "Options:" << endl
              << "  -d level     enable debuging output:" << endl
              << "                 1 - adc only;" << endl
@@ -182,9 +182,9 @@ int main(int argc, char* argv[])
 
         mqttDriver->WaitForReady();
 
-        TConfig config = LoadConfig("/etc/wb-homa-adc.conf",
+        TConfig config = LoadConfig("/etc/wb-mqtt-adc.conf",
                                     customConfig,
-                                    "/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json");
+                                    "/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json");
 
         if (config.EnableDebugMessages)
             DebugLogger.SetEnabled(true);

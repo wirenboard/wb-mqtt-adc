@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.1) unstable; urgency=medium
+
+  * rename from wb-homa-adc to wb-mqtt-adc
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 01 Jul 2020 12:14:12 +0500
+
 wb-homa-adc (2.0.0) unstable; urgency=medium
 
   * port to libwbmqtt1

@@ -1,4 +1,4 @@
-Source: wb-homa-adc
+Source: wb-mqtt-adc
 Maintainer: Evgeny Boger <boger@contactless.ru>
 Section: misc
 Priority: optional
@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 10),
                pkg-config,
                libwbmqtt1-test-utils (>= 0.2)
 
-Package: wb-homa-adc
+Package: wb-mqtt-adc
 Architecture: any
 Depends: bc,
          jq (>= 1.4),
@@ -23,5 +23,16 @@ Depends: bc,
          ${misc:Depends},
          ${shlibs:Depends}
 Suggests: linux-image-wb2 (>= 4.9+wb20181221180922) | linux-image-wb6 (>= 4.9+wb20181221180922)
-Breaks: wb-mqtt-confed (<< 1.0.2)
+Breaks: wb-mqtt-confed (<< 1.0.2), wb-homa-adc (<< 2.0.1)
+Replaces: wb-homa-adc (<< 2.0.1)
+Conflicts: wb-homa-adc (<< 2.0.1)
 Description: Wiren Board Smart Home MQTT ADC driver (WB-specific) compatible with HomA conventions
+
+
+Package: wb-homa-adc
+Depends: wb-mqtt-adc, ${misc:Depends}
+Architecture: all
+Priority: extra
+Section: oldlibs
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.

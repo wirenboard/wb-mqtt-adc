@@ -1,0 +1,16 @@
+#!/bin/bash
+
+CONFFILE=/etc/wb-mqtt-adc.conf
+
+if [ "$1" = "purge" ]; then
+    if [ -x /usr/bin/ucf ]; then
+        ucf  --purge /etc/wb-mqtt-adc.conf
+        rm -f /etc/wb-mqtt-adc.conf.d/*
+        rm -f /etc/wb-mqtt-adc.conf
+        rm -f /etc/wb-homa-adc.conf
+    fi
+fi
+
+
+#DEBHELPER#
+

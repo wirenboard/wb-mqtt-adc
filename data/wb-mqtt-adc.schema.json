@@ -4,8 +4,8 @@
   "description": "Analog inputs configuration",
 
   "configFile": {
-    "path": "/etc/wb-homa-adc.conf",
-    "service": "wb-homa-adc"
+    "path": "/etc/wb-mqtt-adc.conf",
+    "service": "wb-mqtt-adc"
   },
 
   "definitions": {
