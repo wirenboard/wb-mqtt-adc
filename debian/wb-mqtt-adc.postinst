@@ -23,11 +23,16 @@ else
 fi
 
 if [ -f /etc/wb-homa-adc.conf ]; then
-    cp -L /etc/wb-homa-adc.conf $CONFFILE
+    if [ ! -f $CONFFILE ]; then
+        cp /usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.$BOARD_CONF $CONFFILE
+    fi
+    ucf --debconf-ok /etc/wb-homa-adc.conf $CONFFILE
+    cp -f /etc/wb-homa-adc.conf /usr/share/wb-mqtt-adc/wb-homa-adc.conf.old
     rm -f /etc/wb-homa-adc.conf
+else
+    ucf --debconf-ok /usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.$BOARD_CONF $CONFFILE
 fi
 
-ucf --debconf-ok /usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.$BOARD_CONF $CONFFILE
 ln -s $CONFFILE /etc/wb-homa-adc.conf
 
 if [ -f /etc/init.d/wb-configs ]; then

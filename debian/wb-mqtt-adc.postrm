@@ -2,6 +2,13 @@
 
 CONFFILE=/etc/wb-mqtt-adc.conf
 
+if [ -f /usr/share/wb-mqtt-adc/wb-homa-adc.conf.old ]; then
+    rm -f /etc/wb-homa-adc.conf
+    cp -f /usr/share/wb-mqtt-adc/wb-homa-adc.conf.old /etc/wb-homa-adc.conf
+    rm -f /usr/share/wb-mqtt-adc/wb-homa-adc.conf.old
+    rmdir --ignore-fail-on-non-empty /usr/share/wb-mqtt-adc
+fi
+
 if [ "$1" = "purge" ]; then
     if [ -x /usr/bin/ucf ]; then
         ucf  --purge /etc/wb-mqtt-adc.conf
