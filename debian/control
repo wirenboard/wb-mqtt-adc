@@ -4,7 +4,6 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.2
 Build-Depends: debhelper (>= 10),
-               g++,
                libjsoncpp-dev,
                libmosquitto-dev,
                libmosquittopp-dev,
