@@ -30,12 +30,12 @@ TEST_F(TConfigTest, no_file)
 
 TEST_F(TConfigTest, bad_config)
 {
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad1.conf", "", shemaFile), TBadConfigError);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad2.conf", "", shemaFile), TBadConfigError);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad3.conf", "", shemaFile), TBadConfigError);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad4.conf", "", shemaFile), TBadConfigError);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad5.conf", "", shemaFile), TBadConfigError);
-    ASSERT_THROW(LoadConfig("", testRootDir + "/bad/bad1.conf", shemaFile), TBadConfigError);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad1.conf", "", shemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad2.conf", "", shemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad3.conf", "", shemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad4.conf", "", shemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad5.conf", "", shemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig("", testRootDir + "/bad/bad1.conf", shemaFile), std::runtime_error);
 }
 
 TEST_F(TConfigTest, optional_config)
