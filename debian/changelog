@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.2) unstable; urgency=medium
+
+  * alias to wb-homa-adc is added
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 08 Jul 2020 15:49:12 +0500
+
 wb-mqtt-adc (2.0.1) unstable; urgency=medium
 
   * rename from wb-homa-adc to wb-mqtt-adc
