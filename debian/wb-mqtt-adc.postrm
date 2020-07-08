@@ -22,6 +22,6 @@ fi
 
 if [ "$1" = "remove" ]; then
 	if [ -x "/usr/bin/deb-systemd-helper" ]; then
-		deb-systemd-helper purge wb-mqtt-w1.service >/dev/null
+		deb-systemd-helper purge wb-mqtt-adc.service >/dev/null
 	fi
 fi

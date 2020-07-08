@@ -38,6 +38,6 @@ if [ -f /etc/init.d/wb-configs ]; then
     /etc/init.d/wb-configs start
 fi
 
-deb-systemd-helper enable wb-mqtt-w1.service >/dev/null || true
+deb-systemd-helper enable wb-mqtt-adc.service >/dev/null || true
 
 #DEBHELPER#
