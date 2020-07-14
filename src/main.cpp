@@ -138,8 +138,12 @@ int main(int argc, char* argv[])
 {
     TMosquittoMqttConfig mqttConfig{};
     mqttConfig.Id = "wb-adc";
-    TPromise<void> initialized;
 
+    string customConfig;
+    ParseCommadLine(argc, argv, mqttConfig, customConfig);
+    PrintStartupInfo(mqttConfig, customConfig);
+
+    TPromise<void> initialized;
     SetThreadName("main");
     SignalHandling::Handle({SIGINT, SIGTERM});
     SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { SignalHandling::Stop(); });
@@ -161,10 +165,6 @@ int main(int argc, char* argv[])
         exit(2);
     });
     SignalHandling::Start();
-
-    string customConfig;
-    ParseCommadLine(argc, argv, mqttConfig, customConfig);
-    PrintStartupInfo(mqttConfig, customConfig);
 
     try {
         auto mqttDriver =
