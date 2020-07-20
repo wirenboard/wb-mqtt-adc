@@ -19,6 +19,7 @@ Depends: bc,
          libwbmqtt1 (>= 1.0.0),
          ucf,
          wb-utils (>= 2.0.4),
+         wb-configs (>= 1.82.2),
          ${misc:Depends},
          ${shlibs:Depends}
 Suggests: linux-image-wb2 (>= 4.9+wb20181221180922) | linux-image-wb6 (>= 4.9+wb20181221180922)

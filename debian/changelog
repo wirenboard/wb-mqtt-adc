@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.3) unstable; urgency=medium
+
+  * fix wrong configs links after device reset
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Thu, 20 Jul 2020 16:22:01 +0500
+
 wb-mqtt-adc (2.0.2) unstable; urgency=medium
 
   * alias to wb-homa-adc is added
