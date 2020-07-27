@@ -1,4 +1,5 @@
 #!/bin/sh
+rm -f /etc/wb-configs.d/12wb-homa-adc
 rm -f /etc/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json
 rm -f /etc/wb-mqtt-confed/schemas/wb-homa-adc.schema.json
 if [ -d /etc/wb-mqtt-confed ]; then
