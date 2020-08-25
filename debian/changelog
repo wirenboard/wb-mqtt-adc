@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.5) unstable; urgency=medium
+
+  * move system config to /var/lib/wb-mqtt-adc/conf.d folder
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 25 Aug 2020 16:41:01 +0500
+
 wb-mqtt-adc (2.0.4) unstable; urgency=medium
 
   * remove old config backuping instructions from wb-configs

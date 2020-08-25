@@ -67,7 +67,7 @@ clean :
 
 
 install: all
-	install -d $(DESTDIR)/etc/wb-mqtt-adc.conf.d
+	install -d $(DESTDIR)/var/lib/wb-mqtt-adc/conf.d
 
 	install -D -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
 	install -D -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-mqtt-adc/generate-system-config.sh

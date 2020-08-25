@@ -1,1 +1,1 @@
-	etc/wb-mqtt-adc.conf.d
+	var/lib/wb-mqtt-adc/conf.d
