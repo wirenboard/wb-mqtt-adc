@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
     PrintStartupInfo(mqttConfig, customConfig);
 
     TPromise<void> initialized;
-    SetThreadName("main");
+    SetThreadName("wb-mqtt-adc");
     SignalHandling::Handle({SIGINT, SIGTERM});
     SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { SignalHandling::Stop(); });
 
