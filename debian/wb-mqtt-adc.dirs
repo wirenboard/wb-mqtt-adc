@@ -1,7 +1,1 @@
-	etc
-	usr/share/wb-mqtt-confed/schemas
-	usr/bin
-	usr/lib/wb-mqtt-adc
-	usr/share/wb-mqtt-adc
-	etc/wb-configs.d
-	etc/wb-mqtt-adc.conf.d
+	var/lib/wb-mqtt-adc/conf.d

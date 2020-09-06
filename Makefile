@@ -9,7 +9,7 @@ ifeq ($(origin CXX),default)
 	CXX := $(CROSS_COMPILE)g++
 endif
 
-CXXFLAGS=-Wall -std=c++14 -Os -I. -I./thirdparty/valijson-0.2/include
+CXXFLAGS=-Wall -std=c++14 -Os -I.
 
 ADC_SOURCES= 						\
 			src/adc_driver.cpp		\
@@ -67,23 +67,17 @@ clean :
 
 
 install: all
-	install -d $(DESTDIR)/etc
-	install -d $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
-	install -d $(DESTDIR)/usr/bin
-	install -d $(DESTDIR)/usr/lib/wb-mqtt-adc
-	install -d $(DESTDIR)/usr/share/wb-mqtt-adc
-	install -d $(DESTDIR)/etc/wb-configs.d
-	install -d $(DESTDIR)/etc/wb-mqtt-adc.conf.d
+	install -d $(DESTDIR)/var/lib/wb-mqtt-adc/conf.d
 
-	install -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
-	install -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-mqtt-adc/generate-system-config.sh
+	install -D -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
+	install -D -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-mqtt-adc/generate-system-config.sh
 
-	install -m 0644  data/config.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
-	install -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
-	install -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
+	install -D -m 0644  data/config.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
+	install -D -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
+	install -D -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
 
-	install -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
+	install -D -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
 
-	install -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
+	install -D -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
 
-	install -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json
+	install -D -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json

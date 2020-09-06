@@ -2,73 +2,16 @@
 #include <algorithm>
 #include <fstream>
 #include <wblib/utils.h>
-
-#include <valijson/adapters/jsoncpp_adapter.hpp>
-#include <valijson/schema.hpp>
-#include <valijson/schema_parser.hpp>
-#include <valijson/validation_results.hpp>
-#include <valijson/validator.hpp>
+#include <wblib/json_utils.h>
 
 #include "file_utils.h"
 
 using namespace Json;
-using namespace valijson;
+using namespace WBMQTT::JSON;
 using namespace std;
 
 namespace
 {
-    bool Get(const Value& item, const string& key, string& value)
-    {
-        if (!item.isMember(key)) {
-            return false;
-        }
-        Value v = item[key];
-        if (!v.isString()) {
-            throw TBadConfigError(key + " is not a string value");
-        }
-        value = v.asString();
-        return true;
-    }
-
-    bool Get(const Value& item, const string& key, double& value)
-    {
-        if (!item.isMember(key)) {
-            return false;
-        }
-        Value v = item[key];
-        if (!v.isDouble()) {
-            throw TBadConfigError(key + " is not a float value");
-        }
-        value = v.asDouble();
-        return true;
-    }
-
-    bool Get(const Value& item, const string& key, uint32_t& value)
-    {
-        if (!item.isMember(key)) {
-            return false;
-        }
-        Value v = item[key];
-        if (!v.isUInt()) {
-            throw TBadConfigError(key + " is not an unsigned integer value");
-        }
-        value = v.asUInt();
-        return true;
-    }
-
-    bool Get(const Value& item, const string& key, bool& value)
-    {
-        if (!item.isMember(key)) {
-            return false;
-        }
-        Value v = item[key];
-        if (!v.isBool()) {
-            throw TBadConfigError(key + " is not a boolean value");
-        }
-        value = v.asBool();
-        return true;
-    }
-
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
@@ -108,59 +51,13 @@ namespace
         }
     }
 
-    void ValidateJson(const Value& root, const Value& schema_js)
-    {
-        adapters::JsonCppAdapter doc(root);
-        adapters::JsonCppAdapter schema_doc(schema_js);
-
-        SchemaParser parser(SchemaParser::kDraft4);
-        Schema       schema;
-        parser.populateSchema(schema_doc, schema);
-        Validator         validator(Validator::kStrongTypes);
-        ValidationResults results;
-        if (!validator.validate(schema, doc, &results)) {
-            stringstream err_oss;
-            err_oss << "Validation failed." << endl;
-            ValidationResults::Error error;
-            int                      error_num = 1;
-            while (results.popError(error)) {
-                err_oss << "Error " << error_num << endl << "  context: ";
-                for (const auto& er : error.context) {
-                    err_oss << er;
-                }
-                err_oss << endl << "  desc: " << error.description << endl;
-                ++error_num;
-            }
-            throw TBadConfigError(err_oss.str());
-        }
-    }
-
-    Value ParseJson(const string& fileName)
-    {
-        ifstream file;
-        OpenWithException(file, fileName);
-
-        Value  root;
-        Reader reader;
-
-        // Report failures and their locations in the document.
-        if (!reader.parse(file, root, false)) {
-            throw TBadConfigError("Failed to parse JSON " + fileName + ":" +
-                                  reader.getFormattedErrorMessages());
-        }
-        if (!root.isObject()) {
-            throw TBadConfigError("Bad JSON " + fileName + ": the root is not an object");
-        }
-        return root;
-    }
-
     TConfig loadFromJSON(const string& fileName, const Value& shema)
     {
         TConfig config;
 
-        Value configJson(ParseJson(fileName));
+        Value configJson(Parse(fileName));
 
-        ValidateJson(configJson, shema);
+        Validate(configJson, shema);
 
         Get(configJson, "device_name", config.DeviceName);
         Get(configJson, "debug", config.EnableDebugMessages);
@@ -187,7 +84,7 @@ TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
                    const string& shemaFile)
 {
-    Value shema             = ParseJson(shemaFile);
+    Value shema             = Parse(shemaFile);
     Value noDeviceNameShema = shema;
     removeDeviceNameRequirement(noDeviceNameShema);
 

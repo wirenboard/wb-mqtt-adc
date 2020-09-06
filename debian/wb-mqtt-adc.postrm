@@ -5,7 +5,7 @@ CONFFILE=/etc/wb-mqtt-adc.conf
 if [ "$1" = "purge" ]; then
     if [ -x /usr/bin/ucf ]; then
         ucf  --purge /etc/wb-mqtt-adc.conf
-        rm -f /etc/wb-mqtt-adc.conf.d/*
+        rm -f /var/lib/wb-mqtt-adc/conf.d/*
         rm -f /etc/wb-mqtt-adc.conf
         rm -f /etc/wb-homa-adc.conf
     fi
@@ -20,3 +20,8 @@ fi
 
 #DEBHELPER#
 
+if [ "$1" = "remove" ]; then
+	if [ -x "/usr/bin/deb-systemd-helper" ]; then
+		deb-systemd-helper purge wb-mqtt-adc.service >/dev/null
+	fi
+fi

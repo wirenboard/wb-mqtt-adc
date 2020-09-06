@@ -7,18 +7,19 @@ Build-Depends: debhelper (>= 10),
                libjsoncpp-dev,
                libmosquitto-dev,
                libmosquittopp-dev,
-               libwbmqtt1-dev (>= 0.2),
+               libwbmqtt1-dev (>= 1.0.0),
                pkg-config,
-               libwbmqtt1-test-utils (>= 0.2)
+               libwbmqtt1-test-utils (>= 1.0.0)
 
 Package: wb-mqtt-adc
 Architecture: any
 Depends: bc,
          jq (>= 1.4),
          libjsoncpp0 | libjsoncpp1,
-         libwbmqtt1 (>= 0.2),
+         libwbmqtt1 (>= 1.0.0),
          ucf,
          wb-utils (>= 2.0.4),
+         wb-configs (>= 1.82.2),
          ${misc:Depends},
          ${shlibs:Depends}
 Suggests: linux-image-wb2 (>= 4.9+wb20181221180922) | linux-image-wb6 (>= 4.9+wb20181221180922)
@@ -29,7 +30,7 @@ Description: Wiren Board Smart Home MQTT ADC driver (WB-specific) compatible wit
 
 
 Package: wb-homa-adc
-Depends: wb-mqtt-adc, ${misc:Depends}
+Depends: wb-mqtt-adc (= ${source:Version}), ${misc:Depends}
 Architecture: all
 Priority: extra
 Section: oldlibs
