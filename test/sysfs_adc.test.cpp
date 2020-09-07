@@ -6,7 +6,7 @@ class TSysfsTest : public testing::Test
 {
 protected:
     std::string testRootDir;
-    std::string shemaFile;
+    std::string schemaFile;
 
     void SetUp()
     {

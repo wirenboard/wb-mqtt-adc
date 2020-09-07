@@ -51,13 +51,13 @@ namespace
         }
     }
 
-    TConfig loadFromJSON(const string& fileName, const Value& shema)
+    TConfig loadFromJSON(const string& fileName, const Value& schema)
     {
         TConfig config;
 
         Value configJson(Parse(fileName));
 
-        Validate(configJson, shema);
+        Validate(configJson, schema);
 
         Get(configJson, "device_name", config.DeviceName);
         Get(configJson, "debug", config.EnableDebugMessages);
@@ -68,37 +68,38 @@ namespace
         return config;
     }
 
-    void removeDeviceNameRequirement(Value& shema)
+    void removeDeviceNameRequirement(Value& schema)
     {
         Value newArray = arrayValue;
-        for (auto& v : shema["required"]) {
+        for (auto& v : schema["required"]) {
             if (v.asString() != "device_name") {
                 newArray.append(v);
             }
         }
-        shema["required"] = newArray;
+        schema["required"] = newArray;
     }
 } // namespace
 
 TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
-                   const string& shemaFile)
+                   const string& systemConfigDir,
+                   const string& schemaFile)
 {
-    Value shema             = Parse(shemaFile);
-    Value noDeviceNameShema = shema;
-    removeDeviceNameRequirement(noDeviceNameShema);
+    Value schema             = Parse(schemaFile);
+    Value noDeviceNameSchema = schema;
+    removeDeviceNameRequirement(noDeviceNameSchema);
 
     if (!optionalConfigFile.empty())
-        return loadFromJSON(optionalConfigFile, shema);
+        return loadFromJSON(optionalConfigFile, schema);
     TConfig cfg;
     try {
-        IterateDir(mainConfigFile + ".d", ".conf", [&](const string& f) {
-            Append(loadFromJSON(f, noDeviceNameShema), cfg);
+        IterateDir(systemConfigDir, ".conf", [&](const string& f) {
+            Append(loadFromJSON(f, noDeviceNameSchema), cfg);
             return false;
         });
     } catch (const TNoDirError&) {
     }
-    Append(loadFromJSON(mainConfigFile, shema), cfg);
+    Append(loadFromJSON(mainConfigFile, schema), cfg);
     return cfg;
 }
 
