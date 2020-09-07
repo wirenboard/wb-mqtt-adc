@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.6) unstable; urgency=medium
+
+  * fix system config loading error from /var/lib/wb-mqtt-adc/conf.d
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 25 Sep 2020 09:18:01 +0500
+
 wb-mqtt-adc (2.0.5) unstable; urgency=medium
 
   * move system config to /var/lib/wb-mqtt-adc/conf.d folder
