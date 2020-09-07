@@ -184,6 +184,7 @@ int main(int argc, char* argv[])
 
         TConfig config = LoadConfig("/etc/wb-mqtt-adc.conf",
                                     customConfig,
+                                    "/var/lib/wb-mqtt-adc/conf.d",
                                     "/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json");
 
         if (config.EnableDebugMessages)

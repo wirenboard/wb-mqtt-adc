@@ -82,6 +82,7 @@ namespace
 
 TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
+                   const string& systemConfigDir,
                    const string& schemaFile)
 {
     Value schema             = Parse(schemaFile);
@@ -92,7 +93,7 @@ TConfig LoadConfig(const string& mainConfigFile,
         return loadFromJSON(optionalConfigFile, schema);
     TConfig cfg;
     try {
-        IterateDir(mainConfigFile + ".d", ".conf", [&](const string& f) {
+        IterateDir(systemConfigDir, ".conf", [&](const string& f) {
             Append(loadFromJSON(f, noDeviceNameSchema), cfg);
             return false;
         });
