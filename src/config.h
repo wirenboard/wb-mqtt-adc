@@ -39,8 +39,8 @@ public:
  * mainConfigFile + ".d" folder
  * @param optionalConfigFile - path and name of an optional config file. It will be loaded instead
  * of all other config files
- * @param shemaFile - path and name of a file with JSONShema for configs
+ * @param schemaFile - path and name of a file with JSONSchema for configs
  */
 TConfig LoadConfig(const std::string& mainConfigFile,
                    const std::string& optionalConfigFile,
-                   const std::string& shemaFile);
+                   const std::string& schemaFile);

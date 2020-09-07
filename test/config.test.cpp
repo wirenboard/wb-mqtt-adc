@@ -6,7 +6,7 @@ class TConfigTest : public testing::Test
 {
 protected:
     std::string testRootDir;
-    std::string shemaFile;
+    std::string schemaFile;
 
     void SetUp()
     {
@@ -17,7 +17,7 @@ protected:
         }
         testRootDir += "config_test_data";
 
-        shemaFile = testRootDir + "/../../data/wb-mqtt-adc.schema.json";
+        schemaFile = testRootDir + "/../../data/wb-mqtt-adc.schema.json";
     }
 };
 
@@ -30,19 +30,19 @@ TEST_F(TConfigTest, no_file)
 
 TEST_F(TConfigTest, bad_config)
 {
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad1.conf", "", shemaFile), std::runtime_error);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad2.conf", "", shemaFile), std::runtime_error);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad3.conf", "", shemaFile), std::runtime_error);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad4.conf", "", shemaFile), std::runtime_error);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad5.conf", "", shemaFile), std::runtime_error);
-    ASSERT_THROW(LoadConfig("", testRootDir + "/bad/bad1.conf", shemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad1.conf", "", schemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad2.conf", "", schemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad3.conf", "", schemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad4.conf", "", schemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad5.conf", "", schemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig("", testRootDir + "/bad/bad1.conf", schemaFile), std::runtime_error);
 }
 
 TEST_F(TConfigTest, optional_config)
 {
     TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf",
                              testRootDir + "/good1/optional.conf",
-                             shemaFile);
+                             schemaFile);
     ASSERT_EQ(cfg.DeviceName, "Test");
     ASSERT_EQ(cfg.EnableDebugMessages, true);
     ASSERT_EQ(cfg.Channels.size(), 1);
@@ -59,7 +59,7 @@ TEST_F(TConfigTest, optional_config)
 
 TEST_F(TConfigTest, empty_main_config)
 {
-    TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf", "", shemaFile);
+    TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf", "", schemaFile);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
     ASSERT_EQ(cfg.Channels.size(), 1);
@@ -75,7 +75,7 @@ TEST_F(TConfigTest, empty_main_config)
 
 TEST_F(TConfigTest, full_main_config)
 {
-    TConfig cfg = LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf", "", shemaFile);
+    TConfig cfg = LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf", "", schemaFile);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
     ASSERT_EQ(cfg.Channels.size(), 1);
