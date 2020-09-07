@@ -78,7 +78,7 @@ TEST_F(TConfigTest, full_main_config)
 {
     TConfig cfg = LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf",
                              "",
-                             testRootDir + "/wb-mqtt-adc.conf.d",
+                             testRootDir + "/good2/wb-mqtt-adc.conf.d",
                              schemaFile);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
