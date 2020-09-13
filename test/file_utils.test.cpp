@@ -24,12 +24,6 @@ TEST_F(TFileUtilsTest, no_dir)
     ASSERT_THROW(IterateDir(testRootDir + "/nothing", "test", fn), TNoDirError);
 }
 
-TEST_F(TFileUtilsTest, empty_dir)
-{
-    auto fn = [](const std::string& f) { return true; };
-    ASSERT_EQ(IterateDir(testRootDir + "/test2", "test", fn), std::string());
-}
-
 TEST_F(TFileUtilsTest, no_match)
 {
     auto fn = [](const std::string& f) { return true; };
