@@ -1,3 +1,45 @@
+wb-mqtt-adc (2.0.6) unstable; urgency=medium
+
+  * fix system config loading error from /var/lib/wb-mqtt-adc/conf.d
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 25 Sep 2020 09:18:01 +0500
+
+wb-mqtt-adc (2.0.5) unstable; urgency=medium
+
+  * move system config to /var/lib/wb-mqtt-adc/conf.d folder
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 25 Aug 2020 16:41:01 +0500
+
+wb-mqtt-adc (2.0.4) unstable; urgency=medium
+
+  * remove old config backuping instructions from wb-configs
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 27 Jul 2020 08:56:01 +0500
+
+wb-mqtt-adc (2.0.3) unstable; urgency=medium
+
+  * fix wrong configs links after device reset
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Thu, 20 Jul 2020 16:22:01 +0500
+
+wb-mqtt-adc (2.0.2) unstable; urgency=medium
+
+  * alias to wb-homa-adc is added
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 08 Jul 2020 15:49:12 +0500
+
+wb-mqtt-adc (2.0.1) unstable; urgency=medium
+
+  * rename from wb-homa-adc to wb-mqtt-adc
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 01 Jul 2020 12:14:12 +0500
+
+wb-homa-adc (2.0.0) unstable; urgency=medium
+
+  * port to libwbmqtt1
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 09 Jun 2020 14:06:40 +0300
+
 wb-homa-adc (1.14.6) stable; urgency=medium
 
   * fix analog-inputs node autodetect on create_rootfs stage

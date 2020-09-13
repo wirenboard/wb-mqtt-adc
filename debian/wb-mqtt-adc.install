@@ -1,0 +1,8 @@
+usr/bin/wb-mqtt-adc
+usr/lib/wb-mqtt-adc/generate-system-config.sh
+usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
+usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
+usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
+usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
+etc/wb-configs.d/12wb-mqtt-adc
+usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json

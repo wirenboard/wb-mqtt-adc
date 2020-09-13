@@ -1,80 +1,83 @@
-ifeq ($(DEB_TARGET_ARCH),armel)
-CROSS_COMPILE=arm-linux-gnueabi-
+ifneq ($(DEB_HOST_MULTIARCH),)
+	CROSS_COMPILE ?= $(DEB_HOST_MULTIARCH)-
 endif
 
-CXX=$(CROSS_COMPILE)g++
-CXX_PATH := $(shell which $(CROSS_COMPILE)g++-4.7)
-
-CC=$(CROSS_COMPILE)gcc
-CC_PATH := $(shell which $(CROSS_COMPILE)gcc-4.7)
-
-ifneq ($(CXX_PATH),)
-	CXX=$(CROSS_COMPILE)g++-4.7
+ifeq ($(origin CC),default)
+	CC := $(CROSS_COMPILE)gcc
+endif
+ifeq ($(origin CXX),default)
+	CXX := $(CROSS_COMPILE)g++
 endif
 
-ifneq ($(CC_PATH),)
-	CC=$(CROSS_COMPILE)gcc-4.7
-endif
+CXXFLAGS=-Wall -std=c++14 -Os -I.
 
-#CFLAGS=-Wall -ggdb -std=c++0x -O0 -I.
-DEBUG_CFLAGS=-Wall -ggdb -std=c++0x -O0 -I.
-NORMAL_CFLAGS=-Wall -std=c++11 -Os -I.
-CFLAGS=$(if $(or $(DEBUG),), $(DEBUG_CFLAGS),$(NORMAL_CFLAGS))
+ADC_SOURCES= 						\
+			src/adc_driver.cpp		\
+			src/config.cpp			\
+			src/sysfs_adc.cpp		\
+			src/moving_average.cpp	\
+			src/file_utils.cpp		\
 
-LDFLAGS= -lmosquittopp -lmosquitto -ljsoncpp -lwbmqtt
+ADC_OBJECTS=$(ADC_SOURCES:.cpp=.o)
+ADC_BIN=wb-mqtt-adc
+ADC_LIBS= -lwbmqtt1 -lpthread -ljsoncpp 
 
-ADC_BIN=wb-homa-adc
+ADC_TEST_SOURCES= 							\
+			$(TEST_DIR)/test_main.cpp		\
+			$(TEST_DIR)/moving_average.test.cpp	\
+			$(TEST_DIR)/file_utils.test.cpp	\
+			$(TEST_DIR)/config.test.cpp	\
+			$(TEST_DIR)/sysfs_adc.test.cpp	\
 
+TEST_DIR=test
+export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
 
-.PHONY: all clean
+ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:.cpp=.o)
+TEST_BIN=wb-mqtt-adc-test
+TEST_LIBS=-lgtest
+
 
 all : $(ADC_BIN)
 
-
 # ADC
-ADC_H=sysfs_adc.h adc_handler.h lradc_isrc.h sysfs_prefix.h
+%.o : %.cpp
+	${CXX} -c $< -o $@ ${CXXFLAGS}
 
-main.o : main.cpp $(ADC_H)
-	${CXX} -c $< -o $@ ${CFLAGS}
+$(ADC_BIN) : src/main.o $(ADC_OBJECTS)
+	${CXX} $^ ${ADC_LIBS} -o $@
 
-adc_handler.o : adc_handler.cpp $(ADC_H)
-	${CXX} -c $< -o $@ ${CFLAGS}
-sysfs_adc.o : sysfs_adc.cpp $(ADC_H)
-	${CXX} -c $< -o $@ ${CFLAGS}
-imx233.o : imx233.c
-	${CC} -c $< -o $@
-lradc_isrc.o : lradc_isrc.cpp
-	${CXX} -c $< -o $@ ${CFLAGS}
+$(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
+	${CXX} $^ $(ADC_LIBS) $(TEST_LIBS) -o $@
 
-$(ADC_BIN) : main.o sysfs_adc.o adc_handler.o imx233.o lradc_isrc.o
-	${CXX} $^ ${LDFLAGS} -o $@
+test: $(TEST_DIR)/$(TEST_BIN)
+	rm -f $(TEST_DIR)/*.dat.out
+	if [ "$(shell arch)" != "armv7l" ] && [ "$(CROSS_COMPILE)" = "" ] || [ "$(CROSS_COMPILE)" = "x86_64-linux-gnu-" ]; then \
+		valgrind --error-exitcode=180 -q $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
+		if [ $$? = 180 ]; then \
+			echo "*** VALGRIND DETECTED ERRORS ***" 1>& 2; \
+			exit 1; \
+		else $(TEST_DIR)/abt.sh show; exit 1; fi; \
+    else \
+        $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || { $(TEST_DIR)/abt.sh show; exit 1; } \
+	fi
 
 clean :
-	-rm -f *.o $(ADC_BIN)
-
+	-rm -f src/*.o $(ADC_BIN)
+	-rm -f $(TEST_DIR)/*.o $(TEST_DIR)/$(TEST_BIN)
 
 
 install: all
-	install -d $(DESTDIR)
-	install -d $(DESTDIR)/etc
-	install -d $(DESTDIR)/usr/share/wb-mqtt-confed
-	install -d $(DESTDIR)/usr/share/wb-mqtt-confed/schemas
-	install -d $(DESTDIR)/usr/bin
-	install -d $(DESTDIR)/usr/lib
-	install -d $(DESTDIR)/usr/share/wb-homa-adc
-	mkdir -p $(DESTDIR)/etc/wb-configs.d
+	install -d $(DESTDIR)/var/lib/wb-mqtt-adc/conf.d
 
-	install -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
-	install -m 0644  config.json $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.default
-	install -m 0644  config.json.devicetree $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.devicetree
-	install -m 0644  config.json.wb4 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb4
-	install -m 0644  config.json.wb5 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb5
-	install -m 0644  config.json.wb55 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb55
-	install -m 0644  config.json.wb61 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb61
-	install -m 0644  config.json.wb2.8 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb2.8
-	install -m 0644  config.json.wb3.5 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.wb3.5
-	install -m 0644  config.json.netmon1 $(DESTDIR)/usr/share/wb-homa-adc/wb-homa-adc.conf.netmon1
+	install -D -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
+	install -D -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-mqtt-adc/generate-system-config.sh
 
-	install -m 0644  wb-homa-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-homa-adc
+	install -D -m 0644  data/config.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
+	install -D -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
+	install -D -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
 
-	install -m 0644  wb-homa-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-homa-adc.schema.json
+	install -D -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
+
+	install -D -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
+
+	install -D -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json

@@ -1,0 +1,14 @@
+#!/bin/sh
+rm -f /etc/wb-configs.d/12wb-homa-adc
+rm -f /etc/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json
+rm -f /etc/wb-mqtt-confed/schemas/wb-homa-adc.schema.json
+rm -f /etc/wb-mqtt-adc.conf.d/*
+rm -f /etc/wb-homa-adc.conf.default
+if [ -d /etc/wb-mqtt-confed ]; then
+   if [ -d /etc/wb-mqtt-confed/schemas ]; then
+      rmdir --ignore-fail-on-non-empty /etc/wb-mqtt-confed/schemas
+   fi
+   rmdir --ignore-fail-on-non-empty /etc/wb-mqtt-confed
+fi
+
+#DEBHELPER#

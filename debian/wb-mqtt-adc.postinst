@@ -1,0 +1,43 @@
+#!/bin/bash
+. /usr/lib/wb-utils/wb_env.sh
+wb_source "of"
+
+CONFFILE=/etc/wb-mqtt-adc.conf
+
+if of_node_exists /wirenboard/analog-inputs ; then
+    BOARD_CONF="devicetree"
+else
+    case "$WB_VERSION" in
+        "61" )
+            BOARD_CONF="wb61"
+        ;;
+
+        "55" | "58" )
+            BOARD_CONF="wb55"
+        ;;
+
+        * )
+            BOARD_CONF="default"
+        ;;
+    esac
+fi
+
+if [ -f /etc/wb-homa-adc.conf ]; then
+    ucf --debconf-ok /etc/wb-homa-adc.conf $CONFFILE
+    cp -f /etc/wb-homa-adc.conf /usr/share/wb-mqtt-adc/wb-homa-adc.conf.old
+    rm -f /etc/wb-homa-adc.conf
+else
+    ucf --debconf-ok /usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.$BOARD_CONF $CONFFILE
+fi
+
+ln -s $CONFFILE /etc/wb-homa-adc.conf
+
+if [ -f /etc/init.d/wb-configs ]; then
+    # fix symlinks
+    /etc/init.d/wb-configs stop
+    /etc/init.d/wb-configs start
+fi
+
+deb-systemd-helper enable wb-mqtt-adc.service >/dev/null || true
+
+#DEBHELPER#

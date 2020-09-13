@@ -1,0 +1,16 @@
+[Unit]
+Description=MQTT Driver for ADC
+Wants=wb-hwconf-manager.service wb-modules.service
+After=network.target wb-hwconf-manager.service wb-modules.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/wb-mqtt-adc
+ExecStartPre=/usr/lib/wb-mqtt-adc/generate-system-config.sh
+
+[Install]
+WantedBy=multi-user.target
+Alias=wb-homa-adc.service
