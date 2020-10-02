@@ -30,7 +30,7 @@ public:
     /**
      * @brief Get average value. The value is valid only if IsReady() == true.
      */
-    uint32_t GetAverage() const;
+    int32_t GetAverage() const;
 
     /**
      * @brief Check if average value is valid. The value is valid after processing of at least
