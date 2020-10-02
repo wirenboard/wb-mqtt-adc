@@ -41,8 +41,8 @@ void TChannelReader::Measure()
         return;
     }
 
-    uint32_t value = AverageCounter.GetAverage();
-    if (value > MaxADCValue) {
+    int32_t value = AverageCounter.GetAverage();
+    if (value >= 0 && ((uint32_t)value) > MaxADCValue) {
         throw std::runtime_error(Cfg.ChannelNumber + " average (" + std::to_string(value) + ") is bigger than maximum (" + std::to_string(MaxADCValue) + ")");
     }
 

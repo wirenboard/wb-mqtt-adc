@@ -23,7 +23,7 @@ void TMovingAverageCalculator::AddValue(int32_t value)
     }
 }
 
-uint32_t TMovingAverageCalculator::GetAverage() const
+int32_t TMovingAverageCalculator::GetAverage() const
 {
     return std::round(Sum / (double)LastValues.size());
 }
