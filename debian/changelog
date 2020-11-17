@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.8) stable; urgency=medium
+
+  * reading of big voltages is fixed
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Tue, 17 Nov 2020 09:06:00 +0500
+
 wb-mqtt-adc (2.0.7) unstable; urgency=medium
 
   * reading of negative values is fixed
