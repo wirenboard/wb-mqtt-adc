@@ -6,7 +6,8 @@
 
 #include "moving_average.h"
 
-#define ADC_DEFAULT_MAX_VOLTAGE 3100 // voltage in mV
+#define ADC_DEFAULT_MAX_SCALED_VOLTAGE 3100 // voltage in mV
+#define MAX_ADC_VALUE                  4094 // Maximum value that can be read from ADC
 
 /**
  * @brief Iterate over /sys/bus/iio/devices and find folder symlinked to matchIIO value. Throws
@@ -45,7 +46,7 @@ public:
         uint32_t ReadingsNumber = 10;
 
         //! Maximum result after multiplying readed value from ADC to Scale
-        double MaxScaledVoltage = ADC_DEFAULT_MAX_VOLTAGE;
+        double MaxScaledVoltage = ADC_DEFAULT_MAX_SCALED_VOLTAGE;
 
         /*! The ADC scale to use. The closest supported scale will be used.
             It affects the accuracy and the measurement range.
