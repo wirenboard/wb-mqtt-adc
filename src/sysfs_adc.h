@@ -87,7 +87,7 @@ public:
     std::string GetValue() const;
 
     //! Read and convert value from ADC
-    void Measure();
+    void Measure(const std::string& debugMessagePrefix = std::string());
 
 private:
     //! Settings for the channel
