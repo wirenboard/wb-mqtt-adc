@@ -27,28 +27,28 @@ std::string TChannelReader::GetValue() const
     return MeasuredV;
 }
 
-void TChannelReader::Measure()
+void TChannelReader::Measure(const std::string& debugMessagePrefix)
 {
     for (uint32_t i = 0; i < Cfg.ReadingsNumber; ++i) {
         int32_t adcMeasurement = ReadFromADC();
-        DebugLogger.Log() << Cfg.ChannelNumber << " = " << adcMeasurement;
+        DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " = " << adcMeasurement;
         AverageCounter.AddValue(adcMeasurement);
         std::this_thread::sleep_for(std::chrono::milliseconds(DelayBetweenMeasurementsmS));
     }
 
     if (!AverageCounter.IsReady()) {
-        DebugLogger.Log() << Cfg.ChannelNumber << " average is not ready";
+        DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " average is not ready";
         return;
     }
 
     int32_t value = AverageCounter.GetAverage();
     if (value >= 0 && ((uint32_t)value) > MaxADCValue) {
-        throw std::runtime_error(Cfg.ChannelNumber + " average (" + std::to_string(value) + ") is bigger than maximum (" + std::to_string(MaxADCValue) + ")");
+        throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " average (" + std::to_string(value) + ") is bigger than maximum (" + std::to_string(MaxADCValue) + ")");
     }
 
     double v = IIOScale * value;
     if (v > Cfg.MaxScaledVoltage) {
-        throw std::runtime_error(Cfg.ChannelNumber + " scaled value (" + std::to_string(v) + ") is bigger than maximum (" +
+        throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " scaled value (" + std::to_string(v) + ") is bigger than maximum (" +
                                  std::to_string(Cfg.MaxScaledVoltage) + ")");
     }
 

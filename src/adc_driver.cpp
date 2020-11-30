@@ -36,7 +36,7 @@ namespace
         while (*active) {
             for (auto& channel : *channels) {
                 try {
-                    channel.Reader.Measure();
+                    channel.Reader.Measure(channel.MqttId + " ");
                     channel.Error = false;
                 } catch (const std::exception& er) {
                     channel.Error = true;
