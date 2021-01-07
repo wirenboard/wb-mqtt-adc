@@ -30,7 +30,7 @@ Description: Wiren Board Smart Home MQTT ADC driver (WB-specific) compatible wit
 
 
 Package: wb-homa-adc
-Depends: wb-mqtt-adc (= ${source:Version}), ${misc:Depends}
+Depends: wb-mqtt-adc (= ${binary:Version}), ${misc:Depends}
 Architecture: any
 Priority: extra
 Section: oldlibs
