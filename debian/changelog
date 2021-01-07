@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.7) stable; urgency=medium
+
+  * make transition package arch-dependent
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 07 Jan 2021 13:39:05 +0300
+
 wb-mqtt-adc (2.0.6) unstable; urgency=medium
 
   * fix system config loading error from /var/lib/wb-mqtt-adc/conf.d
