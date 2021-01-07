@@ -48,3 +48,16 @@ TEST(TMovingAverageTest, rounding)
     c.AddValue(3);
     EXPECT_EQ(c.GetAverage(), 8);
 }
+
+TEST(TMovingAverageTest, negative)
+{
+    TMovingAverageCalculator c(3);
+    c.AddValue(-10);
+    c.AddValue(-10);
+    c.AddValue(-2);
+    EXPECT_EQ(c.GetAverage(), -7);
+    c.AddValue(-10);
+    c.AddValue(-10);
+    c.AddValue(-3);
+    EXPECT_EQ(c.GetAverage(), -8);
+}

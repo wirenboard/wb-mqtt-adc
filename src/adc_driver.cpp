@@ -36,7 +36,7 @@ namespace
         while (*active) {
             for (auto& channel : *channels) {
                 try {
-                    channel.Reader.Measure();
+                    channel.Reader.Measure(channel.MqttId + " ");
                     channel.Error = false;
                 } catch (const std::exception& er) {
                     channel.Error = true;
@@ -100,7 +100,7 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
             readers->push_back(TChannelDesc{channel.Id,
                                             false,
                                             {MXS_LRADC_DEFAULT_SCALE_FACTOR,
-                                             ADC_DEFAULT_MAX_VOLTAGE,
+                                             MAX_ADC_VALUE,
                                              channel.ReaderCfg,
                                              10,
                                              DebugLogger,
