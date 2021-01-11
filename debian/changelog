@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.10) stable; urgency=medium
+
+  * make transition package arch-dependent
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 07 Jan 2021 13:39:05 +0300
+
 wb-mqtt-adc (2.0.9) stable; urgency=medium
 
   * MQTT topic name is added to some debug messages
