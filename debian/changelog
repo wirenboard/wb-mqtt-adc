@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.0.11) stable; urgency=medium
+
+  * Default config file is fixed
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Fri, 28 May 2021 09:13:00 +0500
+
 wb-mqtt-adc (2.0.10) stable; urgency=medium
 
   * make transition package arch-dependent

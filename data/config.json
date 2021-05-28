@@ -1,5 +1,6 @@
 // Configuration options
 {
     "device_name" : "ADCs",
-    "debug" : false
+    "debug" : false,
+    "iio_channels" : []
 }
