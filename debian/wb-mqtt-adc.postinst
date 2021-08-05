@@ -35,11 +35,7 @@ fi
 
 ln -s $CONFFILE /etc/wb-homa-adc.conf
 
-if [ -f /etc/init.d/wb-configs ]; then
-    # fix symlinks
-    invoke-rc.d wb-configs stop
-    invoke-rc.d wb-configs start
-fi
+deb-systemd-invoke restart wb-configs
 
 deb-systemd-helper enable wb-mqtt-adc.service >/dev/null || true
 
