@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 if [ -e /etc/wb-homa-adc.conf.d ]; then
     rm -r -f /etc/wb-homa-adc.conf.d
 fi
