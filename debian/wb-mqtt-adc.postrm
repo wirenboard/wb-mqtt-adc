@@ -1,14 +1,14 @@
 #!/bin/bash
 
+set -e
+
 CONFFILE=/etc/wb-mqtt-adc.conf
 
 if [ "$1" = "purge" ]; then
-    if [ -x /usr/bin/ucf ]; then
-        ucf  --purge /etc/wb-mqtt-adc.conf
-        rm -f /var/lib/wb-mqtt-adc/conf.d/*
-        rm -f /etc/wb-mqtt-adc.conf
-        rm -f /etc/wb-homa-adc.conf
-    fi
+    ucf  --purge /etc/wb-mqtt-adc.conf
+    rm -f /var/lib/wb-mqtt-adc/conf.d/*
+    rm -f /etc/wb-mqtt-adc.conf
+    rm -f /etc/wb-homa-adc.conf
 fi
 
 if [ -f /usr/share/wb-mqtt-adc/wb-homa-adc.conf.old ]; then

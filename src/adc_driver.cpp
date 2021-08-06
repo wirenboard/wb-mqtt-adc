@@ -23,15 +23,39 @@ namespace
         std::string    MqttId;
         bool           Error;
         TChannelReader Reader;
+
+        //! Flag indicating what we should create MQTT control for channel
+        bool           ShouldCreateControl = true;
     };
+
+    WBMQTT::TControlArgs MakeControlArgs(const std::string& id, size_t order, const std::string& error)
+    {
+        return WBMQTT::TControlArgs{}.SetId(id)
+                                     .SetType("voltage")
+                                     .SetError(error)
+                                     .SetOrder(order)
+                                     .SetReadonly(true);
+    }
+
+    void CreateControl(WBMQTT::PDriverTx&   tx,
+                       WBMQTT::TLocalDevice& device,
+                       size_t                order,
+                       const std::string&    id,
+                       const std::string&    value,
+                       const std::string&    error)
+    {
+        device.CreateControl(tx, MakeControlArgs(id, order, error).SetRawValue(value)).Wait();
+    }
 
     void AdcWorker(bool*                                      active,
                    WBMQTT::PLocalDevice                       device,
                    WBMQTT::PDeviceDriver                      mqttDriver,
                    std::shared_ptr<std::vector<TChannelDesc>> channels,
+                   size_t                                     controlOrder,
                    WBMQTT::TLogger&                           infoLogger,
                    WBMQTT::TLogger&                           errorLogger)
     {
+        bool shouldRemoveUnusedControls = true;
         infoLogger.Log() << "ADC worker thread is started";
         while (*active) {
             for (auto& channel : *channels) {
@@ -46,14 +70,25 @@ namespace
 
             auto tx = mqttDriver->BeginTx();
             for (auto& channel : *channels) {
-                WBMQTT::PControl control = device->GetControl(channel.MqttId);
-                if (channel.Error) {
-                    auto future = control->SetError(tx, "r");
-                    future.Wait();
+                if (channel.ShouldCreateControl) {
+                    CreateControl(tx, *device, controlOrder, channel.MqttId, channel.Reader.GetValue(), channel.Error ? "r" : "");
+                    infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created";
+                    ++controlOrder;
+                    channel.ShouldCreateControl = false;
                 } else {
-                    auto future = control->SetRawValue(tx, channel.Reader.GetValue());
-                    future.Wait();
+                    WBMQTT::PControl control = device->GetControl(channel.MqttId);
+                    if (channel.Error) {
+                        auto future = control->SetError(tx, "r");
+                        future.Wait();
+                    } else {
+                        auto future = control->SetRawValue(tx, channel.Reader.GetValue());
+                        future.Wait();
+                    }
                 }
+            }
+            if (shouldRemoveUnusedControls) {
+                device->RemoveUnusedControls(tx);
+                shouldRemoveUnusedControls = false;
             }
         }
         infoLogger.Log() << "ADC worker thread is stopped";
@@ -77,26 +112,15 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
                                   .SetDoLoadPrevious(false))
                  .GetValue();
 
-    size_t n = 0;
-
+    size_t controlOrder = 0;
     std::shared_ptr<std::vector<TChannelDesc>> readers(new std::vector<TChannelDesc>());
     for (const auto& channel : config.Channels) {
         std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
         if (sysfsIIODir.empty()) {
             ErrorLogger.Log() << "Can't fild matching sysfs IIO: " + channel.MatchIIO;
-        }
-        auto futureControl = Device->CreateControl(tx,
-                                                   WBMQTT::TControlArgs{}
-                                                       .SetId(channel.Id)
-                                                       .SetType("voltage")
-                                                       .SetOrder(n)
-                                                       .SetReadonly(true)
-                                                       .SetError(sysfsIIODir.empty() ? "r" : ""));
-        ++n;
-        futureControl.Wait();
-
-        if (!sysfsIIODir.empty()) {
-            // FIXME: delay ???
+            Device->CreateControl(tx, MakeControlArgs(channel.Id, controlOrder, "r")).Wait();
+            ++controlOrder;
+        } else {
             readers->push_back(TChannelDesc{channel.Id,
                                             false,
                                             {MXS_LRADC_DEFAULT_SCALE_FACTOR,
@@ -106,16 +130,13 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
                                              DebugLogger,
                                              InfoLogger,
                                              sysfsIIODir}});
-            infoLogger.Log() << "Channel " << channel.Id << " MQTT controls are created";
         }
     }
-
-    Device->RemoveUnusedControls(tx);
 
     Active = true;
     Worker = WBMQTT::MakeThread(
         "ADC worker",
-        {[=] { AdcWorker(&Active, Device, MqttDriver, readers, InfoLogger, ErrorLogger); }});
+        {[=] { AdcWorker(&Active, Device, MqttDriver, readers, controlOrder, InfoLogger, ErrorLogger); }});
 }
 
 void TADCDriver::Stop()
