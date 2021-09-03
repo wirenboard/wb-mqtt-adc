@@ -20,9 +20,10 @@ namespace
 
     struct TChannelDesc
     {
-        std::string    MqttId;
-        bool           Error;
-        TChannelReader Reader;
+        std::string               MqttId;
+        bool                      Error;
+        TChannelReader::Timestamp PublishedTimestamp;
+        TChannelReader            Reader;
 
         //! Flag indicating what we should create MQTT control for channel
         bool           ShouldCreateControl = true;
@@ -58,9 +59,11 @@ namespace
         bool shouldRemoveUnusedControls = true;
         infoLogger.Log() << "ADC worker thread is started";
         while (*active) {
+            auto now = std::chrono::steady_clock::now();
+
             for (auto& channel : *channels) {
                 try {
-                    channel.Reader.Measure(channel.MqttId + " ");
+                    channel.Reader.Poll(now, channel.MqttId + " ");
                     channel.Error = false;
                 } catch (const std::exception& er) {
                     channel.Error = true;
@@ -68,28 +71,47 @@ namespace
                 }
             }
 
-            auto tx = mqttDriver->BeginTx();
-            for (auto& channel : *channels) {
-                if (channel.ShouldCreateControl) {
-                    CreateControl(tx, *device, controlOrder, channel.MqttId, channel.Reader.GetValue(), channel.Error ? "r" : "");
-                    infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created";
-                    ++controlOrder;
-                    channel.ShouldCreateControl = false;
-                } else {
-                    WBMQTT::PControl control = device->GetControl(channel.MqttId);
-                    if (channel.Error) {
-                        auto future = control->SetError(tx, "r");
-                        future.Wait();
-                    } else {
-                        auto future = control->SetRawValue(tx, channel.Reader.GetValue());
-                        future.Wait();
+            {
+                auto tx = mqttDriver->BeginTx();
+                for (auto& channel : *channels) {
+                    if (channel.ShouldCreateControl) {
+                        CreateControl(tx, *device, controlOrder, channel.MqttId, channel.Reader.GetValue(), channel.Error ? "r" : "");
+                        infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created, poll interval " <<
+                            channel.Reader.GetPollInterval().count() << " ms";
+                        ++controlOrder;
+                        channel.ShouldCreateControl = false;
+                    } else if (channel.Reader.GetLastMeasureTimestamp() != channel.PublishedTimestamp) {
+                        channel.PublishedTimestamp = channel.Reader.GetLastMeasureTimestamp();
+
+                        // update channel value only if it is fresh
+                        WBMQTT::PControl control = device->GetControl(channel.MqttId);
+                        if (channel.Error) {
+                            auto future = control->SetError(tx, "r");
+                            future.Wait();
+                        } else {
+                            auto future = control->SetRawValue(tx, channel.Reader.GetValue());
+                            future.Wait();
+                        }
                     }
                 }
+
+                if (shouldRemoveUnusedControls) {
+                    device->RemoveUnusedControls(tx);
+                    shouldRemoveUnusedControls = false;
+                }
             }
-            if (shouldRemoveUnusedControls) {
-                device->RemoveUnusedControls(tx);
-                shouldRemoveUnusedControls = false;
+
+            // sleep until next scheduled poll
+            auto nextPoll = (*channels)[0].Reader.GetNextPollTimestamp();
+            for (auto& channel: *channels) {
+                const auto channelNextPoll = channel.Reader.GetNextPollTimestamp();
+                if (channelNextPoll < nextPoll) {
+                    nextPoll = channelNextPoll;
+                }
             }
+
+            // use new steady_clock value here for precision
+            std::this_thread::sleep_until(nextPoll);
         }
         infoLogger.Log() << "ADC worker thread is stopped";
     }
@@ -123,10 +145,10 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
         } else {
             readers->push_back(TChannelDesc{channel.Id,
                                             false,
+                                            TChannelReader::Timestamp::min(),
                                             {MXS_LRADC_DEFAULT_SCALE_FACTOR,
                                              MAX_ADC_VALUE,
                                              channel.ReaderCfg,
-                                             10,
                                              DebugLogger,
                                              InfoLogger,
                                              sysfsIIODir}});

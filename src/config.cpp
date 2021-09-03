@@ -1,5 +1,6 @@
 #include "config.h"
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <wblib/utils.h>
 #include <wblib/json_utils.h>
@@ -15,15 +16,31 @@ namespace
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
+        uint32_t poll_interval_ms = 0, delay_between_measurements_ms = 0;
+
         Get(item, "id", channel.Id);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
         if (Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage))
             channel.ReaderCfg.MaxScaledVoltage *= 1000;
         Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
-        Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
         Get(item, "scale", channel.ReaderCfg.DesiredScale);
+        Get(item, "poll_interval", poll_interval_ms);
+        Get(item, "delay_between_measurements", delay_between_measurements_ms);
         Get(item, "match_iio", channel.MatchIIO);
+
+        if (delay_between_measurements_ms > 0) {
+            channel.ReaderCfg.DelayBetweenMeasurements =
+                std::chrono::milliseconds(delay_between_measurements_ms);
+        }
+
+        if (poll_interval_ms > 0) {
+            channel.ReaderCfg.PollInterval = std::chrono::milliseconds(poll_interval_ms);
+        }
+
+        if (channel.ReaderCfg.AveragingWindow < 1) {
+            throw TBadConfigError(channel.Id + ": averaging_window must be >= 1");
+        }
 
         Value v = item["channel_number"];
         if (v.isInt()) {
@@ -47,6 +64,25 @@ namespace
                 dst.Channels.push_back(v);
             } else {
                 *el = v;
+            }
+        }
+    }
+
+    void MaybeFixDelayBetweenMeasurements(TConfig& cfg, WBMQTT::TLogger* log)
+    {
+        // if delay between measurements is set so that averaging process will not
+        // fit in poll interval, try to distribute these measurements evenly in poll interval
+        for (auto& ch: cfg.Channels) {
+            auto calcMeasureDelay = ch.ReaderCfg.DelayBetweenMeasurements *
+                ch.ReaderCfg.AveragingWindow;
+            if (calcMeasureDelay > ch.ReaderCfg.PollInterval) {
+                if (log) {
+                    log->Log() << ch.Id << ": averaging delay doesn't fit in poll_interval, "
+                        << "adjusting delay_between_measurements";
+                }
+
+                ch.ReaderCfg.DelayBetweenMeasurements = ch.ReaderCfg.PollInterval /
+                    ch.ReaderCfg.AveragingWindow;
             }
         }
     }
@@ -83,7 +119,8 @@ namespace
 TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
                    const string& systemConfigDir,
-                   const string& schemaFile)
+                   const string& schemaFile,
+                   WBMQTT::TLogger* infoLogger)
 {
     Value schema             = Parse(schemaFile);
     Value noDeviceNameSchema = schema;
@@ -100,6 +137,9 @@ TConfig LoadConfig(const string& mainConfigFile,
     } catch (const TNoDirError&) {
     }
     Append(loadFromJSON(mainConfigFile, schema), cfg);
+
+    MaybeFixDelayBetweenMeasurements(cfg, infoLogger);
+
     return cfg;
 }
 

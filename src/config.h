@@ -1,5 +1,6 @@
 #pragma once
 
+#include <wblib/log.h>
 #include "sysfs_adc.h"
 #include <string>
 #include <vector>
@@ -39,11 +40,12 @@ public:
  * It will be loaded if optional config file is empty.
  * @param optionalConfigFile - path and name of an optional config file. It will be loaded instead
  * of all other config files
- * @param systemConfigsDir - folder with system generated config files. 
+ * @param systemConfigsDir - folder with system generated config files.
  * They will be loaded if optional config file is empty.
  * @param schemaFile - path and name of a file with JSONSchema for configs
  */
 TConfig LoadConfig(const std::string& mainConfigFile,
                    const std::string& optionalConfigFile,
                    const std::string& systemConfigsDir,
-                   const std::string& schemaFile);
+                   const std::string& schemaFile,
+                   WBMQTT::TLogger* infoLogger = nullptr);

@@ -3,12 +3,13 @@
 #include <math.h>
 #include <stdexcept>
 
-TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize) : Sum(0), Pos(0), Ready(false)
+TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize)
 {
     if(windowSize == 0) {
         throw std::runtime_error("Moving average window size can't be zero");
     }
     LastValues.resize(windowSize);
+    Reset();
 }
 
 void TMovingAverageCalculator::AddValue(int32_t value)
@@ -31,4 +32,11 @@ int32_t TMovingAverageCalculator::GetAverage() const
 bool TMovingAverageCalculator::IsReady() const
 {
     return Ready;
+}
+
+void TMovingAverageCalculator::Reset()
+{
+    Ready = false;
+    Pos = 0;
+    Sum = 0;
 }

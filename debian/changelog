@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.1.0) stable; urgency=medium
+
+  * Add configurable poll_interval (refactor scheduler)
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Fri, 03 Sep 2021 14:42:21 +0300
+
 wb-mqtt-adc (2.0.12) stable; urgency=medium
 
   * Do not publish zero values after startup
