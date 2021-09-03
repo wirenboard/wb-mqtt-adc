@@ -33,7 +33,7 @@ TEST_F(TSysfsTest, read_value)
     WBMQTT::TLogger           logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
     TChannelReader::TSettings channelCfg{"voltage1", 1, 10000, 2.54, 10.5, 1, 5};
     const double              MAX_SCALE = 2.54;
-    TChannelReader            reader(MAX_SCALE, 3100, channelCfg, 10, logger, logger, testRootDir);
+    TChannelReader            reader(MAX_SCALE, 3100, channelCfg, logger, logger, testRootDir);
     reader.Measure();
     ASSERT_EQ(reader.GetValue(), "6.77418");
 }
