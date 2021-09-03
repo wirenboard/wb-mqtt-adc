@@ -12,11 +12,10 @@
 TChannelReader::TChannelReader(double                           defaultIIOScale,
                                uint32_t                         maxADCvalue,
                                const TChannelReader::TSettings& cfg,
-                               uint32_t                         delayBetweenMeasurementsmS,
                                WBMQTT::TLogger&                 debugLogger,
                                WBMQTT::TLogger&                 infoLogger,
                                const std::string&               sysfsIIODir)
-    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale), MaxADCValue(maxADCvalue), DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
+    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale), MaxADCValue(maxADCvalue),
       AverageCounter(cfg.AveragingWindow), DebugLogger(debugLogger)
 {
     SelectScale(infoLogger);
@@ -27,13 +26,18 @@ std::string TChannelReader::GetValue() const
     return MeasuredV;
 }
 
+uint32_t TChannelReader::GetInterval() const
+{
+    return Cfg.DelayBetweenMeasurementsmS;
+}
+
 void TChannelReader::Measure(const std::string& debugMessagePrefix)
 {
     for (uint32_t i = 0; i < Cfg.ReadingsNumber; ++i) {
         int32_t adcMeasurement = ReadFromADC();
         DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " = " << adcMeasurement;
         AverageCounter.AddValue(adcMeasurement);
-        std::this_thread::sleep_for(std::chrono::milliseconds(DelayBetweenMeasurementsmS));
+        std::this_thread::sleep_for(std::chrono::milliseconds(Cfg.DelayBetweenMeasurementsmS));
     }
 
     if (!AverageCounter.IsReady()) {

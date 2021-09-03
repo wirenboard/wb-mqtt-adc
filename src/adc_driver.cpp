@@ -59,8 +59,8 @@ namespace
         infoLogger.Log() << "ADC worker thread is started";
         while (*active) {
             for (auto& channel : *channels) {
+                channel.Reader.Measure(channel.MqttId + " ");
                 try {
-                    channel.Reader.Measure(channel.MqttId + " ");
                     channel.Error = false;
                 } catch (const std::exception& er) {
                     channel.Error = true;
@@ -72,7 +72,7 @@ namespace
             for (auto& channel : *channels) {
                 if (channel.ShouldCreateControl) {
                     CreateControl(tx, *device, controlOrder, channel.MqttId, channel.Reader.GetValue(), channel.Error ? "r" : "");
-                    infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created";
+                    infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created, poll interval " << channel.Reader.GetInterval() << " ms";
                     ++controlOrder;
                     channel.ShouldCreateControl = false;
                 } else {
@@ -126,7 +126,6 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
                                             {MXS_LRADC_DEFAULT_SCALE_FACTOR,
                                              MAX_ADC_VALUE,
                                              channel.ReaderCfg,
-                                             10,
                                              DebugLogger,
                                              InfoLogger,
                                              sysfsIIODir}});

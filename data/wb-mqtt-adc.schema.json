@@ -31,6 +31,13 @@
           "description" : "The ADC voltage is multiplied to this factor to get the resulting value",
           "propertyOrder": 3
         },
+        "poll_interval": {
+          "type": "integer",
+          "title": "Channel poll interval (ms)",
+          "default" : 10,
+          "description" : "Delay between channel reads. Consider the Averaging Window value in order to calculate the real time yields.",
+          "propertyOrder": 11
+        },
         "averaging_window": {
           "type": "integer",
           "minimum": 1,

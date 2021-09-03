@@ -62,6 +62,9 @@ public:
 
         //! Number of figures after point
         uint32_t DecimalPlaces = 3;
+
+        //! Delay between measurements
+        uint32_t DelayBetweenMeasurementsmS = 10;
     };
 
     /**
@@ -78,13 +81,15 @@ public:
     TChannelReader(double                           defaultIIOScale,
                    uint32_t                         maxADCvalue,
                    const TChannelReader::TSettings& channelCfg,
-                   uint32_t                         delayBetweenMeasurementsmS,
                    WBMQTT::TLogger&                 debugLogger,
                    WBMQTT::TLogger&                 infoLogger,
                    const std::string&               sysfsIIODir);
 
     //! Get last measured value
     std::string GetValue() const;
+
+    //! Get poll interval
+    uint32_t GetInterval() const;
 
     //! Read and convert value from ADC
     void Measure(const std::string& debugMessagePrefix = std::string());
