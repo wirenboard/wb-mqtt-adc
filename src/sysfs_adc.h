@@ -3,6 +3,7 @@
 #include <wblib/log.h>
 
 #include <fstream>
+#include <chrono>
 
 #include "moving_average.h"
 
@@ -36,14 +37,13 @@ std::string FindBestScale(const std::vector<std::string>& scales, double desired
 class TChannelReader
 {
 public:
+    using Timestamp = std::chrono::steady_clock::time_point;
+
     //! ADC channel measurement settings
     struct TSettings
     {
         //! IIO channel "voltageX"
         std::string ChannelNumber = "voltage1";
-
-        //! Number of value readings during one selection
-        uint32_t ReadingsNumber = 10;
 
         //! Maximum result after multiplying readed value from ADC to Scale
         double MaxScaledVoltage = ADC_DEFAULT_MAX_SCALED_VOLTAGE;
@@ -62,6 +62,12 @@ public:
 
         //! Number of figures after point
         uint32_t DecimalPlaces = 3;
+
+        //! Delay between individual measurements
+        std::chrono::milliseconds DelayBetweenMeasurements = std::chrono::milliseconds(10);
+
+        //! Delay between measurement cycles (visible poll interval)
+        std::chrono::milliseconds PollInterval = std::chrono::milliseconds(700);
     };
 
     /**
@@ -70,7 +76,6 @@ public:
      * @param defaultIIOScale Default channel scale if can't get it from sysfs
      * @param maxADCvalue Maximum possible value from ADC
      * @param channelCfg Channel settings from conf file
-     * @param delayBetweenMeasurementsmS Delay between mesurements in mS
      * @param debugLogger Logger for debug messages
      * @param infoLogger Logger for info messages
      * @param sysfsIIODir Sysfs device's folder
@@ -78,7 +83,6 @@ public:
     TChannelReader(double                           defaultIIOScale,
                    uint32_t                         maxADCvalue,
                    const TChannelReader::TSettings& channelCfg,
-                   uint32_t                         delayBetweenMeasurementsmS,
                    WBMQTT::TLogger&                 debugLogger,
                    WBMQTT::TLogger&                 infoLogger,
                    const std::string&               sysfsIIODir);
@@ -86,8 +90,20 @@ public:
     //! Get last measured value
     std::string GetValue() const;
 
+    //! Get interval between measurements in one cycle
+    std::chrono::milliseconds GetDelayBetweenMeasurements() const;
+
+    //! Get interval between measurement cycles
+    std::chrono::milliseconds GetPollInterval() const;
+
     //! Read and convert value from ADC
-    void Measure(const std::string& debugMessagePrefix = std::string());
+    void Poll(Timestamp now, const std::string& debugMessagePrefix = std::string());
+
+    //! Get timestamp of last completed measure
+    Timestamp GetLastMeasureTimestamp() const;
+
+    //! Get timestamp of next scheduled poll operation
+    Timestamp GetNextPollTimestamp() const;
 
 private:
     //! Settings for the channel
@@ -117,11 +133,21 @@ private:
     //! Maximum possible value from ADC
     uint32_t MaxADCValue;
 
-    //! Delay between measurements in mS
-    uint32_t DelayBetweenMeasurementsmS;
+    //! Delay between measurements
+    std::chrono::milliseconds DelayBetweenMeasurements;
 
     TMovingAverageCalculator AverageCounter;
     WBMQTT::TLogger&         DebugLogger;
+    WBMQTT::TLogger&         InfoLogger;
+
+    //! Timestamp of last completed measure
+    Timestamp LastMeasureTimestamp;
+
+    //! Timestamp of next scheduled poll
+    Timestamp NextPollTimestamp;
+
+    //! Timestamp of beginning of very first poll
+    Timestamp FirstPollInLoopTimestamp;
 
     int32_t ReadFromADC();
     void    SelectScale(WBMQTT::TLogger& infoLogger);

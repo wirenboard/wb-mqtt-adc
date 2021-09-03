@@ -49,17 +49,34 @@
           "title": "Overvoltage threshold (V)",
           "propertyOrder": 6
         },
-        "readings_number" : {
-          "type": "integer",
-          "minimum":1,
-          "title": "Number of ADC reading per sample",
-          "propertyOrder": 7
-        },
         "match_iio" : {
           "type" : "string",
           "title" : "IIO device match pattern",
           "description": "Fnmatch-compatible pattern to match with iio:deviceN symlink target",
           "propertyOrder" : 9
+        },
+        "poll_interval": {
+          "type": "integer",
+          "title": "Channel poll interval (ms)",
+          "default" : 700,
+          "minimum": 1,
+          "description" : "Delay between channel value publications",
+          "propertyOrder": 11
+        },
+        "delay_between_measurements": {
+          "type": "integer",
+          "title": "Averaging interval (ms)",
+          "default" : 10,
+          "minimum": 1,
+          "description" : "Delay between individual channel reads while averaging",
+          "propertyOrder": 12
+        },
+        "readings_number": {
+          "type": "integer",
+          "title": "(deprecated) Number of ADC reading per sample",
+          "minimum": 1,
+          "description" : "Is not used. Use averaging window and poll interval instead of this",
+          "propertyOrder": 100
         }
       },
       "required": ["id", "voltage_multiplier"]
@@ -90,7 +107,7 @@
         }
       },
 
-      "defaultProperties": ["channel_number", "voltage_multiplier", "id"],
+      "defaultProperties": ["channel_number", "voltage_multiplier", "id", "poll_interval"],
       "required": ["channel_number"]
     },
 

@@ -1,5 +1,7 @@
 #include "config.h"
 #include <algorithm>
+#include <numeric>
+#include <chrono>
 #include <fstream>
 #include <wblib/utils.h>
 #include <wblib/json_utils.h>
@@ -15,14 +17,16 @@ namespace
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
+
         Get(item, "id", channel.Id);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
         if (Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage))
             channel.ReaderCfg.MaxScaledVoltage *= 1000;
         Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
-        Get(item, "readings_number", channel.ReaderCfg.ReadingsNumber);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
         Get(item, "scale", channel.ReaderCfg.DesiredScale);
+        Get(item, "poll_interval", channel.ReaderCfg.PollInterval);
+        Get(item, "delay_between_measurements", channel.ReaderCfg.DelayBetweenMeasurements);
         Get(item, "match_iio", channel.MatchIIO);
 
         Value v = item["channel_number"];
@@ -47,6 +51,26 @@ namespace
                 dst.Channels.push_back(v);
             } else {
                 *el = v;
+            }
+        }
+    }
+
+    /*! This function recalculates delay between measurements if it is too large for
+        selected poll interval. If so, measurements will be evenly distributed in interval
+    */
+    void MaybeFixDelayBetweenMeasurements(TConfig& cfg, WBMQTT::TLogger* log)
+    {
+        for (auto& ch: cfg.Channels) {
+            auto calcMeasureDelay = ch.ReaderCfg.DelayBetweenMeasurements *
+                ch.ReaderCfg.AveragingWindow;
+            if (calcMeasureDelay > ch.ReaderCfg.PollInterval) {
+                if (log) {
+                    log->Log() << ch.Id << ": averaging delay doesn't fit in poll_interval, "
+                        << "adjusting delay_between_measurements";
+                }
+
+                ch.ReaderCfg.DelayBetweenMeasurements = ch.ReaderCfg.PollInterval /
+                    ch.ReaderCfg.AveragingWindow;
             }
         }
     }
@@ -83,7 +107,8 @@ namespace
 TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
                    const string& systemConfigDir,
-                   const string& schemaFile)
+                   const string& schemaFile,
+                   WBMQTT::TLogger* infoLogger)
 {
     Value schema             = Parse(schemaFile);
     Value noDeviceNameSchema = schema;
@@ -100,6 +125,9 @@ TConfig LoadConfig(const string& mainConfigFile,
     } catch (const TNoDirError&) {
     }
     Append(loadFromJSON(mainConfigFile, schema), cfg);
+
+    MaybeFixDelayBetweenMeasurements(cfg, infoLogger);
+
     return cfg;
 }
 

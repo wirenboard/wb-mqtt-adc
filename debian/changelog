@@ -1,3 +1,13 @@
+wb-mqtt-adc (2.1.0) stable; urgency=medium
+
+  * Add configurable poll_interval (refactor scheduler).
+    Default poll_interval is set to 700ms in order to match legacy behavior
+    without AI-DV-12 module
+  * readings_number parameter is now deprecated and not used anymore.
+    Use poll_interval and averaging_window to control publish rate
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Fri, 03 Sep 2021 14:42:21 +0300
+
 wb-mqtt-adc (2.0.12) stable; urgency=medium
 
   * Do not publish zero values after startup
