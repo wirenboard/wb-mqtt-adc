@@ -7,16 +7,16 @@ Build-Depends: debhelper (>= 10),
                libjsoncpp-dev,
                libmosquitto-dev,
                libmosquittopp-dev,
-               libwbmqtt1-dev (>= 1.0.10),
+               libwbmqtt1-2-dev (>= 2.5.0),
                pkg-config,
-               libwbmqtt1-test-utils (>= 1.0.10)
+               libwbmqtt1-2-test-utils (>= 2.5.0)
 
 Package: wb-mqtt-adc
 Architecture: any
 Depends: bc,
          jq (>= 1.4),
          libjsoncpp0 | libjsoncpp1,
-         libwbmqtt1 (>= 1.0.10),
+         libwbmqtt1-2 (>= 2.5.0),
          ucf,
          wb-utils (>= 2.0.4),
          wb-configs (>= 1.82.2),

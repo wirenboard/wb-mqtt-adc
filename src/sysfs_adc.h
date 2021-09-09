@@ -37,7 +37,7 @@ std::string FindBestScale(const std::vector<std::string>& scales, double desired
 class TChannelReader
 {
 public:
-    using Timestamp = std::chrono::time_point<std::chrono::steady_clock>;
+    using Timestamp = std::chrono::steady_clock::time_point;
 
     //! ADC channel measurement settings
     struct TSettings

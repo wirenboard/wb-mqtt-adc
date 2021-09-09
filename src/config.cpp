@@ -1,5 +1,6 @@
 #include "config.h"
 #include <algorithm>
+#include <numeric>
 #include <chrono>
 #include <fstream>
 #include <wblib/utils.h>
@@ -16,7 +17,6 @@ namespace
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
-        uint32_t poll_interval_ms = 0, delay_between_measurements_ms = 0;
 
         Get(item, "id", channel.Id);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
@@ -25,22 +25,9 @@ namespace
         Get(item, "voltage_multiplier", channel.ReaderCfg.VoltageMultiplier);
         Get(item, "decimal_places", channel.ReaderCfg.DecimalPlaces);
         Get(item, "scale", channel.ReaderCfg.DesiredScale);
-        Get(item, "poll_interval", poll_interval_ms);
-        Get(item, "delay_between_measurements", delay_between_measurements_ms);
+        Get(item, "poll_interval", channel.ReaderCfg.PollInterval);
+        Get(item, "delay_between_measurements", channel.ReaderCfg.DelayBetweenMeasurements);
         Get(item, "match_iio", channel.MatchIIO);
-
-        if (delay_between_measurements_ms > 0) {
-            channel.ReaderCfg.DelayBetweenMeasurements =
-                std::chrono::milliseconds(delay_between_measurements_ms);
-        }
-
-        if (poll_interval_ms > 0) {
-            channel.ReaderCfg.PollInterval = std::chrono::milliseconds(poll_interval_ms);
-        }
-
-        if (channel.ReaderCfg.AveragingWindow < 1) {
-            throw TBadConfigError(channel.Id + ": averaging_window must be >= 1");
-        }
 
         Value v = item["channel_number"];
         if (v.isInt()) {
@@ -68,10 +55,11 @@ namespace
         }
     }
 
+    /*! This function recalculates delay between measurements if it is too large for
+        selected poll interval. If so, measurements will be evenly distributed in interval
+    */
     void MaybeFixDelayBetweenMeasurements(TConfig& cfg, WBMQTT::TLogger* log)
     {
-        // if delay between measurements is set so that averaging process will not
-        // fit in poll interval, try to distribute these measurements evenly in poll interval
         for (auto& ch: cfg.Channels) {
             auto calcMeasureDelay = ch.ReaderCfg.DelayBetweenMeasurements *
                 ch.ReaderCfg.AveragingWindow;

@@ -59,6 +59,7 @@
           "type": "integer",
           "title": "Channel poll interval (ms)",
           "default" : 700,
+          "minimum": 1,
           "description" : "Delay between channel value publications",
           "propertyOrder": 11
         },
@@ -66,6 +67,7 @@
           "type": "integer",
           "title": "Averaging interval (ms)",
           "default" : 10,
+          "minimum": 1.
           "description" : "Delay between individual channel reads while averaging",
           "propertyOrder": 12
         },
@@ -73,7 +75,7 @@
           "type": "integer",
           "title": "(deprecated) Number of ADC reading per sample",
           "minimum": 1,
-          "description" : "Is not used. Use averaging window instead of this",
+          "description" : "Is not used. Use averaging window and poll interval instead of this",
           "propertyOrder": 100
         }
       },

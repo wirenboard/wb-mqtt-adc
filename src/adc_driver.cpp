@@ -102,7 +102,7 @@ namespace
             }
 
             // sleep until next scheduled poll
-            auto nextPoll = (*channels)[0].Reader.GetNextPollTimestamp();
+            auto nextPoll = TChannelReader::Timestamp::max();
             for (auto& channel: *channels) {
                 const auto channelNextPoll = channel.Reader.GetNextPollTimestamp();
                 if (channelNextPoll < nextPoll) {
