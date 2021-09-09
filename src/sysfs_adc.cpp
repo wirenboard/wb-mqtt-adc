@@ -1,5 +1,6 @@
 #include "sysfs_adc.h"
 
+#include <chrono>
 #include <fnmatch.h>
 #include <iomanip>
 #include <math.h>
@@ -12,12 +13,13 @@
 TChannelReader::TChannelReader(double                           defaultIIOScale,
                                uint32_t                         maxADCvalue,
                                const TChannelReader::TSettings& cfg,
-                               uint32_t                         delayBetweenMeasurementsmS,
                                WBMQTT::TLogger&                 debugLogger,
                                WBMQTT::TLogger&                 infoLogger,
                                const std::string&               sysfsIIODir)
-    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale), MaxADCValue(maxADCvalue), DelayBetweenMeasurementsmS(delayBetweenMeasurementsmS),
-      AverageCounter(cfg.AveragingWindow), DebugLogger(debugLogger)
+    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale), MaxADCValue(maxADCvalue),
+      AverageCounter(cfg.AveragingWindow), DebugLogger(debugLogger), InfoLogger(infoLogger),
+      LastMeasureTimestamp(Timestamp::min()), NextPollTimestamp(Timestamp::min()),
+      FirstPollInLoopTimestamp(Timestamp::min())
 {
     SelectScale(infoLogger);
 }
@@ -27,20 +29,54 @@ std::string TChannelReader::GetValue() const
     return MeasuredV;
 }
 
-void TChannelReader::Measure(const std::string& debugMessagePrefix)
+TChannelReader::Timestamp TChannelReader::GetLastMeasureTimestamp() const
 {
-    for (uint32_t i = 0; i < Cfg.ReadingsNumber; ++i) {
-        int32_t adcMeasurement = ReadFromADC();
-        DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " = " << adcMeasurement;
-        AverageCounter.AddValue(adcMeasurement);
-        std::this_thread::sleep_for(std::chrono::milliseconds(DelayBetweenMeasurementsmS));
-    }
+    return LastMeasureTimestamp;
+}
 
-    if (!AverageCounter.IsReady()) {
-        DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " average is not ready";
+TChannelReader::Timestamp TChannelReader::GetNextPollTimestamp() const
+{
+    return NextPollTimestamp;
+}
+
+std::chrono::milliseconds TChannelReader::GetDelayBetweenMeasurements() const
+{
+    return Cfg.DelayBetweenMeasurements;
+}
+
+std::chrono::milliseconds TChannelReader::GetPollInterval() const
+{
+    return Cfg.PollInterval;
+}
+
+void TChannelReader::Poll(Timestamp now, const std::string& debugMessagePrefix)
+{
+    // skip this poll if scheduled time is not come yet
+    if (NextPollTimestamp > now) {
         return;
     }
 
+    // if it is out very first poll, save its start time
+    if (FirstPollInLoopTimestamp == Timestamp::min()) {
+        FirstPollInLoopTimestamp = now;
+    }
+
+    if (NextPollTimestamp == Timestamp::min()) {
+        NextPollTimestamp = now;
+    }
+
+    // perform scheduled measurement
+    int32_t adcMeasurement = ReadFromADC();
+    DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " = " << adcMeasurement;
+    AverageCounter.AddValue(adcMeasurement);
+
+    // if average counter is awaiting more data, schedule next poll and exit
+    if (!AverageCounter.IsReady()) {
+        NextPollTimestamp = NextPollTimestamp + Cfg.DelayBetweenMeasurements;
+        return;
+    }
+
+    // average counter collected enough data, publish it
     int32_t value = AverageCounter.GetAverage();
     if (value >= 0 && ((uint32_t)value) > MaxADCValue) {
         throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " average (" + std::to_string(value) + ") is bigger than maximum (" + std::to_string(MaxADCValue) + ")");
@@ -57,6 +93,15 @@ void TChannelReader::Measure(const std::string& debugMessagePrefix)
     std::ostringstream out;
     out << std::setprecision(Cfg.DecimalPlaces) << std::fixed << res;
     MeasuredV = out.str();
+
+    // update current measurement timestamp info and schedule next one
+    NextPollTimestamp = FirstPollInLoopTimestamp + Cfg.PollInterval;
+    FirstPollInLoopTimestamp = NextPollTimestamp;
+
+    LastMeasureTimestamp = now;
+
+    // reset accumulator
+    AverageCounter.Reset();
 }
 
 int32_t TChannelReader::ReadFromADC()

@@ -40,4 +40,9 @@ public:
      * @return false Average value is not valid
      */
     bool IsReady() const;
+
+    /**
+     * @brief Clear accumulator and prepare for new loop
+     */
+    void Reset();
 };

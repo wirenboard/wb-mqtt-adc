@@ -52,7 +52,6 @@ TEST_F(TConfigTest, optional_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 2);
     ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 5);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.MaxScaledVoltage, 12500);
@@ -69,7 +68,6 @@ TEST_F(TConfigTest, empty_main_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 2);
     ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 3);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 5);
 }
@@ -88,7 +86,33 @@ TEST_F(TConfigTest, full_main_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage80");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 20);
     ASSERT_EQ(cfg.Channels[0].MatchIIO, "path0");
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.ReadingsNumber, 30);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 170);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 50);
+}
+
+TEST_F(TConfigTest, poll_interval_config)
+{
+    using namespace std::literals::chrono_literals;
+
+    TConfig cfg = LoadConfig(testRootDir + "/good3/wb-mqtt-adc.conf",
+                             "",
+                             testRootDir + "/good3/wb-mqtt-adc.conf.d",
+                             schemaFile);
+
+    ASSERT_EQ(cfg.DeviceName, "ADCs");
+    ASSERT_EQ(cfg.EnableDebugMessages, false);
+    ASSERT_EQ(cfg.Channels.size(), 2);
+    ASSERT_EQ(cfg.Channels[0].Id, "Vin");
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 10);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.PollInterval, 100ms);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DelayBetweenMeasurements, 5ms);
+
+    ASSERT_EQ(cfg.Channels[1].Id, "5Vout");
+    ASSERT_EQ(cfg.Channels[1].ReaderCfg.AveragingWindow, 10);
+    ASSERT_EQ(cfg.Channels[1].ReaderCfg.PollInterval, 100ms);
+
+    // in config file it is set to 50, but must be fixed because
+    // averaging will not fit in poll_interval otherwise.
+    // 10 is poll_interval / averaging_window
+    ASSERT_EQ(cfg.Channels[1].ReaderCfg.DelayBetweenMeasurements, 10ms);
 }
