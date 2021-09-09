@@ -104,10 +104,7 @@ namespace
             // sleep until next scheduled poll
             auto nextPoll = TChannelReader::Timestamp::max();
             for (auto& channel: *channels) {
-                const auto channelNextPoll = channel.Reader.GetNextPollTimestamp();
-                if (channelNextPoll < nextPoll) {
-                    nextPoll = channelNextPoll;
-                }
+                nextPoll = std::min(nextPoll, channel.Reader.GetNextPollTimestamp());
             }
 
             // use new steady_clock value here for precision
