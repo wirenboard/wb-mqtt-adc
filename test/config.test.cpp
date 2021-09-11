@@ -116,3 +116,25 @@ TEST_F(TConfigTest, poll_interval_config)
     // 10 is poll_interval / averaging_window
     ASSERT_EQ(cfg.Channels[1].ReaderCfg.DelayBetweenMeasurements, 10ms);
 }
+
+TEST_F(TConfigTest, max_unchanged_interval)
+{
+    ASSERT_THROW(LoadConfig(testRootDir + "/max_unchanged_interval/bad.conf", "", "", schemaFile), std::runtime_error);
+
+    {
+        TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_empty.conf",
+                                "",
+                                "",
+                                schemaFile);
+        ASSERT_EQ(cfg.MaxUnchangedInterval.count(), 60);
+    }
+
+    {
+        TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_non_empty.conf",
+                                "",
+                                "",
+                                schemaFile);
+        ASSERT_EQ(cfg.MaxUnchangedInterval.count(), 123);
+    }
+
+}

@@ -23,6 +23,7 @@ struct TConfig
 {
     std::string DeviceName          = "ADCs";  //! Value of /devices/DRIVER_NAME/meta/name
     bool        EnableDebugMessages = false;   //! Enable logging of debug messages
+    std::chrono::seconds MaxUnchangedInterval = std::chrono::seconds(60);
     std::vector<TADCChannelSettings> Channels; //! ADC channels list
 };
 

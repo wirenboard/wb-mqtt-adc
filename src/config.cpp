@@ -42,6 +42,7 @@ namespace
     {
         dst.DeviceName          = src.DeviceName;
         dst.EnableDebugMessages = src.EnableDebugMessages;
+        dst.MaxUnchangedInterval = src.MaxUnchangedInterval;
 
         for (const auto& v : src.Channels) {
             auto el = find_if(dst.Channels.begin(), dst.Channels.end(), [&](auto& c) {
@@ -85,6 +86,7 @@ namespace
 
         Get(configJson, "device_name", config.DeviceName);
         Get(configJson, "debug", config.EnableDebugMessages);
+        Get(configJson, "max_unchanged_interval", config.MaxUnchangedInterval);
 
         const auto& ch = configJson["iio_channels"];
         for_each(ch.begin(), ch.end(), [&](const Value& v) { LoadChannel(v, config.Channels); });
