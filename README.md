@@ -10,6 +10,11 @@ wb-mqtt-adc
     // то есть ../meta/name ADCs
     "device_name" : "ADCs",
     "debug" : false,
+
+    // Интервал публикации тех же самых значений в MQTT (опционально, по-умолчанию 60 с).
+    // Независимо от настроек, значения публикуются в MQTT при любом изменении.
+    "max_unchanged_interval" : 120,
+
     "iio_channels" : [
          {
                 // под каким id будет публиковаться данный канал в MQTT
@@ -38,7 +43,7 @@ wb-mqtt-adc
                 "poll_interval": 700,
 
                 // задаёт интервал между выборками для усреднения (опционально, по умолчанию 10 мс)
-                "delay_between_measurements": 10
+                "delay_between_measurements": 10,
         },
         {
                 "id" : "A2",

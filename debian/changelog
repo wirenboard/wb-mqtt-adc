@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.2.0) stable; urgency=medium
+
+  * publish values only on change and also every max_unchanged_interval
+
+ -- Evgeny Boger <boger@contactless.ru>  Sat, 11 Sep 2021 14:34:16 +0300
+
 wb-mqtt-adc (2.1.0) stable; urgency=medium
 
   * Add configurable poll_interval (refactor scheduler).

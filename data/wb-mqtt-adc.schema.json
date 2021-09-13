@@ -143,8 +143,15 @@
       "options" : {
           "disable_collapse" : true
       }
+    },
+    "max_unchanged_interval" : {
+      "type" : "integer",
+      "title" : "Unchanged value posting interval (s)",
+      "description" : "Specifies the maximum interval in seconds between posting the same values to message queue. Regardless of this setting, new values will be immediately published on change.",
+      "default" : 60,
+      "minimum" : 5,
+      "propertyOrder" : 4
     }
   },
   "required": ["device_name", "iio_channels"]
 }
-

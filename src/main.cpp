@@ -167,21 +167,6 @@ int main(int argc, char* argv[])
     SignalHandling::Start();
 
     try {
-        auto mqttDriver =
-            NewDriver(TDriverArgs{}
-                          .SetBackend(NewDriverBackend(NewMosquittoMqttClient(mqttConfig)))
-                          .SetId(mqttConfig.Id)
-                          .SetUseStorage(false)
-                          .SetReownUnknownDevices(true));
-
-        mqttDriver->StartLoop();
-        SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] {
-            mqttDriver->StopLoop();
-            mqttDriver->Close();
-        });
-
-        mqttDriver->WaitForReady();
-
         TConfig config = LoadConfig("/etc/wb-mqtt-adc.conf",
                                     customConfig,
                                     "/var/lib/wb-mqtt-adc/conf.d",
@@ -190,6 +175,26 @@ int main(int argc, char* argv[])
 
         if (config.EnableDebugMessages)
             DebugLogger.SetEnabled(true);
+
+        auto publishParameters = TPublishParameters();
+        publishParameters.Set(config.MaxUnchangedInterval.count());
+
+        auto mqttDriver =
+            NewDriver(TDriverArgs{}
+                          .SetBackend(NewDriverBackend(NewMosquittoMqttClient(mqttConfig)))
+                          .SetId(mqttConfig.Id)
+                          .SetUseStorage(false)
+                          .SetReownUnknownDevices(true),
+                       publishParameters
+                    );
+
+        mqttDriver->StartLoop();
+        SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] {
+            mqttDriver->StopLoop();
+            mqttDriver->Close();
+        });
+
+        mqttDriver->WaitForReady();
 
         TADCDriver driver(mqttDriver, config, ErrorLogger, DebugLogger, InfoLogger);
 
