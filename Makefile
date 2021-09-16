@@ -20,7 +20,7 @@ ADC_SOURCES= 						\
 
 ADC_OBJECTS=$(ADC_SOURCES:.cpp=.o)
 ADC_BIN=wb-mqtt-adc
-ADC_LIBS= -lwbmqtt1 -lpthread -ljsoncpp 
+ADC_LIBS= -lwbmqtt1 -lpthread
 
 ADC_TEST_SOURCES= 							\
 			$(TEST_DIR)/test_main.cpp		\
