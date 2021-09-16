@@ -4,7 +4,6 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.2
 Build-Depends: debhelper (>= 10),
-               libjsoncpp-dev,
                libmosquitto-dev,
                libmosquittopp-dev,
                libwbmqtt1-3-dev (>= 3.1.0),
@@ -16,7 +15,6 @@ Package: wb-mqtt-adc
 Architecture: any
 Depends: bc,
          jq (>= 1.4),
-         libjsoncpp0 | libjsoncpp1,
          libwbmqtt1-3 (>= 3.1.0),
          ucf,
          wb-utils (>= 2.0.4),
