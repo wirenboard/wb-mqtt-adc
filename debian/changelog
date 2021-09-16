@@ -1,3 +1,10 @@
+wb-mqtt-adc (2.3.0) stable; urgency=medium
+
+  * Update dependency on libwbmqtt1 to support fixed libmosquitto facade
+    (required for newer mosquitto backports)
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Thu, 16 Sep 2021 15:27:57 +0300
+
 wb-mqtt-adc (2.2.0) stable; urgency=medium
 
   * publish values only on change and also every max_unchanged_interval
