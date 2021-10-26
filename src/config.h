@@ -27,15 +27,8 @@ struct TConfig
     std::vector<TADCChannelSettings> Channels; //! ADC channels list
 };
 
-//! Validation error class
-class TBadConfigError : public std::runtime_error
-{
-public:
-    TBadConfigError(const std::string& msg);
-};
-
 /**
- * @brief Load configuration from config files. Throws TBadConfigError on validation error.
+ * @brief Load configuration from config files. Throws std::runtime_error on validation error.
  *
  * @param mainConfigFile - path and name of a main config file.
  * It will be loaded if optional config file is empty.
@@ -49,4 +42,12 @@ TConfig LoadConfig(const std::string& mainConfigFile,
                    const std::string& optionalConfigFile,
                    const std::string& systemConfigsDir,
                    const std::string& schemaFile,
-                   WBMQTT::TLogger* infoLogger = nullptr);
+                   WBMQTT::TLogger* infoLogger = nullptr,
+                   WBMQTT::TLogger* warnLogger = nullptr);
+
+void MakeJsonForConfed(const std::string& configFile,
+                       const std::string& systemConfigsDir,
+                       const std::string& schemaFile);
+
+void MakeConfigFromConfed(const std::string& systemConfigsDir,
+                          const std::string& schemaFile);

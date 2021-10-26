@@ -1,6 +1,7 @@
 #include "src/config.h"
 #include <gtest/gtest.h>
 #include <vector>
+#include "src/log.h"
 
 class TConfigTest : public testing::Test
 {
@@ -43,7 +44,9 @@ TEST_F(TConfigTest, optional_config)
     TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf",
                              testRootDir + "/good1/optional.conf",
                              "",
-                             schemaFile);
+                             schemaFile,
+                             &InfoLogger,
+                             &WarnLogger);
     ASSERT_EQ(cfg.DeviceName, "Test");
     ASSERT_EQ(cfg.EnableDebugMessages, true);
     ASSERT_EQ(cfg.Channels.size(), 1);
@@ -59,7 +62,12 @@ TEST_F(TConfigTest, optional_config)
 
 TEST_F(TConfigTest, empty_main_config)
 {
-    TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf", "", testRootDir + "/good1/wb-mqtt-adc.conf.d", schemaFile);
+    TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf",
+                             "",
+                             testRootDir + "/good1/wb-mqtt-adc.conf.d",
+                             schemaFile,
+                             &InfoLogger,
+                             &WarnLogger);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
     ASSERT_EQ(cfg.Channels.size(), 1);
@@ -77,16 +85,18 @@ TEST_F(TConfigTest, full_main_config)
     TConfig cfg = LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf",
                              "",
                              testRootDir + "/good2/wb-mqtt-adc.conf.d",
-                             schemaFile);
+                             schemaFile,
+                             &InfoLogger,
+                             &WarnLogger);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
     ASSERT_EQ(cfg.Channels.size(), 1);
     ASSERT_EQ(cfg.Channels[0].Id, "Vin");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 10);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage80");
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 20);
-    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path0");
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 170);
+    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 50);
 }
 
@@ -97,7 +107,9 @@ TEST_F(TConfigTest, poll_interval_config)
     TConfig cfg = LoadConfig(testRootDir + "/good3/wb-mqtt-adc.conf",
                              "",
                              testRootDir + "/good3/wb-mqtt-adc.conf.d",
-                             schemaFile);
+                             schemaFile,
+                             &InfoLogger,
+                             &WarnLogger);
 
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
@@ -125,7 +137,9 @@ TEST_F(TConfigTest, max_unchanged_interval)
         TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_empty.conf",
                                 "",
                                 "",
-                                schemaFile);
+                                schemaFile,
+                                &InfoLogger,
+                                &WarnLogger);
         ASSERT_EQ(cfg.MaxUnchangedInterval.count(), 60);
     }
 
@@ -133,7 +147,9 @@ TEST_F(TConfigTest, max_unchanged_interval)
         TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_non_empty.conf",
                                 "",
                                 "",
-                                schemaFile);
+                                schemaFile,
+                                &InfoLogger,
+                                &WarnLogger);
         ASSERT_EQ(cfg.MaxUnchangedInterval.count(), 123);
     }
 

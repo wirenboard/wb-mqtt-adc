@@ -14,6 +14,8 @@ using namespace std;
 
 namespace
 {
+    const string ProtectedProperties[] = {"match_iio", "channel_number", "mqtt_type", "voltage_multiplier", "max_voltage"};
+
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
         TADCChannelSettings channel;
@@ -38,24 +40,6 @@ namespace
         channels.push_back(channel);
     }
 
-    void Append(const TConfig& src, TConfig& dst)
-    {
-        dst.DeviceName          = src.DeviceName;
-        dst.EnableDebugMessages = src.EnableDebugMessages;
-        dst.MaxUnchangedInterval = src.MaxUnchangedInterval;
-
-        for (const auto& v : src.Channels) {
-            auto el = find_if(dst.Channels.begin(), dst.Channels.end(), [&](auto& c) {
-                return c.Id == v.Id;
-            });
-            if (el == dst.Channels.end()) {
-                dst.Channels.push_back(v);
-            } else {
-                *el = v;
-            }
-        }
-    }
-
     /*! This function recalculates delay between measurements if it is too large for
         selected poll interval. If so, measurements will be evenly distributed in interval
     */
@@ -76,13 +60,16 @@ namespace
         }
     }
 
-    TConfig loadFromJSON(const string& fileName, const Value& schema)
+    Value Load(const string& filePath, const Value& schema)
+    {
+        auto json = Parse(filePath);
+        Validate(json, schema);
+        return json;
+    }
+
+    TConfig LoadFromJSON(const Value& configJson)
     {
         TConfig config;
-
-        Value configJson(Parse(fileName));
-
-        Validate(configJson, schema);
 
         Get(configJson, "device_name", config.DeviceName);
         Get(configJson, "debug", config.EnableDebugMessages);
@@ -94,7 +81,7 @@ namespace
         return config;
     }
 
-    void removeDeviceNameRequirement(Value& schema)
+    Value RemoveDeviceNameRequirement(const Value& schema)
     {
         Value newArray = arrayValue;
         for (auto& v : schema["required"]) {
@@ -102,7 +89,9 @@ namespace
                 newArray.append(v);
             }
         }
-        schema["required"] = newArray;
+        Value res(schema);
+        res["required"] = newArray;
+        return res;
     }
 } // namespace
 
@@ -110,27 +99,121 @@ TConfig LoadConfig(const string& mainConfigFile,
                    const string& optionalConfigFile,
                    const string& systemConfigDir,
                    const string& schemaFile,
-                   WBMQTT::TLogger* infoLogger)
+                   WBMQTT::TLogger* infoLogger,
+                   WBMQTT::TLogger* warnLogger)
 {
-    Value schema             = Parse(schemaFile);
-    Value noDeviceNameSchema = schema;
-    removeDeviceNameRequirement(noDeviceNameSchema);
+    auto schema = Parse(schemaFile);
 
-    if (!optionalConfigFile.empty())
-        return loadFromJSON(optionalConfigFile, schema);
-    TConfig cfg;
+    if (!optionalConfigFile.empty()) {
+        return LoadFromJSON(Load(optionalConfigFile, schema));
+    }
+
+    auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
+
+    TMergeParams mergeParams;
+    mergeParams.LogPrefix = "[config] ";
+    mergeParams.InfoLogger = infoLogger;
+    mergeParams.WarnLogger = warnLogger;
+    mergeParams.MergeArraysOn["/iio_channels"] = "id";
+
+    Json::Value resultingConfig;
+    resultingConfig["iio_channels"] = Json::Value(Json::arrayValue);
+
     try {
         IterateDir(systemConfigDir, ".conf", [&](const string& f) {
-            Append(loadFromJSON(f, noDeviceNameSchema), cfg);
+            Merge(resultingConfig, Load(f, noDeviceNameSchema), mergeParams);
             return false;
         });
     } catch (const TNoDirError&) {
     }
-    Append(loadFromJSON(mainConfigFile, schema), cfg);
 
+    for (const auto& pr: ProtectedProperties) {
+        mergeParams.ProtectedParameters.insert("/iio_channels/" + pr);
+    }
+    Merge(resultingConfig, Load(mainConfigFile, schema), mergeParams);
+    auto cfg = LoadFromJSON(resultingConfig);
     MaybeFixDelayBetweenMeasurements(cfg, infoLogger);
-
     return cfg;
 }
 
-TBadConfigError::TBadConfigError(const string& msg) : runtime_error(msg) {}
+void MakeJsonForConfed(const string& configFile,
+                       const string& systemConfigsDir,
+                       const string& schemaFile)
+{
+    auto schema = Parse(schemaFile);
+    auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
+    auto config = Load(configFile, schema);
+    unordered_map<string, Value> configuredChannels;
+    for (const auto& ch: config["iio_channels"]) {
+        configuredChannels.emplace(ch["id"].asString(), ch);
+    }
+    Value newChannels(arrayValue);
+    try {
+        IterateDir(systemConfigsDir, ".conf", [&](const string& f) {
+            auto cfg = Load(f, noDeviceNameSchema);
+            for (const auto& ch: cfg["iio_channels"]) {
+                auto name = ch["id"].asString();
+                auto it = configuredChannels.find(name);
+                if (it != configuredChannels.end()) {
+                    newChannels.append(it->second);
+                    configuredChannels.erase(name);
+                } else {
+                    Value v;
+                    v["id"] = ch["id"];
+                    newChannels.append(v);
+                }
+            }
+            return false;
+        });
+    } catch (const TNoDirError&) {
+    }
+    for (const auto& ch: config["iio_channels"]) {
+        auto it = configuredChannels.find(ch["id"].asString());
+        if (it != configuredChannels.end()) {
+            newChannels.append(ch);
+        }
+    }
+    config["iio_channels"].swap(newChannels);
+    MakeWriter("", "None")->write(config, &cout);
+}
+
+void MakeConfigFromConfed(const string& systemConfigsDir, const string& schemaFile)
+{
+    auto noDeviceNameSchema = RemoveDeviceNameRequirement(Parse(schemaFile));
+    unordered_set<string> systemChannels;
+    try {
+        IterateDir(systemConfigsDir, ".conf", [&](const string& f) {
+            auto cfg = Load(f, noDeviceNameSchema);
+            for (const auto& ch: cfg["iio_channels"]) {
+                systemChannels.insert(ch["id"].asString());
+            }
+            return false;
+        });
+    } catch (const TNoDirError&) {
+    }
+
+    Value config;
+    CharReaderBuilder readerBuilder;
+    String errs;
+
+    if (!parseFromStream(readerBuilder, cin, &config, &errs)) {
+        throw runtime_error("Failed to parse JSON:" + errs);
+    }
+
+    Value newChannels(arrayValue);
+    for (auto& ch: config["iio_channels"]) {
+        auto it = systemChannels.find(ch["id"].asString());
+        if (it != systemChannels.end()) {
+            for (const auto& pr: ProtectedProperties) {
+                ch.removeMember(pr);
+            }
+            if (ch.size() > 1) {
+                newChannels.append(ch);
+            }
+        } else {
+            newChannels.append(ch);
+        }
+    }
+    config["iio_channels"].swap(newChannels);
+    MakeWriter("  ", "None")->write(config, &cout);
+}

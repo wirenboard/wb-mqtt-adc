@@ -9,13 +9,10 @@
 
 #include "adc_driver.h"
 #include "config.h"
+#include "log.h"
 
 using namespace std;
 using namespace WBMQTT;
-
-TLogger ErrorLogger("ERROR: [wb-adc] ", TLogger::StdErr, TLogger::RED);
-TLogger DebugLogger("DEBUG: [wb-adc] ", TLogger::StdErr, TLogger::WHITE, false);
-TLogger InfoLogger("INFO: [wb-adc] ", TLogger::StdErr, TLogger::GREY);
 
 namespace
 {
@@ -24,6 +21,10 @@ namespace
 
     //! Maximun time to start application. Exceded timeout will case application termination.
     const auto DRIVER_INIT_TIMEOUT_S = chrono::seconds(5);
+
+    const auto CONFIG_FILE        = "/etc/wb-mqtt-adc.conf";
+    const auto SYSTEM_CONFIGS_DIR = "/var/lib/wb-mqtt-adc/conf.d";
+    const auto CONFIG_SCHEMA_FILE = "/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json";
 
     void PrintUsage()
     {
@@ -40,7 +41,9 @@ namespace
              << "  -h IP        MQTT broker IP (default: localhost)" << endl
              << "  -u user      MQTT user (optional)" << endl
              << "  -P password  MQTT user password (optional)" << endl
-             << "  -T prefix    MQTT topic prefix (optional)" << endl;
+             << "  -T prefix    MQTT topic prefix (optional)" << endl
+             << "  -j           Make JSON for wb-mqtt-confed from /etc/wb-mqtt-adc.conf" << endl
+             << "  -J           Make /etc/wb-mqtt-adc.conf from wb-mqtt-confed output" << endl;
     }
 
     void ParseCommadLine(int                   argc,
@@ -51,7 +54,7 @@ namespace
         int debugLevel = 0;
         int c;
 
-        while ((c = getopt(argc, argv, "d:c:h:p:u:P:T:")) != -1) {
+        while ((c = getopt(argc, argv, "d:c:h:p:u:P:T:jJ")) != -1) {
             switch (c) {
             case 'd':
                 debugLevel = stoi(optarg);
@@ -74,6 +77,22 @@ namespace
             case 'P':
                 mqttConfig.Password = optarg;
                 break;
+            case 'j':
+                try {
+                    MakeJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_FILE);
+                    exit(0);
+                } catch (const std::exception& e) {
+                    ErrorLogger.Log() << "FATAL: " << e.what();
+                    exit(1);
+                }
+            case 'J':
+                try {
+                    MakeConfigFromConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_FILE);
+                    exit(0);
+                } catch (const std::exception& e) {
+                    ErrorLogger.Log() << "FATAL: " << e.what();
+                    exit(1);
+                }
 
             case '?':
             default:
@@ -167,11 +186,12 @@ int main(int argc, char* argv[])
     SignalHandling::Start();
 
     try {
-        TConfig config = LoadConfig("/etc/wb-mqtt-adc.conf",
+        TConfig config = LoadConfig(CONFIG_FILE,
                                     customConfig,
-                                    "/var/lib/wb-mqtt-adc/conf.d",
-                                    "/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json",
-                                    &InfoLogger);
+                                    SYSTEM_CONFIGS_DIR,
+                                    CONFIG_SCHEMA_FILE,
+                                    &InfoLogger,
+                                    &WarnLogger);
 
         if (config.EnableDebugMessages)
             DebugLogger.SetEnabled(true);
