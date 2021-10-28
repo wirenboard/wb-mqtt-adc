@@ -51,3 +51,7 @@ void MakeJsonForConfed(const std::string& configFile,
 
 void MakeConfigFromConfed(const std::string& systemConfigsDir,
                           const std::string& schemaFile);
+
+void MakeSchemaForConfed(const std::string& systemConfigsDir,
+                         const std::string& schemaFile,
+                         const std::string& schemaForConfedFile);

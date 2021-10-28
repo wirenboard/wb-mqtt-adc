@@ -1,8 +1,6 @@
 #!/bin/bash
 
 SYS_CONFFILE="/var/lib/wb-mqtt-adc/conf.d/system.conf"
-SCHEMA_FILE="/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json"
-CONFED_SCHEMA_FILE="/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json"
 
 if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
 	source "/usr/lib/wb-utils/common.sh"
@@ -18,7 +16,6 @@ if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
 
 	ADCSYSCONF='{\n "iio_channels": ['
 	first=1
-	item_names=""
 	for ch_name in  $(of_node_children "$node" | sort); do
 		phandle=$(of_get_prop_ulong "$node/$ch_name" "iio-device")
 		divider_r1=$(of_get_prop_ulong "$node/$ch_name" "divider-r1-ohms")
@@ -38,26 +35,19 @@ if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
 		fi
 
 		ITEM="$ITEM \
-			\"_sort_key\" : $(of_has_prop "$node/$ch_name" "sort-order" && echo -n $(of_get_prop_ulong "$node/$ch_name" "sort-order") || echo -n 0) \
+			\"order\" : $(of_has_prop "$node/$ch_name" "sort-order" && echo -n $(of_get_prop_ulong "$node/$ch_name" "sort-order") || echo -n 0) \
 		}"
 
 		if (( first )); then
 			first=0
 		else
 			ADCSYSCONF="$ADCSYSCONF,"
-			item_names="$item_names,"
 		fi
 
 		ADCSYSCONF="$ADCSYSCONF\n$ITEM"
-		item_names="$item_names \"$ch_name\""
 	done
 	ADCSYSCONF="$ADCSYSCONF\n]}"
-	echo -e $ADCSYSCONF > ${SYS_CONFFILE}
-
-	custom_channels_filter=".definitions.custom_channel.allOf[1].not.properties.id.enum=[$item_names]"
-	system_channels_filter=".definitions.system_channel.allOf[1].properties.id.enum=[$item_names]"
-    cat $SCHEMA_FILE | jq "$custom_channels_filter|$system_channels_filter" > ${CONFED_SCHEMA_FILE}
-
+	echo -e $ADCSYSCONF | jq '.iio_channels|=sort_by(.order)|.iio_channels|=map(del(.order))' > ${SYS_CONFFILE}
 else
 	echo "/sys/firmware/devicetree/base/wirenboard/analog-inputs is missing"
 fi

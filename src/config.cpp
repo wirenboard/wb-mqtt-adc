@@ -217,3 +217,30 @@ void MakeConfigFromConfed(const string& systemConfigsDir, const string& schemaFi
     config["iio_channels"].swap(newChannels);
     MakeWriter("  ", "None")->write(config, &cout);
 }
+
+void MakeSchemaForConfed(const string& systemConfigsDir,
+                         const string& schemaFile,
+                         const string& schemaForConfedFile)
+{
+    auto schema = Parse(schemaFile);
+    auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
+    unordered_set<string> systemChannels;
+    try {
+        IterateDir(systemConfigsDir, ".conf", [&](const string& f) {
+            auto cfg = Load(f, noDeviceNameSchema);
+            for (const auto& ch: cfg["iio_channels"]) {
+                systemChannels.insert(ch["id"].asString());
+            }
+            return false;
+        });
+    } catch (const TNoDirError&) {
+    }
+    auto& notNode = schema["definitions"]["custom_channel"]["allOf"][1]["not"]["properties"]["id"]["enum"];
+	auto& sysIdsNode = schema["definitions"]["system_channel"]["allOf"][1]["properties"]["id"]["enum"];
+    for (const auto& id: systemChannels) {
+        notNode.append(id);
+        sysIdsNode.append(id);
+    }
+    ofstream f(schemaForConfedFile);
+    MakeWriter("    ", "None")->write(schema, &f);
+}

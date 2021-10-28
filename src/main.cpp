@@ -25,6 +25,7 @@ namespace
     const auto CONFIG_FILE        = "/etc/wb-mqtt-adc.conf";
     const auto SYSTEM_CONFIGS_DIR = "/var/lib/wb-mqtt-adc/conf.d";
     const auto CONFIG_SCHEMA_FILE = "/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json";
+    const auto SCHEMA_FOR_CONFED_FILE = "/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json";
 
     void PrintUsage()
     {
@@ -42,6 +43,7 @@ namespace
              << "  -u user      MQTT user (optional)" << endl
              << "  -P password  MQTT user password (optional)" << endl
              << "  -T prefix    MQTT topic prefix (optional)" << endl
+             << "  -g           Generate JSON Schema for wb-mqtt-confed" << endl
              << "  -j           Make JSON for wb-mqtt-confed from /etc/wb-mqtt-adc.conf" << endl
              << "  -J           Make /etc/wb-mqtt-adc.conf from wb-mqtt-confed output" << endl;
     }
@@ -54,7 +56,7 @@ namespace
         int debugLevel = 0;
         int c;
 
-        while ((c = getopt(argc, argv, "d:c:h:p:u:P:T:jJ")) != -1) {
+        while ((c = getopt(argc, argv, "d:c:h:p:u:P:T:jJg")) != -1) {
             switch (c) {
             case 'd':
                 debugLevel = stoi(optarg);
@@ -93,7 +95,14 @@ namespace
                     ErrorLogger.Log() << "FATAL: " << e.what();
                     exit(1);
                 }
-
+            case 'g':
+                try {
+                    MakeSchemaForConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_FILE, SCHEMA_FOR_CONFED_FILE);
+                    exit(0);
+                } catch (const std::exception& e) {
+                    ErrorLogger.Log() << "FATAL: " << e.what();
+                    exit(1);
+                }
             case '?':
             default:
                 PrintUsage();
