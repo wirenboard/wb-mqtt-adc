@@ -135,10 +135,10 @@
       "options": {
         "disable_edit_json": true,
         "disable_properties": true,
-        "compact": true,
         "disable_collapse": true,
         "wb": {
-            "disable_panel": true
+            "disable_panel": true,
+            "disable_title": true
         }
       }
     },
@@ -209,12 +209,13 @@
       },
       "remove_empty_properties": true,
       "options": {
-        "compact": true,
         "disable_edit_json": true,
         "disable_properties": true,
         "disable_collapse": true,
         "wb": {
-            "disable_panel": true
+          "disable_panel": true,
+          "disable_title": true,
+          "controls_on_top": true
         }
       }
     }
@@ -240,6 +241,7 @@
       "title": "List of ADC channels",
       "items": {
         "_format": "roMultiple",
+        "title": "Channel",
         "headerTemplate": "{{self.id}}",
         "oneOf": [
           { "$ref": "#/definitions/system_channel" },
@@ -252,8 +254,8 @@
         "disable_array_reorder": true,
         "disable_collapse": true,
         "disable_array_add": true,
-        "disable_array_delete": true,
-        "disable_array_delete_all": true,
+        "disable_array_delete_all_rows": true,
+        "disable_array_delete_last_row": true,
         "wb": {
           "disable_panel": true,
           "disable_array_item_panel": true
