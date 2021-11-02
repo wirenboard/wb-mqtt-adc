@@ -25,7 +25,7 @@ namespace
     const auto CONFIG_FILE        = "/etc/wb-mqtt-adc.conf";
     const auto SYSTEM_CONFIGS_DIR = "/var/lib/wb-mqtt-adc/conf.d";
     const auto CONFIG_SCHEMA_FILE = "/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json";
-    const auto SCHEMA_FOR_CONFED_FILE = "/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json";
+    const auto SCHEMA_FOR_CONFED_FILE = "/var/lib/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json";
 
     void PrintUsage()
     {

@@ -22,7 +22,7 @@ Depends: bc,
          ${misc:Depends},
          ${shlibs:Depends}
 Suggests: linux-image-wb2 (>= 4.9+wb20181221180922) | linux-image-wb6 (>= 4.9+wb20181221180922)
-Breaks: wb-mqtt-confed (<< 1.0.2), wb-homa-adc (<< 2.0.1)
+Breaks: wb-mqtt-confed (<< 1.7.0), wb-homa-adc (<< 2.0.1)
 Replaces: wb-homa-adc (<< 2.0.1)
 Conflicts: wb-homa-adc (<< 2.0.1)
 Description: Wiren Board Smart Home MQTT ADC driver compatible with HomA conventions
