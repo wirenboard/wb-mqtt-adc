@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.3.1) stable; urgency=medium
+
+  * ADC schema title translation to Russian
+
+ -- Dmitry Vorobjev <d.vorobjev@wirenboard.ru>  Tue, 02 Nov 2021 14:30:02 +0300
+
 wb-mqtt-adc (2.3.0) stable; urgency=medium
 
   * Update dependency on libwbmqtt1 to support fixed libmosquitto facade
