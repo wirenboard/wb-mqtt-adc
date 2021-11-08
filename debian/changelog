@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.3.2) stable; urgency=medium
+
+  * MQTT ADC schema translation to Russian
+
+ -- Dmitry Vorobjev <d.vorobjev@wirenboard.ru>  Mon, 08 Nov 2021 18:52:18 +0300
+
 wb-mqtt-adc (2.3.1) stable; urgency=medium
 
   * ADC schema title translation to Russian
