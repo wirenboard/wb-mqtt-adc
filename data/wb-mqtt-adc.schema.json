@@ -180,7 +180,7 @@
             "voltage_multiplier_description": "Для получения итогового значения напряжение АЦП умножается на заданный коэффициент",
             "Averaging window": "Окно усреднения",
             "Number of samples to use while calculating moving average": "Количество выборок, используемых для усреднения значения",
-            "Decimal places in value": "Количество цифр после запятой у итогового значения",
+            "Decimal places in value": "Число десятичных знаков у итогового значения",
             "Overvoltage threshold (V)": "Максимальное входное напряжение (В)",
             "IIO device match pattern": "Шаблон соответствия устройству IIO",
             "Fnmatch-compatible pattern to match with iio:deviceN symlink target": "Шаблон соотвествия с целью символической ссылки iio:устройствоN",
@@ -196,7 +196,7 @@
             "MQTT device name": "Имя устройства MQTT",
             "Enable debug logging": "Включить отладочные сообщения",
             "List of SoC channels": "Список каналов аналогового ввода",
-            "Unchanged value posting interval (s)": "Интервал публикации неизменившихся значений (с)",
+            "Unchanged value posting interval (s)": "Интервал публикации неизменившегося значения (с)",
             "max_unchanged_interval_description": "Задает интервал публикации значения, если оно не изменилось. При изменении значения данные публикуются всегда незамедлительно",
             "ADC channel {{ |self.channel_number|}} {{(|self.id|)}}": "Канал АЦП {{ |self.channel_number|}} {{(|self.id|)}}"
         }
