@@ -35,7 +35,7 @@ if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
 		fi
 
 		ITEM="$ITEM \
-			\"_sort_key\" : $(of_has_prop "$node/$ch_name" "sort-order" && echo -n $(of_get_prop_ulong "$node/$ch_name" "sort-order") || echo -n 0) \
+			\"order\" : $(of_has_prop "$node/$ch_name" "sort-order" && echo -n $(of_get_prop_ulong "$node/$ch_name" "sort-order") || echo -n 0) \
 		}"
 
 		if (( first )); then
@@ -47,7 +47,7 @@ if [[ -d /sys/firmware/devicetree/base/wirenboard/analog-inputs ]]; then
 		ADCSYSCONF="$ADCSYSCONF\n$ITEM"
 	done
 	ADCSYSCONF="$ADCSYSCONF\n]}"
-	echo -e $ADCSYSCONF > ${SYS_CONFFILE}
+	echo -e $ADCSYSCONF | jq '.iio_channels|=sort_by(.order)|.iio_channels|=map(del(.order))' > ${SYS_CONFFILE}
 else
 	echo "/sys/firmware/devicetree/base/wirenboard/analog-inputs is missing"
 fi

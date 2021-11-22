@@ -4,6 +4,8 @@ set -e
 
 CONFFILE=/etc/wb-mqtt-adc.conf
 
+rm -f /var/lib/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json
+
 if [ "$1" = "purge" ]; then
     ucf  --purge /etc/wb-mqtt-adc.conf
     rm -f /var/lib/wb-mqtt-adc/conf.d/*

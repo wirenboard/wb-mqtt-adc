@@ -17,6 +17,7 @@ ADC_SOURCES= 						\
 			src/sysfs_adc.cpp		\
 			src/moving_average.cpp	\
 			src/file_utils.cpp		\
+			src/log.cpp				\
 
 ADC_OBJECTS=$(ADC_SOURCES:.cpp=.o)
 ADC_BIN=wb-mqtt-adc
@@ -80,4 +81,4 @@ install: all
 
 	install -D -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
 
-	install -D -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json
+	install -D -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json

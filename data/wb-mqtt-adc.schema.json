@@ -1,173 +1,290 @@
 {
-    "type": "object",
-    "title": "ADC Driver Configuration",
-    "description": "Controller analog inputs configuration",
+  "type": "object",
+  "title": "ADC Driver Configuration",
+  "description": "Controller analog inputs configuration",
 
-    "configFile": {
-        "path": "/etc/wb-mqtt-adc.conf",
-        "service": "wb-mqtt-adc"
-    },
+  "configFile": {
+    "path": "/etc/wb-mqtt-adc.conf",
+    "service": "wb-mqtt-adc",
+    "toJSON": [ "wb-mqtt-adc", "-j" ],
+    "fromJSON": [ "wb-mqtt-adc", "-J" ]
+  },
 
-    "definitions": {
-        "adc_channel": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "title": "MQTT id",
-                    "propertyOrder": 1
-                },
-                "scale": {
-                    "type": "number",
-                    "title": "Internal ADC scale",
-                    "default": 0,
-                    "description": "The ADC scale to use. This setting asks hardware to use the specified scale. The closest supported scale (from _scale_available list) will be used. This doesn't affect the final value, but, instead would affect the accuracy and the measurement range. If left 0, the maximum available scale is used.",
-                    "propertyOrder": 10
-                },
-                "voltage_multiplier": {
-                    "type": "number",
-                    "title": "Scale factor",
-                    "default": 1,
-                    "description": "The ADC voltage is multiplied to this factor to get the resulting value",
-                    "propertyOrder": 3
-                },
-                "averaging_window": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "title": "Averaging window",
-                    "description": "Number of samples to use while calculating moving average",
-                    "propertyOrder": 4
-                },
-                "decimal_places": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "title": "Decimal places in value",
-                    "propertyOrder": 5
-                },
-                "max_voltage": {
-                    "type": "number",
-                    "title": "Overvoltage threshold (V)",
-                    "propertyOrder": 6
-                },
-                "match_iio": {
-                    "type": "string",
-                    "title": "IIO device match pattern",
-                    "description": "Fnmatch-compatible pattern to match with iio:deviceN symlink target",
-                    "propertyOrder": 9
-                },
-                "poll_interval": {
-                    "type": "integer",
-                    "title": "Channel poll interval (ms)",
-                    "default": 700,
-                    "minimum": 1,
-                    "description": "Delay between channel value publications",
-                    "propertyOrder": 11
-                },
-                "delay_between_measurements": {
-                    "type": "integer",
-                    "title": "Averaging interval (ms)",
-                    "default": 10,
-                    "minimum": 1,
-                    "description": "Delay between individual channel reads while averaging",
-                    "propertyOrder": 12
-                },
-                "readings_number": {
-                    "type": "integer",
-                    "title": "(deprecated) Number of ADC reading per sample",
-                    "minimum": 1,
-                    "description": "Is not used. Use averaging window and poll interval instead of this",
-                    "propertyOrder": 100
-                }
-            },
-            "required": ["id", "voltage_multiplier"]
+  "definitions": {
+    "common_parameters": {
+      "properties": {
+        "averaging_window": {
+          "type": "integer",
+          "minimum": 1,
+          "title": "Averaging window",
+          "description": "Number of samples to use while calculating moving average",
+          "propertyOrder": 4
         },
-
-        "iio_channel_base": {
-            "type": "object",
-            "options": {
-                "disable_edit_json": true,
-                "disable_collapse": true
-            },
-            "properties": {
-                "channel_number": {
-                    "title": "SoC channel",
-                    "propertyOrder": 2,
-                    "oneOf": [
-                        {
-                            "type": "string",
-                            "description": "example: \"voltage10\" coresponds to \"in_voltage10\"",
-                            "minLength": 1
-                        },
-                        {
-                            "type": "integer",
-                            "description": "(deprecated) \"10\" coresponds to \"in_voltage10\"",
-                            "minimum": 0
-                        }
-                    ]
-                }
-            },
-
-            "defaultProperties": [
-                "channel_number",
-                "voltage_multiplier",
-                "id",
-                "poll_interval"
-            ],
-            "required": ["channel_number"]
+        "decimal_places": {
+          "type": "integer",
+          "minimum": 0,
+          "title": "Decimal places in value",
+          "propertyOrder": 5
         },
-
-        "iio_channel": {
-            "headerTemplate": "ADC channel {{ |self.channel_number|}} {{(|self.id|)}}",
-            "allOf": [
-                {
-                    "$ref": "#/definitions/iio_channel_base"
-                },
-                { "$ref": "#/definitions/adc_channel" }
-            ]
+        "scale": {
+          "type": "number",
+          "title": "Internal ADC scale",
+          "default": 0,
+          "description": "The ADC scale to use. This setting asks hardware to use the specified scale. The closest supported scale (from _scale_available list) will be used. This doesn't affect the final value, but, instead would affect the accuracy and the measurement range. If left 0, the maximum available scale is used.",
+          "propertyOrder": 10
+        },
+        "poll_interval": {
+          "type": "integer",
+          "title": "Channel poll interval (ms)",
+          "default": 700,
+          "minimum": 1,
+          "description": "Delay between channel value publications",
+          "propertyOrder": 11
+        },
+        "delay_between_measurements": {
+          "type": "integer",
+          "title": "Averaging interval (ms)",
+          "default": 10,
+          "minimum": 1,
+          "description": "Delay between individual channel reads while averaging",
+          "propertyOrder": 12
+        },
+        "readings_number": {
+          "type": "integer",
+          "title": "(deprecated) Number of ADC reading per sample",
+          "minimum": 1,
+          "description": "Is not used. Use averaging window and poll interval instead of this",
+          "propertyOrder": 100
         }
+      },
+      "defaultProperties": ["averaging_window", "decimal_places", "scale", "poll_interval", "delay_between_measurements"]
     },
 
-    "properties": {
-        "device_name": {
-            "type": "string",
-            "title": "MQTT device name",
-            "default": "ADCs",
-            "propertyOrder": 1
-        },
-        "debug": {
-            "type": "boolean",
-            "title": "Enable debug logging",
-            "default": false,
-            "_format": "checkbox",
-            "propertyOrder": 2
-        },
-        "iio_channels": {
-            "type": "array",
-            "title": "List of SoC channels",
-            "items": {
-                "$ref": "#/definitions/iio_channel"
-            },
-            "_format": "tabs",
-            "propertyOrder": 3,
-            "options": {
-                "disable_collapse": true
+    "custom_channel": {
+      "_format": "merge-default",
+      "allOf": [
+        { "$ref": "#/definitions/common_parameters" },
+        {
+          "type": "object",
+          "not": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "enum": []
+              }
             }
-        },
-        "max_unchanged_interval": {
-            "type": "integer",
-            "title": "Unchanged value posting interval (s)",
-            "description": "Specifies the maximum interval in seconds between posting the same values to message queue. Regardless of this setting, new values will be immediately published on change.",
-            "default": 60,
-            "minimum": 5,
-            "propertyOrder": 4
+          },
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "MQTT id",
+              "propertyOrder": 1
+            },
+            "voltage_multiplier": {
+              "type": "number",
+              "title": "Scale factor",
+              "default": 1,
+              "description": "The ADC voltage is multiplied to this factor to get the resulting value",
+              "propertyOrder": 3
+            },
+            "max_voltage": {
+              "type": "number",
+              "title": "Overvoltage threshold (V)",
+              "propertyOrder": 6
+            },
+            "match_iio": {
+              "type": "string",
+              "title": "IIO device match pattern",
+              "description": "Fnmatch-compatible pattern to match with iio:deviceN symlink target",
+              "propertyOrder": 9
+            },
+            "channel_number": {
+              "title": "ADC channel",
+              "propertyOrder": 2,
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "example: \"voltage10\" corresponds to \"in_voltage10\"",
+                  "minLength": 1
+                },
+                {
+                  "type": "integer",
+                  "description": "(deprecated) \"10\" corresponds to \"in_voltage10\"",
+                  "minimum": 0
+                }
+              ]
+            },
+            "mqtt_type": {
+              "type": "string",
+              "enum": ["voltage", "current"],
+              "title": "MQTT control type",
+              "propertyOrder": 13
+            }
+          },
+          "required": ["id", "channel_number", "match_iio", "voltage_multiplier"]
         }
+      ],
+      "default": {
+        "averaging_window": 10,
+        "decimal_places": 3,
+        "scale": 0,
+        "poll_interval": 700,
+        "delay_between_measurements": 10
+      },
+      "remove_empty_properties": true,
+      "options": {
+        "disable_edit_json": true,
+        "disable_properties": true,
+        "disable_collapse": true,
+        "wb": {
+            "disable_panel": true,
+            "disable_title": true
+        }
+      }
     },
     "required": ["device_name", "iio_channels"],
 
-    "translations": {
-        "ru": {
-            "ADC Driver Configuration": "Аналоговые входы",
-            "Controller analog inputs configuration": "Конфигурация аналоговых входов контроллера"
+    "system_channel": {
+      "_format": "merge-default",
+      "allOf": [
+        { "$ref": "#/definitions/common_parameters" },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "enum": [],
+              "options": {
+                "hidden": true
+              }
+            },
+            "voltage_multiplier": {
+              "type": "number",
+              "options": {
+                "hidden": true
+              }
+            },
+            "match_iio": {
+              "type": "string",
+              "options": {
+                "hidden": true
+              }
+            },
+            "channel_number": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              ],
+              "options": {
+                "hidden": true
+              }
+            },
+            "mqtt_type": {
+              "type": "string",
+              "options": {
+                "hidden": true
+              }
+            },
+            "max_voltage": {
+              "type": "number",
+              "options": {
+                "hidden": true
+              }
+            }
+          },
+          "required": ["id"]
         }
+      ],
+      "default": {
+        "averaging_window": 10,
+        "decimal_places": 3,
+        "scale": 0,
+        "poll_interval": 700,
+        "delay_between_measurements": 10
+      },
+      "remove_empty_properties": true,
+      "options": {
+        "disable_edit_json": true,
+        "disable_properties": true,
+        "disable_collapse": true,
+        "wb": {
+          "disable_panel": true,
+          "disable_title": true,
+          "controls_on_top": true
+        }
+      }
     }
+  },
+
+  "_format": "merge-default",
+  "properties": {
+    "device_name": {
+      "type": "string",
+      "title": "MQTT device name",
+      "default": "ADCs",
+      "propertyOrder": 1
+    },
+    "debug": {
+      "type": "boolean",
+      "title": "Enable debug logging",
+      "default": false,
+      "_format": "checkbox",
+      "propertyOrder": 2
+    },
+    "iio_channels": {
+      "type": "array",
+      "title": "List of ADC channels",
+      "items": {
+        "_format": "roMultiple",
+        "title": "Channel",
+        "headerTemplate": "{{self.id}}",
+        "oneOf": [
+          { "$ref": "#/definitions/system_channel" },
+          { "$ref": "#/definitions/custom_channel" }
+        ]
+      },
+      "_format": "tabs",
+      "propertyOrder": 4,
+      "options": {
+        "disable_array_reorder": true,
+        "disable_collapse": true,
+        "disable_array_add": true,
+        "disable_array_delete_all_rows": true,
+        "disable_array_delete_last_row": true,
+        "wb": {
+          "disable_panel": true,
+          "disable_array_item_panel": true
+        }
+      }
+    },
+    "max_unchanged_interval": {
+      "type": "integer",
+      "title": "Unchanged value posting interval (s)",
+      "description": "Specifies the maximum interval in seconds between posting the same values to message queue. Regardless of this setting, new values will be immediately published on change.",
+      "default": 60,
+      "minimum": 5,
+      "propertyOrder": 3
+    }
+  },
+  "required": ["device_name", "iio_channels"],
+  "options": {
+    "disable_collapse": true,
+    "disable_properties": true,
+    "disable_edit_json": true
+  },
+  "default": {
+    "max_unchanged_interval": 60
+  },
+  "translations": {
+    "ru": {
+      "ADC Driver Configuration": "Аналоговые входы",
+      "Controller analog inputs configuration": "Конфигурация аналоговых входов контроллера"
+    }
+  }
 }
