@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <chrono>
+#include  <limits>
 
 #include "moving_average.h"
 
@@ -46,7 +47,7 @@ public:
         std::string ChannelNumber = "voltage1";
 
         //! Maximum result after multiplying readed value from ADC to Scale
-        double MaxScaledVoltage = ADC_DEFAULT_MAX_SCALED_VOLTAGE;
+        double MaxScaledVoltage = std::numeric_limits<double>::max();
 
         /*! The ADC scale to use. The closest supported scale will be used.
             It affects the accuracy and the measurement range.
