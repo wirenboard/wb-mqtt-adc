@@ -1,3 +1,10 @@
+wb-mqtt-adc (2.4.1) stable; urgency=medium
+
+  * generate-system-config: made dividers, channel name and so on optional
+  * do not limit max adc voltage if not set in config
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 22 Nov 2021 17:24:07 +0300
+
 wb-mqtt-adc (2.4.0) stable; urgency=medium
 
   * New UI for editing configuration file
