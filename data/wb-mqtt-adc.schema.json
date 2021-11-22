@@ -1,7 +1,7 @@
 {
   "type": "object",
   "title": "ADC Driver Configuration",
-  "description": "Analog inputs configuration",
+  "description": "Controller analog inputs configuration",
 
   "configFile": {
     "path": "/etc/wb-mqtt-adc.conf",
@@ -142,6 +142,7 @@
         }
       }
     },
+    "required": ["device_name", "iio_channels"],
 
     "system_channel": {
       "_format": "merge-default",
@@ -279,5 +280,11 @@
   },
   "default": {
     "max_unchanged_interval": 60
+  },
+  "translations": {
+    "ru": {
+      "ADC Driver Configuration": "Аналоговые входы",
+      "Controller analog inputs configuration": "Конфигурация аналоговых входов контроллера"
+    }
   }
 }

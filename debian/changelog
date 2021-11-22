@@ -3,7 +3,13 @@ wb-mqtt-adc (2.4.0) stable; urgency=medium
   * New UI for editing configuration file
   * Schema for wb-mqtt-homeui is moved to /var/lib/wb-mqtt-confed/schemas
 
- -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 25 Oct 2021 15:55:49 +0500
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 22 Nov 2021 10:46:05 +0500
+
+wb-mqtt-adc (2.3.1) stable; urgency=medium
+
+  * ADC schema title translation to Russian
+
+ -- Dmitry Vorobjev <d.vorobjev@wirenboard.ru>  Tue, 02 Nov 2021 14:30:02 +0300
 
 wb-mqtt-adc (2.3.0) stable; urgency=medium
 
