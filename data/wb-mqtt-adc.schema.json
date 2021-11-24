@@ -142,7 +142,6 @@
         }
       }
     },
-    "required": ["device_name", "iio_channels"],
 
     "system_channel": {
       "_format": "merge-default",
