@@ -30,7 +30,7 @@
           "type": "number",
           "title": "Internal ADC scale",
           "default": 0,
-          "description": "The ADC scale to use. This setting asks hardware to use the specified scale. The closest supported scale (from _scale_available list) will be used. This doesn't affect the final value, but, instead would affect the accuracy and the measurement range. If left 0, the maximum available scale is used.",
+          "description": "scale_description",
           "propertyOrder": 10
         },
         "poll_interval": {
@@ -84,7 +84,7 @@
               "type": "number",
               "title": "Scale factor",
               "default": 1,
-              "description": "The ADC voltage is multiplied to this factor to get the resulting value",
+              "description": "voltage_multiplier_description",
               "propertyOrder": 3
             },
             "max_voltage": {
@@ -265,7 +265,7 @@
     "max_unchanged_interval": {
       "type": "integer",
       "title": "Unchanged value posting interval (s)",
-      "description": "Specifies the maximum interval in seconds between posting the same values to message queue. Regardless of this setting, new values will be immediately published on change.",
+      "description": "max_unchanged_interval_description",
       "default": 60,
       "minimum": 5,
       "propertyOrder": 3
@@ -280,10 +280,40 @@
   "default": {
     "max_unchanged_interval": 60
   },
-  "translations": {
-    "ru": {
-      "ADC Driver Configuration": "Аналоговые входы",
-      "Controller analog inputs configuration": "Конфигурация аналоговых входов контроллера"
+    "translations": {
+        "en": {
+            "scale_description": "The ADC scale to use. This setting asks hardware to use the specified scale. The closest supported scale (from _scale_available list) will be used. This doesn't affect the final value, but, instead would affect the accuracy and the measurement range. If left 0, the maximum available scale is used",
+            "voltage_multiplier_description": "The ADC voltage is multiplied to this factor to get the resulting value",
+            "max_unchanged_interval_description": "Specifies the maximum interval in seconds between posting the same values to message queue. Regardless of this setting, new values will be immediately published on change"
+        },
+        "ru": {
+            "ADC Driver Configuration": "Аналоговые входы",
+            "Controller analog inputs configuration": "Конфигурация аналоговых входов контроллера",
+            "MQTT id": "Название канала MQTT",
+            "Internal ADC scale": "Внутренний множитель АЦП",
+            "scale_description": "Множитель не влияет на конечное значение, он определяет точность и диапазон измерения. Будет выбран ближайший из поддерживаемых множителей. Число 0 задает максимальный доступный множитель",
+            "Scale factor": "Масштабирующий коэффициент",
+            "voltage_multiplier_description": "Для получения итогового значения напряжение АЦП умножается на заданный коэффициент",
+            "Averaging window": "Окно усреднения",
+            "Number of samples to use while calculating moving average": "Количество выборок, используемых для усреднения значения",
+            "Decimal places in value": "Число десятичных знаков у итогового значения",
+            "Overvoltage threshold (V)": "Максимальное входное напряжение (В)",
+            "IIO device match pattern": "Шаблон соответствия устройству IIO",
+            "Fnmatch-compatible pattern to match with iio:deviceN symlink target": "Шаблон соответствия с целью символической ссылки iio:deviceN",
+            "Channel poll interval (ms)": "Период опроса канала (мс)",
+            "Delay between channel value publications": "Интервал между опросами значений канала",
+            "Averaging interval (ms)": "Интервал усреднения (мс)",
+            "Delay between individual channel reads while averaging": "Интервал между выборками значений канала при усреднении",
+            "(deprecated) Number of ADC reading per sample": "Количество чтений данных АЦП при опросе (устаревшее)",
+            "Is not used. Use averaging window and poll interval instead of this": "Не используется. Используйте параметры \"Окно усреднения\" и \"Период опроса\"",
+            "example: \"voltage10\" corresponds to \"in_voltage10\"": "например: \"voltage10\" соответствует \"in_voltage10\"",
+            "(deprecated) \"10\" corresponds to \"in_voltage10\"": "\"10\" соответствует \"in_voltage10\" (устаревшее)",
+            "MQTT device name": "Имя устройства MQTT",
+            "Enable debug logging": "Включить отладочные сообщения",
+            "Unchanged value posting interval (s)": "Интервал публикации неизменившегося значения (с)",
+            "max_unchanged_interval_description": "Интервал публикации значения, если оно не изменилось. При изменении значения данные публикуются всегда незамедлительно",
+            "ADC channel": "Канал АЦП",
+            "List of ADC channels": "Список каналов АЦП"
+        }
     }
-  }
 }
