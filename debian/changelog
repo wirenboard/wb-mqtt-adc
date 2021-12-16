@@ -7,7 +7,7 @@ wb-mqtt-adc (2.4.2) stable; urgency=medium
 
 wb-mqtt-adc (2.4.1) stable; urgency=medium
 
-* MQTT ADC schema translation to Russian
+  * MQTT ADC schema translation to Russian
   * wb-mqtt-adc.schema.json is renamed to wb-mqtt-adc-template.schema.json to show 
     that it is not a final JSON schema but a template for actual schema generation
   * Generated JSON schema is used for config validation
