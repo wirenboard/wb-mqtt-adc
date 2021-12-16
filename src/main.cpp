@@ -24,8 +24,8 @@ namespace
 
     const auto CONFIG_FILE        = "/etc/wb-mqtt-adc.conf";
     const auto SYSTEM_CONFIGS_DIR = "/var/lib/wb-mqtt-adc/conf.d";
-    const auto CONFIG_SCHEMA_FILE = "/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json";
-    const auto SCHEMA_FOR_CONFED_FILE = "/var/lib/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json";
+    const auto CONFIG_SCHEMA_TEMPLATE_FILE = "/usr/share/wb-mqtt-adc/wb-mqtt-adc-template.schema.json";
+    const auto SCHEMA_FILE = "/var/lib/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json";
 
     void PrintUsage()
     {
@@ -81,7 +81,7 @@ namespace
                 break;
             case 'j':
                 try {
-                    MakeJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_FILE);
+                    MakeJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
                     exit(0);
                 } catch (const std::exception& e) {
                     ErrorLogger.Log() << "FATAL: " << e.what();
@@ -89,7 +89,7 @@ namespace
                 }
             case 'J':
                 try {
-                    MakeConfigFromConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_FILE);
+                    MakeConfigFromConfed(SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
                     exit(0);
                 } catch (const std::exception& e) {
                     ErrorLogger.Log() << "FATAL: " << e.what();
@@ -97,7 +97,7 @@ namespace
                 }
             case 'g':
                 try {
-                    MakeSchemaForConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_FILE, SCHEMA_FOR_CONFED_FILE);
+                    MakeSchemaForConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_TEMPLATE_FILE, SCHEMA_FILE);
                     exit(0);
                 } catch (const std::exception& e) {
                     ErrorLogger.Log() << "FATAL: " << e.what();
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
         TConfig config = LoadConfig(CONFIG_FILE,
                                     customConfig,
                                     SYSTEM_CONFIGS_DIR,
-                                    CONFIG_SCHEMA_FILE,
+                                    SCHEMA_FILE,
                                     &InfoLogger,
                                     &WarnLogger);
 

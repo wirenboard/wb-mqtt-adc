@@ -1,9 +1,19 @@
-wb-mqtt-adc (2.4.1) stable; urgency=medium
+wb-mqtt-adc (2.4.2) stable; urgency=medium
 
   * generate-system-config: made dividers, channel name and so on optional
   * do not limit max adc voltage if not set in config
 
  -- Evgeny Boger <boger@contactless.ru>  Mon, 22 Nov 2021 17:24:07 +0300
+
+wb-mqtt-adc (2.4.1) stable; urgency=medium
+
+* MQTT ADC schema translation to Russian
+  * wb-mqtt-adc.schema.json is renamed to wb-mqtt-adc-template.schema.json to show 
+    that it is not a final JSON schema but a template for actual schema generation
+  * Generated JSON schema is used for config validation
+  * Generated JSON schema conforms to JSON Schema Draft v4
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 24 Nov 2021 18:03:25 +0500
 
 wb-mqtt-adc (2.4.0) stable; urgency=medium
 

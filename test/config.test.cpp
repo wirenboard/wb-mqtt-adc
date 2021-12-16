@@ -8,6 +8,7 @@ class TConfigTest : public testing::Test
 protected:
     std::string testRootDir;
     std::string schemaFile;
+    std::string confDDir;
 
     void SetUp()
     {
@@ -18,7 +19,15 @@ protected:
         }
         testRootDir += "config_test_data";
 
-        schemaFile = testRootDir + "/../../data/wb-mqtt-adc.schema.json";
+        const auto CONFIG_SCHEMA_TEMPLATE_FILE = testRootDir + "/../../data/wb-mqtt-adc-template.schema.json";
+        confDDir = testRootDir + "/conf.d";
+        schemaFile = testRootDir + "/wb-mqtt-adc.schema.json";
+        MakeSchemaForConfed(confDDir, CONFIG_SCHEMA_TEMPLATE_FILE, schemaFile);
+    }
+
+    void TearDown()
+    {
+        remove(schemaFile.c_str());
     }
 };
 
@@ -36,6 +45,7 @@ TEST_F(TConfigTest, bad_config)
     ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad3.conf", "", "", schemaFile), std::runtime_error);
     ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad4.conf", "", "", schemaFile), std::runtime_error);
     ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad5.conf", "", "", schemaFile), std::runtime_error);
+    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad6.conf", "", "", schemaFile), std::runtime_error);
     ASSERT_THROW(LoadConfig("", testRootDir + "/bad/bad1.conf", "", schemaFile), std::runtime_error);
 }
 
@@ -43,7 +53,7 @@ TEST_F(TConfigTest, optional_config)
 {
     TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf",
                              testRootDir + "/good1/optional.conf",
-                             "",
+                             confDDir,
                              schemaFile,
                              &InfoLogger,
                              &WarnLogger);
@@ -64,7 +74,7 @@ TEST_F(TConfigTest, empty_main_config)
 {
     TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf",
                              "",
-                             testRootDir + "/good1/wb-mqtt-adc.conf.d",
+                             confDDir,
                              schemaFile,
                              &InfoLogger,
                              &WarnLogger);
@@ -75,16 +85,16 @@ TEST_F(TConfigTest, empty_main_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 1);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 2);
-    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 5);
+    ASSERT_EQ(cfg.Channels[0].MatchIIO, "../../../devices/platform/soc/2100000.bus/2198000.adc/iio:device0");
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17.66666);
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 0);
 }
 
 TEST_F(TConfigTest, full_main_config)
 {
     TConfig cfg = LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf",
                              "",
-                             testRootDir + "/good2/wb-mqtt-adc.conf.d",
+                             confDDir,
                              schemaFile,
                              &InfoLogger,
                              &WarnLogger);
@@ -95,8 +105,8 @@ TEST_F(TConfigTest, full_main_config)
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 10);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.ChannelNumber, "voltage8");
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 20);
-    ASSERT_EQ(cfg.Channels[0].MatchIIO, "path");
-    ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17);
+    ASSERT_EQ(cfg.Channels[0].MatchIIO, "../../../devices/platform/soc/2100000.bus/2198000.adc/iio:device0");
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.VoltageMultiplier, 17.66666);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DesiredScale, 50);
 }
 
@@ -106,7 +116,7 @@ TEST_F(TConfigTest, poll_interval_config)
 
     TConfig cfg = LoadConfig(testRootDir + "/good3/wb-mqtt-adc.conf",
                              "",
-                             testRootDir + "/good3/wb-mqtt-adc.conf.d",
+                             confDDir,
                              schemaFile,
                              &InfoLogger,
                              &WarnLogger);
@@ -136,7 +146,7 @@ TEST_F(TConfigTest, max_unchanged_interval)
     {
         TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_empty.conf",
                                 "",
-                                "",
+                                confDDir,
                                 schemaFile,
                                 &InfoLogger,
                                 &WarnLogger);
@@ -146,7 +156,7 @@ TEST_F(TConfigTest, max_unchanged_interval)
     {
         TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_non_empty.conf",
                                 "",
-                                "",
+                                confDDir,
                                 schemaFile,
                                 &InfoLogger,
                                 &WarnLogger);

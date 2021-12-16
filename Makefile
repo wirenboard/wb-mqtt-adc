@@ -81,4 +81,4 @@ install: all
 
 	install -D -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
 
-	install -D -m 0644  data/wb-mqtt-adc.schema.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.schema.json
+	install -D -m 0644  data/wb-mqtt-adc-template.schema.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc-template.schema.json
