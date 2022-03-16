@@ -45,7 +45,6 @@ TEST_F(TConfigTest, bad_config)
     ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad3.conf", "", "", schemaFile), std::runtime_error);
     ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad4.conf", "", "", schemaFile), std::runtime_error);
     ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad5.conf", "", "", schemaFile), std::runtime_error);
-    ASSERT_THROW(LoadConfig(testRootDir + "/bad/bad6.conf", "", "", schemaFile), std::runtime_error);
     ASSERT_THROW(LoadConfig("", testRootDir + "/bad/bad1.conf", "", schemaFile), std::runtime_error);
 }
 
