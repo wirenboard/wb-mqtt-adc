@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.4.3) stable; urgency=medium
+
+  * match_iio parameter is not required for custom channels 
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 16 Mar 2022 17:17:16 +0500
+
 wb-mqtt-adc (2.4.2) stable; urgency=medium
 
   * generate-system-config: made dividers, channel name and so on optional
