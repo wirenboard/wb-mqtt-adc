@@ -121,7 +121,7 @@
               "propertyOrder": 13
             }
           },
-          "required": ["id", "channel_number", "match_iio", "voltage_multiplier"]
+          "required": ["id", "channel_number", "voltage_multiplier"]
         }
       ],
       "default": {
