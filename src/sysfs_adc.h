@@ -8,8 +8,8 @@
 
 #include "moving_average.h"
 
-#define ADC_DEFAULT_MAX_SCALED_VOLTAGE 3100 // voltage in mV
-#define MAX_ADC_VALUE                  4094 // Maximum value that can be read from ADC
+#define ADC_DEFAULT_MAX_SCALED_VOLTAGE 3100  // voltage in mV
+#define MAX_ADC_VALUE                  65534 // Maximum value that can be read from ADC (16-bit - 1)
 
 /**
  * @brief Iterate over /sys/bus/iio/devices and find folder symlinked to matchIIO value. Throws
