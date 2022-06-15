@@ -9,7 +9,6 @@
 #include "moving_average.h"
 
 #define ADC_DEFAULT_MAX_SCALED_VOLTAGE 3100  // voltage in mV
-#define MAX_ADC_VALUE                  65534 // Maximum value that can be read from ADC (16-bit - 1)
 
 /**
  * @brief Iterate over /sys/bus/iio/devices and find folder symlinked to matchIIO value. Throws
@@ -75,14 +74,12 @@ public:
      * @brief Construct a new TChannelReader object
      *
      * @param defaultIIOScale Default channel scale if can't get it from sysfs
-     * @param maxADCvalue Maximum possible value from ADC
      * @param channelCfg Channel settings from conf file
      * @param debugLogger Logger for debug messages
      * @param infoLogger Logger for info messages
      * @param sysfsIIODir Sysfs device's folder
      */
     TChannelReader(double                           defaultIIOScale,
-                   uint32_t                         maxADCvalue,
                    const TChannelReader::TSettings& channelCfg,
                    WBMQTT::TLogger&                 debugLogger,
                    WBMQTT::TLogger&                 infoLogger,

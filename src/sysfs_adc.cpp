@@ -11,12 +11,11 @@
 #include "file_utils.h"
 
 TChannelReader::TChannelReader(double                           defaultIIOScale,
-                               uint32_t                         maxADCvalue,
                                const TChannelReader::TSettings& cfg,
                                WBMQTT::TLogger&                 debugLogger,
                                WBMQTT::TLogger&                 infoLogger,
                                const std::string&               sysfsIIODir)
-    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale), MaxADCValue(maxADCvalue),
+    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale),
       AverageCounter(cfg.AveragingWindow), DebugLogger(debugLogger), InfoLogger(infoLogger),
       LastMeasureTimestamp(Timestamp::min()), NextPollTimestamp(Timestamp::min()),
       FirstPollInLoopTimestamp(Timestamp::min())
@@ -78,10 +77,6 @@ void TChannelReader::Poll(Timestamp now, const std::string& debugMessagePrefix)
 
     // average counter collected enough data, publish it
     int32_t value = AverageCounter.GetAverage();
-    if (value >= 0 && ((uint32_t)value) > MaxADCValue) {
-        throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " average (" + std::to_string(value) + ") is bigger than maximum (" + std::to_string(MaxADCValue) + ")");
-    }
-
     double v = IIOScale * value;
     if (v > Cfg.MaxScaledVoltage) {
         throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " scaled value (" + std::to_string(v) + ") is bigger than maximum (" +
