@@ -9,7 +9,7 @@ ifeq ($(origin CXX),default)
 	CXX := $(CROSS_COMPILE)g++
 endif
 
-CXXFLAGS=-Wall -std=c++14 -Os -I.
+CXXFLAGS=-Wall -std=c++17 -Os -I.
 
 ADC_SOURCES= 						\
 			src/adc_driver.cpp		\
