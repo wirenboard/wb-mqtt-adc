@@ -167,7 +167,7 @@ std::string FindSysfsIIODir(const std::string& matchIIO)
         return (fnmatch(pattern.c_str(), buf, 0) == 0);
     };
 
-    return IterateDir("/sys/bus/iio/devices", "iio:device", fn);
+    return IterateDirByPattern("/sys/bus/iio/devices", "iio:device", fn);
 }
 
 std::string FindBestScale(const std::vector<std::string>& scales, double desiredScale)

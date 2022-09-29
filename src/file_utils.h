@@ -47,6 +47,14 @@ public:
 };
 
 /**
+ * @brief Iterate over entries of the folder.
+ *
+ * @param dirName Folder to iterate over
+ * @param fn The function calls fn with every folder entry. If fn returns true, iteration stops.
+ */
+void IterateDir(const std::string& dirName, std::function<bool(const std::string&)> fn);
+
+/**
  * @brief Iterate over entries of the folder. If entry name contains pattern, execute fn with the
  * entry.
  *
@@ -55,6 +63,6 @@ public:
  * @param fn The function calls fn with matching folder entry. If fn returns true, iteration stops.
  * @return std::string Folder entry for which fn returned true or empty string
  */
-std::string IterateDir(const std::string&                      dirName,
-                       const std::string&                      pattern,
-                       std::function<bool(const std::string&)> fn);
+std::string IterateDirByPattern(const std::string& dirName,
+                                const std::string& pattern,
+                                std::function<bool(const std::string&)> fn);

@@ -1,3 +1,10 @@
+wb-mqtt-adc (2.6.0) stable; urgency=medium
+
+  * Switched to the C++17 standard
+  * Add alphabetical order when reading files from conf.d
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.ru>  Wed, 21 Sep 2022 17:10:49 +0300
+
 wb-mqtt-adc (2.5.0) stable; urgency=medium
 
   * Support for 16-bit ADC values is added

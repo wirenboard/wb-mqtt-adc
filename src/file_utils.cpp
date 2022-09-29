@@ -1,10 +1,9 @@
 #include "file_utils.h"
+#include <filesystem>
+#include <set>
 
-#include <cstring>
-#include <dirent.h>
-#include <iomanip>
-
-TNoDirError::TNoDirError(const std::string& msg) : std::runtime_error(msg) {}
+TNoDirError::TNoDirError(const std::string& msg): std::runtime_error(msg)
+{}
 
 bool TryOpen(const std::vector<std::string>& fnames, std::ifstream& file)
 {
@@ -25,27 +24,40 @@ void WriteToFile(const std::string& fileName, const std::string& value)
     f << value;
 }
 
-std::string IterateDir(const std::string&                      dirName,
-                       const std::string&                      pattern,
-                       std::function<bool(const std::string&)> fn)
+void IterateDir(const std::string& dirName, std::function<bool(const std::string&)> fn)
 {
-    DIR* dir = opendir(dirName.c_str());
+    try {
+        const std::filesystem::path dirPath{dirName};
+        std::set<std::filesystem::path> sortedByPath;
 
-    if (dir == NULL) {
-        throw TNoDirError("Can't open directory: " + dirName);
-    }
+        for (auto& entry: std::filesystem::directory_iterator(dirPath))
+            sortedByPath.insert(entry.path());
 
-    dirent*                                 ent;
-    auto                                    closeFn = [](DIR* d) { closedir(d); };
-    std::unique_ptr<DIR, decltype(closeFn)> dirPtr(dir, closeFn);
-    while ((ent = readdir(dirPtr.get())) != NULL) {
-        if (!std::strstr(ent->d_name, pattern.c_str())) {
-            continue;
+        for (auto& filePath: sortedByPath) {
+            const auto filenameStr = filePath.filename().string();
+            if (fn(filenameStr)) {
+                return;
+            }
         }
-        std::string d(dirName + "/" + std::string(ent->d_name));
-        if (fn(d)) {
-            return d;
-        }
+    } catch (std::filesystem::filesystem_error const& ex) {
+        throw TNoDirError(ex.what());
     }
-    return std::string();
+}
+
+std::string IterateDirByPattern(const std::string& dirName,
+                                const std::string& pattern,
+                                std::function<bool(const std::string&)> fn)
+{
+    std::string res;
+    IterateDir(dirName, [&](const auto& name) {
+        if (name.find(pattern) != std::string::npos) {
+            std::string d(dirName + "/" + name);
+            if (fn(d)) {
+                res = d;
+                return true;
+            }
+        }
+        return false;
+    });
+    return res;
 }

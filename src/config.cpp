@@ -120,7 +120,7 @@ TConfig LoadConfig(const string& mainConfigFile,
     resultingConfig["iio_channels"] = Json::Value(Json::arrayValue);
 
     try {
-        IterateDir(systemConfigDir, ".conf", [&](const string& f) {
+        IterateDirByPattern(systemConfigDir, ".conf", [&](const string& f) {
             Merge(resultingConfig, Load(f, noDeviceNameSchema), mergeParams);
             return false;
         });
@@ -149,7 +149,7 @@ void MakeJsonForConfed(const string& configFile,
     }
     Value newChannels(arrayValue);
     try {
-        IterateDir(systemConfigsDir, ".conf", [&](const string& f) {
+        IterateDirByPattern(systemConfigsDir, ".conf", [&](const string& f) {
             auto cfg = Load(f, noDeviceNameSchema);
             for (const auto& ch: cfg["iio_channels"]) {
                 auto name = ch["id"].asString();
@@ -182,7 +182,7 @@ void MakeConfigFromConfed(const string& systemConfigsDir, const string& schemaFi
     auto noDeviceNameSchema = RemoveDeviceNameRequirement(Parse(schemaFile));
     unordered_set<string> systemChannels;
     try {
-        IterateDir(systemConfigsDir, ".conf", [&](const string& f) {
+        IterateDirByPattern(systemConfigsDir, ".conf", [&](const string& f) {
             auto cfg = Load(f, noDeviceNameSchema);
             for (const auto& ch: cfg["iio_channels"]) {
                 systemChannels.insert(ch["id"].asString());
@@ -226,7 +226,7 @@ void MakeSchemaForConfed(const string& systemConfigsDir,
     auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
     unordered_set<string> systemChannels;
     try {
-        IterateDir(systemConfigsDir, ".conf", [&](const string& f) {
+        IterateDirByPattern(systemConfigsDir, ".conf", [&](const string& f) {
             auto cfg = Load(f, noDeviceNameSchema);
             for (const auto& ch: cfg["iio_channels"]) {
                 systemChannels.insert(ch["id"].asString());
