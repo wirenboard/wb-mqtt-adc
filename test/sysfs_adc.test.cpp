@@ -1,4 +1,4 @@
-#include "src/sysfs_adc.h"
+#include "sysfs_adc.h"
 #include <gtest/gtest.h>
 #include <vector>
 #include <chrono>

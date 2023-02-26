@@ -9,76 +9,83 @@ ifeq ($(origin CXX),default)
 	CXX := $(CROSS_COMPILE)g++
 endif
 
-CXXFLAGS=-Wall -std=c++17 -Os -I.
+ifeq ($(DEBUG),)
+	BUILD_DIR ?= build/release
+else
+	BUILD_DIR ?= build/debug
+endif
 
-ADC_SOURCES= 						\
-			src/adc_driver.cpp		\
-			src/config.cpp			\
-			src/sysfs_adc.cpp		\
-			src/moving_average.cpp	\
-			src/file_utils.cpp		\
-			src/log.cpp				\
+PREFIX = /usr
 
-ADC_OBJECTS=$(ADC_SOURCES:.cpp=.o)
-ADC_BIN=wb-mqtt-adc
-ADC_LIBS= -lwbmqtt1 -lpthread
+ADC_BIN = wb-mqtt-adc
+SRC_DIR = src
+ADC_SOURCES := $(shell find $(SRC_DIR) -name *.cpp -and -not -name main.cpp)
+ADC_OBJECTS := $(ADC_SOURCES:%=$(BUILD_DIR)/%.o)
 
-ADC_TEST_SOURCES= 							\
-			$(TEST_DIR)/test_main.cpp		\
-			$(TEST_DIR)/moving_average.test.cpp	\
-			$(TEST_DIR)/file_utils.test.cpp	\
-			$(TEST_DIR)/config.test.cpp	\
-			$(TEST_DIR)/sysfs_adc.test.cpp	\
+CXXFLAGS = -Wall -std=c++17 -I$(SRC_DIR)
+LDFLAGS = -lwbmqtt1 -lpthread
 
-TEST_DIR=test
+ifeq ($(DEBUG),)
+	CXXFLAGS += -O2
+else
+	CXXFLAGS += -g -O0 -fprofile-arcs -ftest-coverage
+	LDFLAGS += -lgcov
+endif
+
+TEST_DIR = test
+ADC_TEST_SOURCES := $(shell find $(TEST_DIR) -name *.cpp)
+ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:%=$(BUILD_DIR)/%.o)
+TEST_BIN = wb-mqtt-adc-test
+TEST_LDFLAGS = -lgtest
+
 export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
 
-ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:.cpp=.o)
-TEST_BIN=wb-mqtt-adc-test
-TEST_LIBS=-lgtest
-
-
-all : $(ADC_BIN)
+all: $(BUILD_DIR)/$(ADC_BIN)
 
 # ADC
-%.o : %.cpp
-	${CXX} -c $< -o $@ ${CXXFLAGS}
+$(BUILD_DIR)/%.cpp.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-$(ADC_BIN) : src/main.o $(ADC_OBJECTS)
-	${CXX} $^ ${ADC_LIBS} -o $@
+$(BUILD_DIR)/$(ADC_BIN): $(BUILD_DIR)/$(SRC_DIR)/main.cpp.o $(ADC_OBJECTS)
+	$(CXX) $^ $(LDFLAGS) -o $@
 
-$(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
-	${CXX} $^ $(ADC_LIBS) $(TEST_LIBS) -o $@
+$(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
+	$(CXX) $^ $(LDFLAGS) $(TEST_LDFLAGS) -o $@
 
-test: $(TEST_DIR)/$(TEST_BIN)
+test: $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN)
 	rm -f $(TEST_DIR)/*.dat.out
 	if [ "$(shell arch)" != "armv7l" ] && [ "$(CROSS_COMPILE)" = "" ] || [ "$(CROSS_COMPILE)" = "x86_64-linux-gnu-" ]; then \
-		valgrind --error-exitcode=180 -q $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
+		valgrind --error-exitcode=180 -q $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
 		if [ $$? = 180 ]; then \
 			echo "*** VALGRIND DETECTED ERRORS ***" 1>& 2; \
 			exit 1; \
 		else $(TEST_DIR)/abt.sh show; exit 1; fi; \
     else \
-        $(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || { $(TEST_DIR)/abt.sh show; exit 1; } \
+        $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || { $(TEST_DIR)/abt.sh show; exit 1; } \
 	fi
 
-clean :
-	-rm -f src/*.o $(ADC_BIN)
-	-rm -f $(TEST_DIR)/*.o $(TEST_DIR)/$(TEST_BIN)
+lcov: test
+ifeq ($(DEBUG), 1)
+	geninfo --no-external -b . -o $(BUILD_DIR)/coverage.info $(BUILD_DIR)/src
+	genhtml $(BUILD_DIR)/coverage.info -o $(BUILD_DIR)/cov_html
+endif
 
+clean:
+	-rm -f build
 
 install: all
 	install -d $(DESTDIR)/var/lib/wb-mqtt-adc/conf.d
 
-	install -D -m 0755  $(ADC_BIN) $(DESTDIR)/usr/bin/$(ADC_BIN)
-	install -D -m 0755  generate-system-config.sh $(DESTDIR)/usr/lib/wb-mqtt-adc/generate-system-config.sh
+	install -Dm0755 $(BUILD_DIR)/$(ADC_BIN) -t $(DESTDIR)$(PREFIX)/bin
+	install -Dm0755 generate-system-config.sh $(DESTDIR)$(PREFIX)/lib/wb-mqtt-adc/generate-system-config.sh
 
-	install -D -m 0644  data/config.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
-	install -D -m 0644  data/config.json.wb55 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
-	install -D -m 0644  data/config.json.wb61 $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
+	install -Dm0644 data/config.json $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
+	install -Dm0644 data/config.json.wb55 $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
+	install -Dm0644 data/config.json.wb61 $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
 
-	install -D -m 0644  data/config.json.devicetree $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
+	install -Dm0644 data/config.json.devicetree $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
 
-	install -D -m 0644  data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
+	install -Dm0644 data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
 
-	install -D -m 0644  data/wb-mqtt-adc-template.schema.json $(DESTDIR)/usr/share/wb-mqtt-adc/wb-mqtt-adc-template.schema.json
+	install -Dm0644 data/wb-mqtt-adc-template.schema.json -t $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc
