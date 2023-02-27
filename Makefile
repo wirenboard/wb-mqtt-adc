@@ -38,7 +38,7 @@ ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:%=$(BUILD_DIR)/%.o)
 TEST_BIN = wb-mqtt-adc-test
 TEST_LDFLAGS = -lgtest
 
-export TEST_DIR_ABS = $(shell pwd)/$(TEST_DIR)
+export TEST_DIR_ABS = $(CURDIR)/$(TEST_DIR)
 
 all: $(BUILD_DIR)/$(ADC_BIN)
 
@@ -72,7 +72,7 @@ ifeq ($(DEBUG), 1)
 endif
 
 clean:
-	-rm -f build
+	-rm -fr build
 
 install: all
 	install -d $(DESTDIR)/var/lib/wb-mqtt-adc/conf.d
