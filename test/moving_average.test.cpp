@@ -1,4 +1,4 @@
-#include "src/moving_average.h"
+#include "moving_average.h"
 #include <gtest/gtest.h>
 
 TEST(TMovingAverageTest, zero_window)

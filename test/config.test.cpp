@@ -1,7 +1,7 @@
-#include "src/config.h"
+#include "config.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include "src/log.h"
+#include "log.h"
 
 class TConfigTest : public testing::Test
 {
