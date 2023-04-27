@@ -1,13 +1,13 @@
 #include "sysfs_adc.h"
-#include <gtest/gtest.h>
-#include <vector>
 #include <chrono>
-#include <fstream>
 #include <cstring>
-#include <stdlib.h>
+#include <fstream>
+#include <gtest/gtest.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <vector>
 
-class TSysfsTest : public testing::Test
+class TSysfsTest: public testing::Test
 {
 protected:
     std::string SysfsTestDir;
@@ -57,10 +57,10 @@ TEST_F(TSysfsTest, scale_finder)
 
 TEST_F(TSysfsTest, read_value_single_measurement)
 {
-    WBMQTT::TLogger           logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
+    WBMQTT::TLogger logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
     TChannelReader::TSettings channelCfg{"voltage1", 10000, 2.54, 10.5, 1, 5};
-    const double              MAX_SCALE = 2.54;
-    TChannelReader            reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
+    const double MAX_SCALE = 2.54;
+    TChannelReader reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
 
     auto now = std::chrono::steady_clock::now();
     reader.Poll(now);
@@ -73,10 +73,10 @@ TEST_F(TSysfsTest, read_value_single_measurement)
 
 TEST_F(TSysfsTest, read_value_average_measurement)
 {
-    WBMQTT::TLogger           logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
+    WBMQTT::TLogger logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
     TChannelReader::TSettings channelCfg{"voltage1", 10000, 2.54, 10.5, 3, 5};
-    const double              MAX_SCALE = 2.54;
-    TChannelReader            reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
+    const double MAX_SCALE = 2.54;
+    TChannelReader reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
 
     auto now = std::chrono::steady_clock::now();
 

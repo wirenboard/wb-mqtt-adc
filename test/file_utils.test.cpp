@@ -1,9 +1,9 @@
 #include "file_utils.h"
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <vector>
-#include <algorithm>
 
-class TFileUtilsTest : public testing::Test
+class TFileUtilsTest: public testing::Test
 {
 protected:
     std::string testRootDir;
@@ -34,7 +34,7 @@ TEST_F(TFileUtilsTest, no_match)
 TEST_F(TFileUtilsTest, one_match)
 {
     std::string res(testRootDir + "/test1/dummy2");
-    auto        fn = [&](const std::string& f) { return f == res; };
+    auto fn = [&](const std::string& f) { return f == res; };
     ASSERT_EQ(IterateDirByPattern(testRootDir + "/test1", "dummy2", fn), res);
 
     res = testRootDir + "/test1/test3";
@@ -53,8 +53,7 @@ TEST_F(TFileUtilsTest, two_matches)
     ASSERT_EQ(res.size(), 2);
 
     std::sort(res.begin(), res.end());
-    std::vector<std::string> resMatch = {testRootDir + "/test1/dummy",
-                                         testRootDir + "/test1/dummy2"};
+    std::vector<std::string> resMatch = {testRootDir + "/test1/dummy", testRootDir + "/test1/dummy2"};
     ASSERT_EQ(res[0], resMatch[0]);
     ASSERT_EQ(res[1], resMatch[1]);
 }

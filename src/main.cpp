@@ -22,7 +22,7 @@ namespace
     //! Maximun time to start application. Exceded timeout will case application termination.
     const auto DRIVER_INIT_TIMEOUT_S = chrono::seconds(5);
 
-    const auto CONFIG_FILE        = "/etc/wb-mqtt-adc.conf";
+    const auto CONFIG_FILE = "/etc/wb-mqtt-adc.conf";
     const auto SYSTEM_CONFIGS_DIR = "/var/lib/wb-mqtt-adc/conf.d";
     const auto CONFIG_SCHEMA_TEMPLATE_FILE = "/usr/share/wb-mqtt-adc/wb-mqtt-adc-template.schema.json";
     const auto SCHEMA_FILE = "/var/lib/wb-mqtt-confed/schemas/wb-mqtt-adc.schema.json";
@@ -48,101 +48,98 @@ namespace
              << "  -J           Make /etc/wb-mqtt-adc.conf from wb-mqtt-confed output" << endl;
     }
 
-    void ParseCommadLine(int                   argc,
-                         char*                 argv[],
-                         TMosquittoMqttConfig& mqttConfig,
-                         string&               customConfig)
+    void ParseCommadLine(int argc, char* argv[], TMosquittoMqttConfig& mqttConfig, string& customConfig)
     {
         int debugLevel = 0;
         int c;
 
         while ((c = getopt(argc, argv, "d:c:h:p:u:P:T:jJg")) != -1) {
             switch (c) {
-            case 'd':
-                debugLevel = stoi(optarg);
-                break;
-            case 'c':
-                customConfig = optarg;
-                break;
-            case 'p':
-                mqttConfig.Port = stoi(optarg);
-                break;
-            case 'h':
-                mqttConfig.Host = optarg;
-                break;
-            case 'T':
-                mqttConfig.Prefix = optarg;
-                break;
-            case 'u':
-                mqttConfig.User = optarg;
-                break;
-            case 'P':
-                mqttConfig.Password = optarg;
-                break;
-            case 'j':
-                try {
-                    MakeJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
-                    exit(0);
-                } catch (const std::exception& e) {
-                    ErrorLogger.Log() << "FATAL: " << e.what();
-                    exit(1);
-                }
-            case 'J':
-                try {
-                    MakeConfigFromConfed(SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
-                    exit(0);
-                } catch (const std::exception& e) {
-                    ErrorLogger.Log() << "FATAL: " << e.what();
-                    exit(1);
-                }
-            case 'g':
-                try {
-                    MakeSchemaForConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_TEMPLATE_FILE, SCHEMA_FILE);
-                    exit(0);
-                } catch (const std::exception& e) {
-                    ErrorLogger.Log() << "FATAL: " << e.what();
-                    exit(1);
-                }
-            case '?':
-            default:
-                PrintUsage();
-                exit(2);
+                case 'd':
+                    debugLevel = stoi(optarg);
+                    break;
+                case 'c':
+                    customConfig = optarg;
+                    break;
+                case 'p':
+                    mqttConfig.Port = stoi(optarg);
+                    break;
+                case 'h':
+                    mqttConfig.Host = optarg;
+                    break;
+                case 'T':
+                    mqttConfig.Prefix = optarg;
+                    break;
+                case 'u':
+                    mqttConfig.User = optarg;
+                    break;
+                case 'P':
+                    mqttConfig.Password = optarg;
+                    break;
+                case 'j':
+                    try {
+                        MakeJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
+                        exit(0);
+                    } catch (const std::exception& e) {
+                        ErrorLogger.Log() << "FATAL: " << e.what();
+                        exit(1);
+                    }
+                case 'J':
+                    try {
+                        MakeConfigFromConfed(SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
+                        exit(0);
+                    } catch (const std::exception& e) {
+                        ErrorLogger.Log() << "FATAL: " << e.what();
+                        exit(1);
+                    }
+                case 'g':
+                    try {
+                        MakeSchemaForConfed(SYSTEM_CONFIGS_DIR, CONFIG_SCHEMA_TEMPLATE_FILE, SCHEMA_FILE);
+                        exit(0);
+                    } catch (const std::exception& e) {
+                        ErrorLogger.Log() << "FATAL: " << e.what();
+                        exit(1);
+                    }
+                case '?':
+                default:
+                    PrintUsage();
+                    exit(2);
             }
         }
 
         switch (debugLevel) {
-        case 0:
-            break;
-        case -1:
-            Info.SetEnabled(false);
-            break;
+            case 0:
+                break;
+            case -1:
+                Info.SetEnabled(false);
+                break;
 
-        case -2:
-            WBMQTT::Info.SetEnabled(false);
-            break;
+            case -2:
+                WBMQTT::Info.SetEnabled(false);
+                break;
 
-        case -3:
-            WBMQTT::Info.SetEnabled(false);
-            Info.SetEnabled(false);
-            break;
+            case -3:
+                WBMQTT::Info.SetEnabled(false);
+                Info.SetEnabled(false);
+                break;
 
-        case 1:
-            DebugLogger.SetEnabled(true);
-            break;
+            case 1:
+                DebugLogger.SetEnabled(true);
+                break;
 
-        case 2:
-            WBMQTT::Debug.SetEnabled(true);
-            break;
+            case 2:
+                WBMQTT::Debug.SetEnabled(true);
+                break;
 
-        case 3:
-            WBMQTT::Debug.SetEnabled(true);
-            DebugLogger.SetEnabled(true);
-            break;
+            case 3:
+                WBMQTT::Debug.SetEnabled(true);
+                DebugLogger.SetEnabled(true);
+                break;
 
-        default:
-            cout << "Invalid -d parameter value " << debugLevel << endl;
-            PrintUsage();
-            exit(2);
+            default:
+                cout << "Invalid -d parameter value " << debugLevel << endl;
+                PrintUsage();
+                exit(2);
         }
 
         if (optind < argc) {
@@ -195,12 +192,8 @@ int main(int argc, char* argv[])
     SignalHandling::Start();
 
     try {
-        TConfig config = LoadConfig(CONFIG_FILE,
-                                    customConfig,
-                                    SYSTEM_CONFIGS_DIR,
-                                    SCHEMA_FILE,
-                                    &InfoLogger,
-                                    &WarnLogger);
+        TConfig config =
+            LoadConfig(CONFIG_FILE, customConfig, SYSTEM_CONFIGS_DIR, SCHEMA_FILE, &InfoLogger, &WarnLogger);
 
         if (config.EnableDebugMessages)
             DebugLogger.SetEnabled(true);
@@ -208,14 +201,12 @@ int main(int argc, char* argv[])
         auto publishParameters = TPublishParameters();
         publishParameters.Set(config.MaxUnchangedInterval.count());
 
-        auto mqttDriver =
-            NewDriver(TDriverArgs{}
-                          .SetBackend(NewDriverBackend(NewMosquittoMqttClient(mqttConfig)))
-                          .SetId(mqttConfig.Id)
-                          .SetUseStorage(false)
-                          .SetReownUnknownDevices(true),
-                       publishParameters
-                    );
+        auto mqttDriver = NewDriver(TDriverArgs{}
+                                        .SetBackend(NewDriverBackend(NewMosquittoMqttClient(mqttConfig)))
+                                        .SetId(mqttConfig.Id)
+                                        .SetUseStorage(false)
+                                        .SetReownUnknownDevices(true),
+                                    publishParameters);
 
         mqttDriver->StartLoop();
         SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] {

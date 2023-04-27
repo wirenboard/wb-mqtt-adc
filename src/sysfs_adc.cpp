@@ -10,14 +10,19 @@
 
 #include "file_utils.h"
 
-TChannelReader::TChannelReader(double                           defaultIIOScale,
+TChannelReader::TChannelReader(double defaultIIOScale,
                                const TChannelReader::TSettings& cfg,
-                               WBMQTT::TLogger&                 debugLogger,
-                               WBMQTT::TLogger&                 infoLogger,
-                               const std::string&               sysfsIIODir)
-    : Cfg(cfg), SysfsIIODir(sysfsIIODir), IIOScale(defaultIIOScale),
-      AverageCounter(cfg.AveragingWindow), DebugLogger(debugLogger), InfoLogger(infoLogger),
-      LastMeasureTimestamp(Timestamp::min()), NextPollTimestamp(Timestamp::min()),
+                               WBMQTT::TLogger& debugLogger,
+                               WBMQTT::TLogger& infoLogger,
+                               const std::string& sysfsIIODir)
+    : Cfg(cfg),
+      SysfsIIODir(sysfsIIODir),
+      IIOScale(defaultIIOScale),
+      AverageCounter(cfg.AveragingWindow),
+      DebugLogger(debugLogger),
+      InfoLogger(infoLogger),
+      LastMeasureTimestamp(Timestamp::min()),
+      NextPollTimestamp(Timestamp::min()),
       FirstPollInLoopTimestamp(Timestamp::min())
 {
     SelectScale(infoLogger);
@@ -79,8 +84,8 @@ void TChannelReader::Poll(Timestamp now, const std::string& debugMessagePrefix)
     int32_t value = AverageCounter.GetAverage();
     double v = IIOScale * value;
     if (v > Cfg.MaxScaledVoltage) {
-        throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " scaled value (" + std::to_string(v) + ") is bigger than maximum (" +
-                                 std::to_string(Cfg.MaxScaledVoltage) + ")");
+        throw std::runtime_error(debugMessagePrefix + Cfg.ChannelNumber + " scaled value (" + std::to_string(v) +
+                                 ") is bigger than maximum (" + std::to_string(Cfg.MaxScaledVoltage) + ")");
     }
 
     double res = v * Cfg.VoltageMultiplier / 1000.0; // got mV let's divide it by 1000 to obtain V
@@ -125,7 +130,8 @@ void TChannelReader::SelectScale(WBMQTT::TLogger& infoLogger)
     std::string scalePrefix = SysfsIIODir + "/in_" + Cfg.ChannelNumber + "_scale";
 
     std::ifstream scaleFile;
-    TryOpen({scalePrefix + "_available", SysfsIIODir + "/in_voltage_scale_available", SysfsIIODir + "/scale_available"}, scaleFile);
+    TryOpen({scalePrefix + "_available", SysfsIIODir + "/in_voltage_scale_available", SysfsIIODir + "/scale_available"},
+            scaleFile);
 
     if (scaleFile.is_open()) {
         auto contents = std::string((std::istreambuf_iterator<char>(scaleFile)), std::istreambuf_iterator<char>());
@@ -160,7 +166,7 @@ std::string FindSysfsIIODir(const std::string& matchIIO)
 
     auto fn = [&](const std::string& d) {
         char buf[512];
-        int  len;
+        int len;
         if ((len = readlink(d.c_str(), buf, 512)) < 0)
             return false;
         buf[len] = 0;
@@ -173,9 +179,9 @@ std::string FindSysfsIIODir(const std::string& matchIIO)
 std::string FindBestScale(const std::vector<std::string>& scales, double desiredScale)
 {
     std::string bestScaleStr;
-    double      bestScaleDouble = 0;
+    double bestScaleDouble = 0;
 
-    for (auto& scaleStr : scales) {
+    for (auto& scaleStr: scales) {
         double val;
         try {
             val = stod(scaleStr);
@@ -185,9 +191,10 @@ std::string FindBestScale(const std::vector<std::string>& scales, double desired
         // best scale is either maximum scale or the one closest to user request
         if (((desiredScale > 0) && (fabs(val - desiredScale) <= fabs(bestScaleDouble - desiredScale))) // user request
             || ((desiredScale <= 0) && (val >= bestScaleDouble))                                       // maximum scale
-        ) {
+        )
+        {
             bestScaleDouble = val;
-            bestScaleStr    = scaleStr;
+            bestScaleStr = scaleStr;
         }
     }
     return bestScaleStr;

@@ -10,9 +10,9 @@
 class TMovingAverageCalculator
 {
     std::vector<int32_t> LastValues;
-    int32_t              Sum;
-    size_t               Pos;
-    bool                 Ready;
+    int32_t Sum;
+    size_t Pos;
+    bool Ready;
 
 public:
     /**

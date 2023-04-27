@@ -2,13 +2,13 @@
 
 #include <wblib/log.h>
 
-#include <fstream>
 #include <chrono>
-#include  <limits>
+#include <fstream>
+#include <limits>
 
 #include "moving_average.h"
 
-#define ADC_DEFAULT_MAX_SCALED_VOLTAGE 3100  // voltage in mV
+#define ADC_DEFAULT_MAX_SCALED_VOLTAGE 3100 // voltage in mV
 
 /**
  * @brief Iterate over /sys/bus/iio/devices and find folder symlinked to matchIIO value. Throws
@@ -79,11 +79,11 @@ public:
      * @param infoLogger Logger for info messages
      * @param sysfsIIODir Sysfs device's folder
      */
-    TChannelReader(double                           defaultIIOScale,
+    TChannelReader(double defaultIIOScale,
                    const TChannelReader::TSettings& channelCfg,
-                   WBMQTT::TLogger&                 debugLogger,
-                   WBMQTT::TLogger&                 infoLogger,
-                   const std::string&               sysfsIIODir);
+                   WBMQTT::TLogger& debugLogger,
+                   WBMQTT::TLogger& infoLogger,
+                   const std::string& sysfsIIODir);
 
     //! Get last measured value
     std::string GetValue() const;
@@ -135,8 +135,8 @@ private:
     std::chrono::milliseconds DelayBetweenMeasurements;
 
     TMovingAverageCalculator AverageCounter;
-    WBMQTT::TLogger&         DebugLogger;
-    WBMQTT::TLogger&         InfoLogger;
+    WBMQTT::TLogger& DebugLogger;
+    WBMQTT::TLogger& InfoLogger;
 
     //! Timestamp of last completed measure
     Timestamp LastMeasureTimestamp;
@@ -148,7 +148,7 @@ private:
     Timestamp FirstPollInLoopTimestamp;
 
     int32_t ReadFromADC();
-    void    SelectScale(WBMQTT::TLogger& infoLogger);
+    void SelectScale(WBMQTT::TLogger& infoLogger);
 
     TChannelReader();
 };

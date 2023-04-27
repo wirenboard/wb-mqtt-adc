@@ -1,10 +1,10 @@
 #include "config.h"
 #include <algorithm>
-#include <numeric>
 #include <chrono>
 #include <fstream>
-#include <wblib/utils.h>
+#include <numeric>
 #include <wblib/json_utils.h>
+#include <wblib/utils.h>
 
 #include "file_utils.h"
 
@@ -14,7 +14,11 @@ using namespace std;
 
 namespace
 {
-    const string ProtectedProperties[] = {"match_iio", "channel_number", "mqtt_type", "voltage_multiplier", "max_voltage"};
+    const string ProtectedProperties[] = {"match_iio",
+                                          "channel_number",
+                                          "mqtt_type",
+                                          "voltage_multiplier",
+                                          "max_voltage"};
 
     void LoadChannel(const Value& item, vector<TADCChannelSettings>& channels)
     {
@@ -46,16 +50,14 @@ namespace
     void MaybeFixDelayBetweenMeasurements(TConfig& cfg, WBMQTT::TLogger* log)
     {
         for (auto& ch: cfg.Channels) {
-            auto calcMeasureDelay = ch.ReaderCfg.DelayBetweenMeasurements *
-                ch.ReaderCfg.AveragingWindow;
+            auto calcMeasureDelay = ch.ReaderCfg.DelayBetweenMeasurements * ch.ReaderCfg.AveragingWindow;
             if (calcMeasureDelay > ch.ReaderCfg.PollInterval) {
                 if (log) {
                     log->Log() << ch.Id << ": averaging delay doesn't fit in poll_interval, "
-                        << "adjusting delay_between_measurements";
+                               << "adjusting delay_between_measurements";
                 }
 
-                ch.ReaderCfg.DelayBetweenMeasurements = ch.ReaderCfg.PollInterval /
-                    ch.ReaderCfg.AveragingWindow;
+                ch.ReaderCfg.DelayBetweenMeasurements = ch.ReaderCfg.PollInterval / ch.ReaderCfg.AveragingWindow;
             }
         }
     }
@@ -84,7 +86,7 @@ namespace
     Value RemoveDeviceNameRequirement(const Value& schema)
     {
         Value newArray = arrayValue;
-        for (auto& v : schema["required"]) {
+        for (auto& v: schema["required"]) {
             if (v.asString() != "device_name") {
                 newArray.append(v);
             }
@@ -136,9 +138,7 @@ TConfig LoadConfig(const string& mainConfigFile,
     return cfg;
 }
 
-void MakeJsonForConfed(const string& configFile,
-                       const string& systemConfigsDir,
-                       const string& schemaFile)
+void MakeJsonForConfed(const string& configFile, const string& systemConfigsDir, const string& schemaFile)
 {
     auto schema = Parse(schemaFile);
     auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
@@ -218,9 +218,7 @@ void MakeConfigFromConfed(const string& systemConfigsDir, const string& schemaFi
     MakeWriter("  ", "None")->write(config, &cout);
 }
 
-void MakeSchemaForConfed(const string& systemConfigsDir,
-                         const string& schemaFile,
-                         const string& schemaForConfedFile)
+void MakeSchemaForConfed(const string& systemConfigsDir, const string& schemaFile, const string& schemaForConfedFile)
 {
     auto schema = Parse(schemaFile);
     auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
@@ -236,7 +234,7 @@ void MakeSchemaForConfed(const string& systemConfigsDir,
     } catch (const TNoDirError&) {
     }
     auto& notNode = schema["definitions"]["custom_channel"]["allOf"][1]["not"]["properties"]["id"]["enum"];
-	auto& sysIdsNode = schema["definitions"]["system_channel"]["allOf"][1]["properties"]["id"]["enum"];
+    auto& sysIdsNode = schema["definitions"]["system_channel"]["allOf"][1]["properties"]["id"]["enum"];
     for (const auto& id: systemChannels) {
         notNode.append(id);
         sysIdsNode.append(id);
