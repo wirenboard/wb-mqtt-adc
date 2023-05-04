@@ -1,9 +1,9 @@
 #pragma once
 
-#include <wblib/log.h>
 #include "sysfs_adc.h"
 #include <string>
 #include <vector>
+#include <wblib/log.h>
 
 //! ADC channel settings
 struct TADCChannelSettings
@@ -21,8 +21,8 @@ struct TADCChannelSettings
 //! Programm settings
 struct TConfig
 {
-    std::string DeviceName          = "ADCs";  //! Value of /devices/DRIVER_NAME/meta/name
-    bool        EnableDebugMessages = false;   //! Enable logging of debug messages
+    std::string DeviceName = "ADCs";  //! Value of /devices/DRIVER_NAME/meta/name
+    bool EnableDebugMessages = false; //! Enable logging of debug messages
     std::chrono::seconds MaxUnchangedInterval = std::chrono::seconds(60);
     std::vector<TADCChannelSettings> Channels; //! ADC channels list
 };
@@ -49,8 +49,7 @@ void MakeJsonForConfed(const std::string& configFile,
                        const std::string& systemConfigsDir,
                        const std::string& schemaFile);
 
-void MakeConfigFromConfed(const std::string& systemConfigsDir,
-                          const std::string& schemaFile);
+void MakeConfigFromConfed(const std::string& systemConfigsDir, const std::string& schemaFile);
 
 void MakeSchemaForConfed(const std::string& systemConfigsDir,
                          const std::string& schemaFile,

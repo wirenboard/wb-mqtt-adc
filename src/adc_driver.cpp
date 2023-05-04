@@ -20,48 +20,44 @@ namespace
 
     struct TChannelDesc
     {
-        std::string               MqttId;
-        bool                      Error;
+        std::string MqttId;
+        bool Error;
         TChannelReader::Timestamp PublishedTimestamp;
-        TChannelReader            Reader;
+        TChannelReader Reader;
 
         //! Flag indicating what we should create MQTT control for channel
-        bool           ShouldCreateControl = true;
+        bool ShouldCreateControl = true;
     };
 
     WBMQTT::TControlArgs MakeControlArgs(const std::string& id, size_t order, const std::string& error)
     {
-        return WBMQTT::TControlArgs{}.SetId(id)
-                                     .SetType("voltage")
-                                     .SetError(error)
-                                     .SetOrder(order)
-                                     .SetReadonly(true);
+        return WBMQTT::TControlArgs{}.SetId(id).SetType("voltage").SetError(error).SetOrder(order).SetReadonly(true);
     }
 
-    void CreateControl(WBMQTT::PDriverTx&   tx,
+    void CreateControl(WBMQTT::PDriverTx& tx,
                        WBMQTT::TLocalDevice& device,
-                       size_t                order,
-                       const std::string&    id,
-                       const std::string&    value,
-                       const std::string&    error)
+                       size_t order,
+                       const std::string& id,
+                       const std::string& value,
+                       const std::string& error)
     {
         device.CreateControl(tx, MakeControlArgs(id, order, error).SetRawValue(value)).Wait();
     }
 
-    void AdcWorker(bool*                                      active,
-                   WBMQTT::PLocalDevice                       device,
-                   WBMQTT::PDeviceDriver                      mqttDriver,
+    void AdcWorker(bool* active,
+                   WBMQTT::PLocalDevice device,
+                   WBMQTT::PDeviceDriver mqttDriver,
                    std::shared_ptr<std::vector<TChannelDesc>> channels,
-                   size_t                                     controlOrder,
-                   WBMQTT::TLogger&                           infoLogger,
-                   WBMQTT::TLogger&                           errorLogger)
+                   size_t controlOrder,
+                   WBMQTT::TLogger& infoLogger,
+                   WBMQTT::TLogger& errorLogger)
     {
         bool shouldRemoveUnusedControls = true;
         infoLogger.Log() << "ADC worker thread is started";
         while (*active) {
             auto now = std::chrono::steady_clock::now();
 
-            for (auto& channel : *channels) {
+            for (auto& channel: *channels) {
                 try {
                     channel.Reader.Poll(now, channel.MqttId + " ");
                     channel.Error = false;
@@ -73,11 +69,16 @@ namespace
 
             {
                 auto tx = mqttDriver->BeginTx();
-                for (auto& channel : *channels) {
+                for (auto& channel: *channels) {
                     if (channel.ShouldCreateControl) {
-                        CreateControl(tx, *device, controlOrder, channel.MqttId, channel.Reader.GetValue(), channel.Error ? "r" : "");
-                        infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created, poll interval " <<
-                            channel.Reader.GetPollInterval().count() << " ms";
+                        CreateControl(tx,
+                                      *device,
+                                      controlOrder,
+                                      channel.MqttId,
+                                      channel.Reader.GetValue(),
+                                      channel.Error ? "r" : "");
+                        infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created, poll interval "
+                                         << channel.Reader.GetPollInterval().count() << " ms";
                         ++controlOrder;
                         channel.ShouldCreateControl = false;
                     } else if (channel.Reader.GetLastMeasureTimestamp() != channel.PublishedTimestamp) {
@@ -115,16 +116,18 @@ namespace
 } // namespace
 
 TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
-                       const TConfig&               config,
-                       WBMQTT::TLogger&             errorLogger,
-                       WBMQTT::TLogger&             debugLogger,
-                       WBMQTT::TLogger&             infoLogger)
-    : MqttDriver(mqttDriver), ErrorLogger(errorLogger), DebugLogger(debugLogger),
+                       const TConfig& config,
+                       WBMQTT::TLogger& errorLogger,
+                       WBMQTT::TLogger& debugLogger,
+                       WBMQTT::TLogger& infoLogger)
+    : MqttDriver(mqttDriver),
+      ErrorLogger(errorLogger),
+      DebugLogger(debugLogger),
       InfoLogger(infoLogger)
 {
     InfoLogger.Log() << "Creating driver MQTT controls";
     auto tx = MqttDriver->BeginTx();
-    Device  = tx->CreateDevice(WBMQTT::TLocalDeviceArgs{}
+    Device = tx->CreateDevice(WBMQTT::TLocalDeviceArgs{}
                                   .SetId(DriverId)
                                   .SetTitle(config.DeviceName)
                                   .SetIsVirtual(true)
@@ -133,21 +136,18 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
 
     size_t controlOrder = 0;
     std::shared_ptr<std::vector<TChannelDesc>> readers(new std::vector<TChannelDesc>());
-    for (const auto& channel : config.Channels) {
+    for (const auto& channel: config.Channels) {
         std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
         if (sysfsIIODir.empty()) {
             ErrorLogger.Log() << "Can't fild matching sysfs IIO: " + channel.MatchIIO;
             Device->CreateControl(tx, MakeControlArgs(channel.Id, controlOrder, "r")).Wait();
             ++controlOrder;
         } else {
-            readers->push_back(TChannelDesc{channel.Id,
-                                            false,
-                                            TChannelReader::Timestamp::min(),
-                                            {MXS_LRADC_DEFAULT_SCALE_FACTOR,
-                                             channel.ReaderCfg,
-                                             DebugLogger,
-                                             InfoLogger,
-                                             sysfsIIODir}});
+            readers->push_back(TChannelDesc{
+                channel.Id,
+                false,
+                TChannelReader::Timestamp::min(),
+                {MXS_LRADC_DEFAULT_SCALE_FACTOR, channel.ReaderCfg, DebugLogger, InfoLogger, sysfsIIODir}});
         }
     }
 

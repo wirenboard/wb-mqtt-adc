@@ -1,9 +1,9 @@
 #include "config.h"
+#include "log.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include "log.h"
 
-class TConfigTest : public testing::Test
+class TConfigTest: public testing::Test
 {
 protected:
     std::string testRootDir;
@@ -71,12 +71,8 @@ TEST_F(TConfigTest, optional_config)
 
 TEST_F(TConfigTest, empty_main_config)
 {
-    TConfig cfg = LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf",
-                             "",
-                             confDDir,
-                             schemaFile,
-                             &InfoLogger,
-                             &WarnLogger);
+    TConfig cfg =
+        LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf", "", confDDir, schemaFile, &InfoLogger, &WarnLogger);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
     ASSERT_EQ(cfg.Channels.size(), 1);
@@ -91,12 +87,8 @@ TEST_F(TConfigTest, empty_main_config)
 
 TEST_F(TConfigTest, full_main_config)
 {
-    TConfig cfg = LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf",
-                             "",
-                             confDDir,
-                             schemaFile,
-                             &InfoLogger,
-                             &WarnLogger);
+    TConfig cfg =
+        LoadConfig(testRootDir + "/good2/wb-mqtt-adc.conf", "", confDDir, schemaFile, &InfoLogger, &WarnLogger);
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
     ASSERT_EQ(cfg.Channels.size(), 1);
@@ -113,12 +105,8 @@ TEST_F(TConfigTest, poll_interval_config)
 {
     using namespace std::literals::chrono_literals;
 
-    TConfig cfg = LoadConfig(testRootDir + "/good3/wb-mqtt-adc.conf",
-                             "",
-                             confDDir,
-                             schemaFile,
-                             &InfoLogger,
-                             &WarnLogger);
+    TConfig cfg =
+        LoadConfig(testRootDir + "/good3/wb-mqtt-adc.conf", "", confDDir, schemaFile, &InfoLogger, &WarnLogger);
 
     ASSERT_EQ(cfg.DeviceName, "ADCs");
     ASSERT_EQ(cfg.EnableDebugMessages, false);
@@ -144,22 +132,21 @@ TEST_F(TConfigTest, max_unchanged_interval)
 
     {
         TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_empty.conf",
-                                "",
-                                confDDir,
-                                schemaFile,
-                                &InfoLogger,
-                                &WarnLogger);
+                                 "",
+                                 confDDir,
+                                 schemaFile,
+                                 &InfoLogger,
+                                 &WarnLogger);
         ASSERT_EQ(cfg.MaxUnchangedInterval.count(), 60);
     }
 
     {
         TConfig cfg = LoadConfig(testRootDir + "/max_unchanged_interval/good_non_empty.conf",
-                                "",
-                                confDDir,
-                                schemaFile,
-                                &InfoLogger,
-                                &WarnLogger);
+                                 "",
+                                 confDDir,
+                                 schemaFile,
+                                 &InfoLogger,
+                                 &WarnLogger);
         ASSERT_EQ(cfg.MaxUnchangedInterval.count(), 123);
     }
-
 }

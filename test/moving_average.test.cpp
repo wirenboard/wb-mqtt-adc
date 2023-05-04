@@ -19,7 +19,7 @@ TEST(TMovingAverageTest, one_window)
 
 TEST(TMovingAverageTest, ten_window)
 {
-    const uint32_t           windowSize = 10;
+    const uint32_t windowSize = 10;
     TMovingAverageCalculator c(windowSize);
     EXPECT_EQ(c.IsReady(), false);
     uint32_t sum = 0;

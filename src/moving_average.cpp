@@ -5,7 +5,7 @@
 
 TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize)
 {
-    if(windowSize == 0) {
+    if (windowSize == 0) {
         throw std::runtime_error("Moving average window size can't be zero");
     }
     LastValues.resize(windowSize);
