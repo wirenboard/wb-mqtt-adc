@@ -1,3 +1,9 @@
+wb-mqtt-adc (2.6.3) stable; urgency=medium
+
+  * Add dependency from libwbmqtt1-4. No functional changes
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Thu, 01 Jun 2023 17:50:02 +0500
+
 wb-mqtt-adc (2.6.2) stable; urgency=medium
 
   * Fix clang-format, no functional changes
