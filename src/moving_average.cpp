@@ -1,6 +1,6 @@
 #include "moving_average.h"
 
-#include <math.h>
+#include <cmath>
 #include <stdexcept>
 
 TMovingAverageCalculator::TMovingAverageCalculator(size_t windowSize)

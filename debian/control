@@ -4,8 +4,6 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.2
 Build-Depends: debhelper (>= 10),
-               libmosquitto-dev,
-               libmosquittopp-dev,
                libwbmqtt1-4-dev,
                pkg-config,
                libwbmqtt1-4-test-utils,

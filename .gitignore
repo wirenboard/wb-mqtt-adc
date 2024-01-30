@@ -8,6 +8,7 @@ build
 *.tar.gz
 *.debhelper.log
 *.debhelper
+*.buildinfo
 debian/*.substvars
 wb-homa-adc/debian/wb-homa-adc/
 .d
@@ -17,6 +18,7 @@ debian/tmp
 debian/files
 debhelper-build-stamp
 .clang-format
+compile_commands.json
 
 ### Visual Studio Code ###
 .vscode
