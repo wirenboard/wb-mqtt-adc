@@ -43,7 +43,7 @@ export TEST_DIR_ABS = $(CURDIR)/$(TEST_DIR)
 VALGRIND_FLAGS = --error-exitcode=180 -q
 
 COV_REPORT ?= $(BUILD_DIR)/cov.html
-GCOVR_FLAGS := --html $(COV_REPORT)
+GCOVR_FLAGS := -s --html $(COV_REPORT)
 ifneq ($(COV_FAIL_UNDER),)
 	GCOVR_FLAGS += --fail-under-line $(COV_FAIL_UNDER)
 endif
