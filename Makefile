@@ -19,7 +19,7 @@ PREFIX = /usr
 
 ADC_BIN = wb-mqtt-adc
 SRC_DIR = src
-ADC_SOURCES := $(shell find $(SRC_DIR) -name *.cpp -and -not -name main.cpp)
+ADC_SOURCES := $(shell find $(SRC_DIR) -name "*.cpp" -and -not -name main.cpp)
 ADC_OBJECTS := $(ADC_SOURCES:%=$(BUILD_DIR)/%.o)
 
 CXXFLAGS = -Wall -std=c++17 -I$(SRC_DIR)
@@ -28,17 +28,25 @@ LDFLAGS = -lwbmqtt1 -lpthread
 ifeq ($(DEBUG),)
 	CXXFLAGS += -O2
 else
-	CXXFLAGS += -g -O0 -fprofile-arcs -ftest-coverage
-	LDFLAGS += -lgcov
+	CXXFLAGS += -g -O0 --coverage
+	LDFLAGS += --coverage
 endif
 
 TEST_DIR = test
-ADC_TEST_SOURCES := $(shell find $(TEST_DIR) -name *.cpp)
+ADC_TEST_SOURCES := $(shell find $(TEST_DIR) -name "*.cpp")
 ADC_TEST_OBJECTS=$(ADC_TEST_SOURCES:%=$(BUILD_DIR)/%.o)
 TEST_BIN = wb-mqtt-adc-test
 TEST_LDFLAGS = -lgtest
 
 export TEST_DIR_ABS = $(CURDIR)/$(TEST_DIR)
+
+VALGRIND_FLAGS = --error-exitcode=180 -q
+
+COV_REPORT ?= $(BUILD_DIR)/cov
+GCOVR_FLAGS := -s --html $(COV_REPORT).html -x $(COV_REPORT).xml
+ifneq ($(COV_FAIL_UNDER),)
+	GCOVR_FLAGS += --fail-under-line $(COV_FAIL_UNDER)
+endif
 
 all: $(BUILD_DIR)/$(ADC_BIN)
 
@@ -56,19 +64,16 @@ $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN): $(ADC_OBJECTS) $(ADC_TEST_OBJECTS)
 test: $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN)
 	rm -f $(TEST_DIR)/*.dat.out
 	if [ "$(shell arch)" != "armv7l" ] && [ "$(CROSS_COMPILE)" = "" ] || [ "$(CROSS_COMPILE)" = "x86_64-linux-gnu-" ]; then \
-		valgrind --error-exitcode=180 -q $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
+		valgrind $(VALGRIND_FLAGS) $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || \
 		if [ $$? = 180 ]; then \
 			echo "*** VALGRIND DETECTED ERRORS ***" 1>& 2; \
 			exit 1; \
 		else $(TEST_DIR)/abt.sh show; exit 1; fi; \
-    else \
-        $(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || { $(TEST_DIR)/abt.sh show; exit 1; } \
+	else \
+		$(BUILD_DIR)/$(TEST_DIR)/$(TEST_BIN) $(TEST_ARGS) || { $(TEST_DIR)/abt.sh show; exit 1; } \
 	fi
-
-lcov: test
-ifeq ($(DEBUG), 1)
-	geninfo --no-external -b . -o $(BUILD_DIR)/coverage.info $(BUILD_DIR)/src
-	genhtml $(BUILD_DIR)/coverage.info -o $(BUILD_DIR)/cov_html
+ifneq ($(DEBUG),)
+	gcovr $(GCOVR_FLAGS) $(BUILD_DIR)/$(SRC_DIR) $(BUILD_DIR)/$(TEST_DIR)
 endif
 
 clean:
