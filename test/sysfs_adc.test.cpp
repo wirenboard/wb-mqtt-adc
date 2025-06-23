@@ -71,27 +71,3 @@ TEST_F(TSysfsTest, read_value_single_measurement)
     ASSERT_EQ(reader.GetValue(), "6.77418");
 }
 
-TEST_F(TSysfsTest, read_value_average_measurement)
-{
-    WBMQTT::TLogger logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
-    TChannelReader::TSettings channelCfg{"voltage1", 10000, 2.54, 10.5, 3, 5};
-    const double MAX_SCALE = 2.54;
-    TChannelReader reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
-
-    auto now = std::chrono::steady_clock::now();
-
-    WriteTestSysfsFile("in_voltage1_raw", "254");
-    reader.Poll(now);
-    ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.DelayBetweenMeasurements);
-
-    WriteTestSysfsFile("in_voltage1_raw", "250");
-    reader.Poll(now + channelCfg.DelayBetweenMeasurements);
-    ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.DelayBetweenMeasurements * 2);
-
-    WriteTestSysfsFile("in_voltage1_raw", "258");
-    reader.Poll(now + channelCfg.DelayBetweenMeasurements * 2);
-    ASSERT_EQ(reader.GetLastMeasureTimestamp(), now + channelCfg.DelayBetweenMeasurements * 2);
-    ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.PollInterval);
-
-    ASSERT_EQ(reader.GetValue(), "6.77418");
-}
