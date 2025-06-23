@@ -70,4 +70,3 @@ TEST_F(TSysfsTest, read_value_single_measurement)
 
     ASSERT_EQ(reader.GetValue(), "6.77418");
 }
-
