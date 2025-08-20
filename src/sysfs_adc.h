@@ -61,7 +61,7 @@ public:
         uint32_t AveragingWindow = 10;
 
         //! Number of figures after point
-        uint32_t DecimalPlaces = 3;
+        uint32_t DecimalPlaces = 0;
 
         //! Delay between individual measurements
         std::chrono::milliseconds DelayBetweenMeasurements = std::chrono::milliseconds(10);
