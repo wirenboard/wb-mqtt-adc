@@ -160,6 +160,7 @@ void MakeJsonForConfed(const string& configFile, const string& systemConfigsDir,
                 } else {
                     Value v;
                     v["id"] = ch["id"];
+                    v["decimal_places"] = ch["decimal_places"];
                     newChannels.append(v);
                 }
             }

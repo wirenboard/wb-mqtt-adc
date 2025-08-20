@@ -57,7 +57,7 @@
           "propertyOrder": 100
         }
       },
-      "defaultProperties": ["averaging_window", "decimal_places", "scale", "poll_interval", "delay_between_measurements"]
+      "defaultProperties": ["averaging_window", "scale", "poll_interval", "delay_between_measurements"]
     },
 
     "custom_channel": {
@@ -126,7 +126,6 @@
       ],
       "default": {
         "averaging_window": 10,
-        "decimal_places": 3,
         "scale": 0,
         "poll_interval": 700,
         "delay_between_measurements": 10
@@ -202,7 +201,6 @@
       ],
       "default": {
         "averaging_window": 10,
-        "decimal_places": 3,
         "scale": 0,
         "poll_interval": 700,
         "delay_between_measurements": 10
