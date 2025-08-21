@@ -83,7 +83,7 @@ install: all
 	install -d $(DESTDIR)/var/lib/wb-mqtt-adc/conf.d
 
 	install -Dm0755 $(BUILD_DIR)/$(ADC_BIN) -t $(DESTDIR)$(PREFIX)/bin
-	install -Dm0755 generate-system-config.sh $(DESTDIR)$(PREFIX)/lib/wb-mqtt-adc/generate-system-config.sh
+	install -Dm0755 generate-system-config.sh -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-adc
 
 	install -Dm0644 data/config.json $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
 	install -Dm0644 data/config.json.wb55 $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
