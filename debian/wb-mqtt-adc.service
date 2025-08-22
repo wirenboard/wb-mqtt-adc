@@ -14,4 +14,3 @@ ExecStartPre=/usr/bin/wb-mqtt-adc -g
 
 [Install]
 WantedBy=multi-user.target
-Alias=wb-homa-adc.service
