@@ -1,5 +1,6 @@
 #include "sysfs_adc.h"
 #include <chrono>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -93,5 +94,54 @@ TEST_F(TSysfsTest, read_value_average_measurement)
     ASSERT_EQ(reader.GetLastMeasureTimestamp(), now + channelCfg.DelayBetweenMeasurements * 2);
     ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.PollInterval);
 
+    ASSERT_EQ(reader.GetValue(), "6.77418");
+}
+
+TEST_F(TSysfsTest, overvoltage_error_reschedules_next_poll)
+{
+    WBMQTT::TLogger logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
+    // 254 * 2.54 = 645.16 mV is above the 100 mV threshold
+    TChannelReader::TSettings channelCfg{"voltage1", 100, 2.54, 10.5, 1, 5};
+    const double MAX_SCALE = 2.54;
+    TChannelReader reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
+
+    auto now = std::chrono::steady_clock::now();
+    ASSERT_THROW(reader.Poll(now), std::runtime_error);
+
+    // the failed cycle must be rescheduled, otherwise the caller polls in a tight loop
+    ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.PollInterval);
+    ASSERT_EQ(reader.GetLastMeasureTimestamp(), TChannelReader::Timestamp::min());
+
+    // and nothing is read until the next cycle is due
+    reader.Poll(now + channelCfg.PollInterval / 2);
+    ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.PollInterval);
+}
+
+TEST_F(TSysfsTest, read_error_reschedules_next_poll_and_drops_accumulated_data)
+{
+    WBMQTT::TLogger logger("", WBMQTT::TLogger::StdErr, WBMQTT::TLogger::RED, false);
+    TChannelReader::TSettings channelCfg{"voltage1", 10000, 2.54, 10.5, 3, 5};
+    const double MAX_SCALE = 2.54;
+    TChannelReader reader(MAX_SCALE, channelCfg, logger, logger, SysfsTestDir);
+
+    auto now = std::chrono::steady_clock::now();
+    reader.Poll(now);
+    ASSERT_EQ(reader.GetNextPollTimestamp(), now + channelCfg.DelayBetweenMeasurements);
+
+    auto failedAt = now + channelCfg.DelayBetweenMeasurements;
+    ASSERT_EQ(::remove((SysfsTestDir + "/in_voltage1_raw").c_str()), 0);
+    ASSERT_THROW(reader.Poll(failedAt), std::runtime_error);
+    ASSERT_EQ(reader.GetNextPollTimestamp(), failedAt + channelCfg.PollInterval);
+    ASSERT_EQ(reader.GetLastMeasureTimestamp(), TChannelReader::Timestamp::min());
+
+    // the sample taken before the error is dropped, so a full window is needed again
+    WriteTestSysfsFile("in_voltage1_raw", "254");
+    auto cycleStart = failedAt + channelCfg.PollInterval;
+    reader.Poll(cycleStart);
+    reader.Poll(cycleStart + channelCfg.DelayBetweenMeasurements);
+    ASSERT_EQ(reader.GetLastMeasureTimestamp(), TChannelReader::Timestamp::min());
+
+    reader.Poll(cycleStart + channelCfg.DelayBetweenMeasurements * 2);
+    ASSERT_EQ(reader.GetLastMeasureTimestamp(), cycleStart + channelCfg.DelayBetweenMeasurements * 2);
     ASSERT_EQ(reader.GetValue(), "6.77418");
 }

@@ -69,6 +69,20 @@ void TChannelReader::Poll(Timestamp now, const std::string& debugMessagePrefix)
         NextPollTimestamp = now;
     }
 
+    try {
+        Measure(now, debugMessagePrefix);
+    } catch (...) {
+        /* The measurement cycle is broken. Drop accumulated data and schedule the next cycle,
+           otherwise NextPollTimestamp stays in the past and the caller retries in a tight loop. */
+        AverageCounter.Reset();
+        FirstPollInLoopTimestamp = now + Cfg.PollInterval;
+        NextPollTimestamp = FirstPollInLoopTimestamp;
+        throw;
+    }
+}
+
+void TChannelReader::Measure(Timestamp now, const std::string& debugMessagePrefix)
+{
     // perform scheduled measurement
     int32_t adcMeasurement = ReadFromADC();
     DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " = " << adcMeasurement;

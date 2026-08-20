@@ -148,6 +148,7 @@ private:
     Timestamp FirstPollInLoopTimestamp;
 
     int32_t ReadFromADC();
+    void Measure(Timestamp now, const std::string& debugMessagePrefix);
     void SelectScale(WBMQTT::TLogger& infoLogger);
 
     TChannelReader();
