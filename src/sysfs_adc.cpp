@@ -10,6 +10,12 @@
 
 #include "file_utils.h"
 
+namespace
+{
+    //! Number of measurement attempts during one poll before the cycle is abandoned
+    const size_t MEASURE_ATTEMPTS = 3;
+} // namespace
+
 TChannelReader::TChannelReader(double defaultIIOScale,
                                const TChannelReader::TSettings& cfg,
                                WBMQTT::TLogger& debugLogger,
@@ -69,6 +75,30 @@ void TChannelReader::Poll(Timestamp now, const std::string& debugMessagePrefix)
         NextPollTimestamp = now;
     }
 
+    /* Retry a failed measurement immediately: a transient error is worth another try
+       right away instead of losing the whole poll interval. */
+    for (size_t attempt = 1; attempt <= MEASURE_ATTEMPTS; ++attempt) {
+        try {
+            Measure(now, debugMessagePrefix);
+            return;
+        } catch (const std::exception& er) {
+            if (attempt < MEASURE_ATTEMPTS) {
+                DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " measurement attempt " << attempt
+                                  << " failed: " << er.what();
+                continue;
+            }
+            /* The measurement cycle is broken. Drop accumulated data and schedule the next cycle,
+               otherwise NextPollTimestamp stays in the past and the caller retries in a tight loop. */
+            AverageCounter.Reset();
+            FirstPollInLoopTimestamp = now + Cfg.PollInterval;
+            NextPollTimestamp = FirstPollInLoopTimestamp;
+            throw;
+        }
+    }
+}
+
+void TChannelReader::Measure(Timestamp now, const std::string& debugMessagePrefix)
+{
     // perform scheduled measurement
     int32_t adcMeasurement = ReadFromADC();
     DebugLogger.Log() << debugMessagePrefix << Cfg.ChannelNumber << " = " << adcMeasurement;
