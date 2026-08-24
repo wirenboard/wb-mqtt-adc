@@ -1,7 +1,6 @@
 wb-mqtt-adc (2.8.3) stable; urgency=medium
 
-  * Fix data race on the ADC worker stop flag: it is read by the worker thread
-    without holding ActiveMutex, so make it atomic instead
+  * Improve stop flag: make it atomic
 
  -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Fri, 21 Aug 2026 12:00:00 +0400
 
