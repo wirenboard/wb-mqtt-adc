@@ -3,6 +3,7 @@
 #include <functional>
 #include <wblib/wbmqtt.h>
 
+#include <atomic>
 #include <thread>
 
 #include "config.h"
@@ -21,8 +22,7 @@ public:
 private:
     WBMQTT::PDeviceDriver MqttDriver;
     WBMQTT::PLocalDevice Device;
-    bool Active;
-    std::mutex ActiveMutex;
+    std::atomic_bool Active{false};
     std::unique_ptr<std::thread> Worker;
     WBMQTT::TLogger& ErrorLogger;
     WBMQTT::TLogger& DebugLogger;

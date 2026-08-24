@@ -44,7 +44,7 @@ namespace
         device.CreateControl(tx, MakeControlArgs(id, order, error).SetRawValue(value)).Wait();
     }
 
-    void AdcWorker(bool* active,
+    void AdcWorker(std::atomic_bool* active,
                    WBMQTT::PLocalDevice device,
                    WBMQTT::PDeviceDriver mqttDriver,
                    std::shared_ptr<std::vector<TChannelDesc>> channels,
@@ -159,13 +159,9 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
 
 void TADCDriver::Stop()
 {
-    {
-        std::lock_guard<std::mutex> lg(ActiveMutex);
-        if (!Active) {
-            ErrorLogger.Log() << "Attempt to stop already stopped TADCDriver";
-            return;
-        }
-        Active = false;
+    if (!Active.exchange(false)) {
+        ErrorLogger.Log() << "Attempt to stop already stopped TADCDriver";
+        return;
     }
 
     InfoLogger.Log() << "Stopping...";
