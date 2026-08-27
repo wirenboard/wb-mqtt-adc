@@ -98,7 +98,7 @@ namespace
                         exit(0);
                     } catch (const std::exception& e) {
                         ErrorLogger.Log() << "FATAL: " << e.what();
-                        exit(1);
+                        exit(6);
                     }
                 case '?':
                 default:
@@ -187,14 +187,23 @@ int main(int argc, char* argv[])
     SignalHandling::SetOnTimeout(DRIVER_STOP_TIMEOUT_S, [&] {
         ErrorLogger.Log() << "Driver takes too long to stop. Exiting.";
         cerr << "Error: DRIVER_STOP_TIMEOUT_S" << endl;
-        exit(2);
+        exit(1);
     });
-    SignalHandling::Start();
+
+    TConfig config;
+    try {
+        config = LoadConfig(CONFIG_FILE, customConfig, SYSTEM_CONFIGS_DIR, SCHEMA_FILE, &InfoLogger, &WarnLogger);
+    } catch (const exception& e) {
+        ErrorLogger.Log() << "FATAL: " << e.what();
+        return 6;
+    }
+
+    if (config.Channels.empty()) {
+        InfoLogger.Log() << "No ADC channels defined in config. Nothing to do";
+        return 7;
+    }
 
     try {
-        TConfig config =
-            LoadConfig(CONFIG_FILE, customConfig, SYSTEM_CONFIGS_DIR, SCHEMA_FILE, &InfoLogger, &WarnLogger);
-
         if (config.EnableDebugMessages)
             DebugLogger.SetEnabled(true);
 
@@ -221,13 +230,13 @@ int main(int argc, char* argv[])
         SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { driver.Stop(); });
 
         initialized.Complete();
+        SignalHandling::Start();
         SignalHandling::Wait();
 
     } catch (const exception& e) {
         ErrorLogger.Log() << "FATAL: " << e.what();
-        SignalHandling::Stop();
         return 1;
     }
 
-    return 0;
+    return 7;
 }
