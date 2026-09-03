@@ -27,6 +27,9 @@ namespace
 
         //! Flag indicating what we should create MQTT control for channel
         bool ShouldCreateControl = true;
+
+        //! Error state published to the control's meta/error
+        bool PublishedError = false;
     };
 
     WBMQTT::TControlArgs MakeControlArgs(const std::string& id, size_t order, const std::string& error)
@@ -60,10 +63,15 @@ namespace
             for (auto& channel: *channels) {
                 try {
                     channel.Reader.Poll(now, channel.MqttId + " ");
-                    channel.Error = false;
+                    if (channel.Error && channel.Reader.GetLastMeasureTimestamp() != channel.PublishedTimestamp) {
+                        infoLogger.Log() << "Channel " << channel.MqttId << " is measured again";
+                        channel.Error = false;
+                    }
                 } catch (const std::exception& er) {
-                    channel.Error = true;
-                    errorLogger.Log() << er.what();
+                    if (!channel.Error) {
+                        channel.Error = true;
+                        errorLogger.Log() << er.what();
+                    }
                 }
             }
 
@@ -81,17 +89,17 @@ namespace
                                          << channel.Reader.GetPollInterval().count() << " ms";
                         ++controlOrder;
                         channel.ShouldCreateControl = false;
-                    } else if (channel.Reader.GetLastMeasureTimestamp() != channel.PublishedTimestamp) {
-                        channel.PublishedTimestamp = channel.Reader.GetLastMeasureTimestamp();
+                        channel.PublishedError = channel.Error;
+                    } else {
+                        if (channel.Error != channel.PublishedError) {
+                            channel.PublishedError = channel.Error;
+                            device->GetControl(channel.MqttId)->SetError(tx, channel.Error ? "r" : "").Wait();
+                        }
+                        if (channel.Reader.GetLastMeasureTimestamp() != channel.PublishedTimestamp) {
+                            channel.PublishedTimestamp = channel.Reader.GetLastMeasureTimestamp();
 
-                        // update channel value only if it is fresh
-                        WBMQTT::PControl control = device->GetControl(channel.MqttId);
-                        if (channel.Error) {
-                            auto future = control->SetError(tx, "r");
-                            future.Wait();
-                        } else {
-                            auto future = control->SetRawValue(tx, channel.Reader.GetValue());
-                            future.Wait();
+                            // update channel value only if it is fresh
+                            device->GetControl(channel.MqttId)->SetRawValue(tx, channel.Reader.GetValue()).Wait();
                         }
                     }
                 }
