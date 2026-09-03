@@ -2,6 +2,7 @@ wb-mqtt-adc (2.9.0) stable; urgency=medium
 
   * Exit with 6 on broken config, 7 on empty config and on SIGTERM/SIGINT, 1 on stop timeout
   * -g mode exits with 6 on errors
+  * Start signal handling before MQTT and driver initialization
   * systemd unit: Restart=on-failure, codes 2 and 6 are not restarted, 7 is success, start after mosquitto
   * Channel read errors are logged once per state change instead of every poll,
     the channel's meta/error is set on failure and cleared on recovery (SOFT-7326)

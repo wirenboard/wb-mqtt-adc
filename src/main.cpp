@@ -203,6 +203,8 @@ int main(int argc, char* argv[])
         return 7;
     }
 
+    SignalHandling::Start();
+
     try {
         if (config.EnableDebugMessages)
             DebugLogger.SetEnabled(true);
@@ -230,7 +232,6 @@ int main(int argc, char* argv[])
         SignalHandling::OnSignals({SIGINT, SIGTERM}, [&] { driver.Stop(); });
 
         initialized.Complete();
-        SignalHandling::Start();
         SignalHandling::Wait();
 
     } catch (const exception& e) {
