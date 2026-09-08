@@ -15,10 +15,6 @@ else
             BOARD_CONF="wb61"
         ;;
 
-        "55" | "58" )
-            BOARD_CONF="wb55"
-        ;;
-
         * )
             BOARD_CONF="default"
         ;;

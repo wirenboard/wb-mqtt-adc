@@ -22,7 +22,7 @@ SRC_DIR = src
 ADC_SOURCES := $(shell find $(SRC_DIR) -name "*.cpp" -and -not -name main.cpp)
 ADC_OBJECTS := $(ADC_SOURCES:%=$(BUILD_DIR)/%.o)
 
-CXXFLAGS = -Wall -std=c++17 -I$(SRC_DIR)
+CXXFLAGS = -Wall -std=c++20 -I$(SRC_DIR)
 LDFLAGS = -lwbmqtt1 -lpthread
 
 ifeq ($(DEBUG),)
@@ -86,9 +86,7 @@ install: all
 	install -Dm0755 generate-system-config.sh -t $(DESTDIR)$(PREFIX)/lib/wb-mqtt-adc
 
 	install -Dm0644 data/config.json $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.default
-	install -Dm0644 data/config.json.wb55 $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb55
 	install -Dm0644 data/config.json.wb61 $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.wb61
-
 	install -Dm0644 data/config.json.devicetree $(DESTDIR)$(PREFIX)/share/wb-mqtt-adc/wb-mqtt-adc.conf.devicetree
 
 	install -Dm0644 data/wb-mqtt-adc.wbconfigs $(DESTDIR)/etc/wb-configs.d/12wb-mqtt-adc
