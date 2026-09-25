@@ -1,0 +1,5 @@
+{
+  "device_name": "ADCs",
+  "debug": false,
+  "iio_channels": []
+}

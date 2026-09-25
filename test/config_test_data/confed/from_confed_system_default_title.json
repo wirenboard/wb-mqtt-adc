@@ -1,0 +1,13 @@
+{
+  "device_name": "ADCs",
+  "debug": false,
+  "iio_channels": [
+    {
+      "id": "Vin",
+      "title": "System title",
+      "match_iio": "../../../devices/platform/soc/2100000.bus/2198000.adc/iio:device0",
+      "channel_number": "voltage8",
+      "voltage_multiplier": 17.66666
+    }
+  ]
+}

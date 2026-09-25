@@ -9,6 +9,8 @@
 "/devices/" DriverId "/controls/" Config.Channels[i].Id                 = measured voltage
 "/devices/" DriverId "/controls/" Config.Channels[i].Id "/meta/order"   = i from Config.Channels[i]
 "/devices/" DriverId "/controls/" Config.Channels[i].Id "/meta/type"    = string "voltage"
+"/devices/" DriverId "/controls/" Config.Channels[i].Id "/meta"         = JSON with field "title" (if set):
+                                                                          {"en": Config.Channels[i].Title}
 */
 
 //! default scale for file "in_voltageNUMBER_scale"
@@ -21,6 +23,7 @@ namespace
     struct TChannelDesc
     {
         std::string MqttId;
+        std::string Title;
         bool Error;
         TChannelReader::Timestamp PublishedTimestamp;
         TChannelReader Reader;
@@ -29,19 +32,28 @@ namespace
         bool ShouldCreateControl = true;
     };
 
-    WBMQTT::TControlArgs MakeControlArgs(const std::string& id, size_t order, const std::string& error)
+    WBMQTT::TControlArgs MakeControlArgs(const std::string& id,
+                                         const std::string& title,
+                                         size_t order,
+                                         const std::string& error)
     {
-        return WBMQTT::TControlArgs{}.SetId(id).SetType("voltage").SetError(error).SetOrder(order).SetReadonly(true);
+        auto args =
+            WBMQTT::TControlArgs{}.SetId(id).SetType("voltage").SetError(error).SetOrder(order).SetReadonly(true);
+        if (!title.empty()) {
+            args.SetTitle(title);
+        }
+        return args;
     }
 
     void CreateControl(WBMQTT::PDriverTx& tx,
                        WBMQTT::TLocalDevice& device,
                        size_t order,
                        const std::string& id,
+                       const std::string& title,
                        const std::string& value,
                        const std::string& error)
     {
-        device.CreateControl(tx, MakeControlArgs(id, order, error).SetRawValue(value)).Wait();
+        device.CreateControl(tx, MakeControlArgs(id, title, order, error).SetRawValue(value)).Wait();
     }
 
     void AdcWorker(std::atomic_bool* active,
@@ -75,6 +87,7 @@ namespace
                                       *device,
                                       controlOrder,
                                       channel.MqttId,
+                                      channel.Title,
                                       channel.Reader.GetValue(),
                                       channel.Error ? "r" : "");
                         infoLogger.Log() << "Channel " << channel.MqttId << " MQTT controls are created, poll interval "
@@ -140,11 +153,12 @@ TADCDriver::TADCDriver(const WBMQTT::PDeviceDriver& mqttDriver,
         std::string sysfsIIODir = FindSysfsIIODir(channel.MatchIIO);
         if (sysfsIIODir.empty()) {
             ErrorLogger.Log() << "Can't fild matching sysfs IIO: " + channel.MatchIIO;
-            Device->CreateControl(tx, MakeControlArgs(channel.Id, controlOrder, "r")).Wait();
+            Device->CreateControl(tx, MakeControlArgs(channel.Id, channel.Title, controlOrder, "r")).Wait();
             ++controlOrder;
         } else {
             readers->push_back(TChannelDesc{
                 channel.Id,
+                channel.Title,
                 false,
                 TChannelReader::Timestamp::min(),
                 {MXS_LRADC_DEFAULT_SCALE_FACTOR, channel.ReaderCfg, DebugLogger, InfoLogger, sysfsIIODir}});

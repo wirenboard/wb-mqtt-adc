@@ -13,18 +13,25 @@
   "definitions": {
     "common_parameters": {
       "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "title": "Channel name",
+          "description": "Channel name to be displayed in UI",
+          "propertyOrder": 2
+        },
         "averaging_window": {
           "type": "integer",
           "minimum": 1,
           "title": "Averaging window",
           "description": "Number of samples to use while calculating moving average",
-          "propertyOrder": 4
+          "propertyOrder": 5
         },
         "decimal_places": {
           "type": "integer",
           "minimum": 0,
           "title": "Decimal places in value",
-          "propertyOrder": 5
+          "propertyOrder": 6
         },
         "scale": {
           "type": "number",
@@ -57,7 +64,7 @@
           "propertyOrder": 100
         }
       },
-      "defaultProperties": ["averaging_window", "scale", "poll_interval", "delay_between_measurements"]
+      "defaultProperties": ["title", "averaging_window", "scale", "poll_interval", "delay_between_measurements"]
     },
 
     "custom_channel": {
@@ -78,6 +85,7 @@
             "id": {
               "type": "string",
               "title": "MQTT id",
+              "description": "Used as part of the topic",
               "propertyOrder": 1
             },
             "voltage_multiplier": {
@@ -85,12 +93,12 @@
               "title": "Scale factor",
               "default": 1,
               "description": "voltage_multiplier_description",
-              "propertyOrder": 3
+              "propertyOrder": 4
             },
             "max_voltage": {
               "type": "number",
               "title": "Overvoltage threshold (V)",
-              "propertyOrder": 6
+              "propertyOrder": 7
             },
             "match_iio": {
               "type": "string",
@@ -100,7 +108,7 @@
             },
             "channel_number": {
               "title": "ADC channel",
-              "propertyOrder": 2,
+              "propertyOrder": 3,
               "oneOf": [
                 {
                   "type": "string",
@@ -287,7 +295,10 @@
         "ru": {
             "ADC Driver Configuration": "Аналоговые входы",
             "Controller analog inputs configuration": "Конфигурация аналоговых входов контроллера",
-            "MQTT id": "Название канала MQTT",
+            "MQTT id": "Идентификатор канала в MQTT",
+            "Used as part of the topic": "Используется как часть топика в MQTT",
+            "Channel name": "Название канала",
+            "Channel name to be displayed in UI": "Название канала, которое отображается в веб-интерфейсе",
             "Internal ADC scale": "Внутренний множитель АЦП",
             "scale_description": "Множитель не влияет на конечное значение, он определяет точность и диапазон измерения. Будет выбран ближайший из поддерживаемых множителей. Число 0 задает максимальный доступный множитель",
             "Scale factor": "Масштабирующий коэффициент",

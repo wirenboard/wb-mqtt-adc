@@ -1,0 +1,21 @@
+{
+  "device_name": "ADCs",
+  "debug": false,
+  "max_unchanged_interval": 60,
+  "iio_channels": [
+    {
+      "id": "Vin",
+      "title": "Supply voltage",
+      "match_iio": "../../../devices/platform/soc/2100000.bus/2198000.adc/iio:device0",
+      "channel_number": "voltage8",
+      "voltage_multiplier": 17.66666
+    },
+    {
+      "id": "A1",
+      "title": "Custom input",
+      "match_iio": "path1",
+      "channel_number": "voltage1",
+      "voltage_multiplier": 2
+    }
+  ]
+}

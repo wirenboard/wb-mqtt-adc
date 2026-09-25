@@ -25,6 +25,7 @@ namespace
         TADCChannelSettings channel;
 
         Get(item, "id", channel.Id);
+        Get(item, "title", channel.Title);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
         if (Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage))
             channel.ReaderCfg.MaxScaledVoltage *= 1000;
@@ -83,6 +84,22 @@ namespace
         return config;
     }
 
+    //! Title shown in web UI if the channel has no own title: system config title or id
+    string GetDefaultTitle(const Value& channel)
+    {
+        if (channel.isMember("title") && channel["title"].isString() && !channel["title"].asString().empty()) {
+            return channel["title"].asString();
+        }
+        return channel["id"].asString();
+    }
+
+    void SetDefaultTitle(Value& channel, const string& defaultTitle)
+    {
+        if (!channel.isMember("title") || channel["title"].asString().empty()) {
+            channel["title"] = defaultTitle;
+        }
+    }
+
     Value RemoveDeviceNameRequirement(const Value& schema)
     {
         Value newArray = arrayValue;
@@ -138,7 +155,7 @@ TConfig LoadConfig(const string& mainConfigFile,
     return cfg;
 }
 
-void MakeJsonForConfed(const string& configFile, const string& systemConfigsDir, const string& schemaFile)
+Value MakeJsonForConfed(const string& configFile, const string& systemConfigsDir, const string& schemaFile)
 {
     auto schema = Parse(schemaFile);
     auto noDeviceNameSchema = RemoveDeviceNameRequirement(schema);
@@ -154,15 +171,16 @@ void MakeJsonForConfed(const string& configFile, const string& systemConfigsDir,
             for (const auto& ch: cfg["iio_channels"]) {
                 auto name = ch["id"].asString();
                 auto it = configuredChannels.find(name);
+                Value v;
                 if (it != configuredChannels.end()) {
-                    newChannels.append(it->second);
+                    v = it->second;
                     configuredChannels.erase(name);
                 } else {
-                    Value v;
                     v["id"] = ch["id"];
                     v["decimal_places"] = ch["decimal_places"];
-                    newChannels.append(v);
                 }
+                SetDefaultTitle(v, GetDefaultTitle(ch));
+                newChannels.append(v);
             }
             return false;
         });
@@ -171,39 +189,42 @@ void MakeJsonForConfed(const string& configFile, const string& systemConfigsDir,
     for (const auto& ch: config["iio_channels"]) {
         auto it = configuredChannels.find(ch["id"].asString());
         if (it != configuredChannels.end()) {
-            newChannels.append(ch);
+            Value v(ch);
+            SetDefaultTitle(v, ch["id"].asString());
+            newChannels.append(v);
         }
     }
     config["iio_channels"].swap(newChannels);
-    MakeWriter("", "None")->write(config, &cout);
+    return config;
 }
 
-void MakeConfigFromConfed(const string& systemConfigsDir, const string& schemaFile)
+Value MakeConfigFromConfed(const Value& confedConfig, const string& systemConfigsDir, const string& schemaFile)
 {
     auto noDeviceNameSchema = RemoveDeviceNameRequirement(Parse(schemaFile));
-    unordered_set<string> systemChannels;
+    //! System channel id -> default title
+    unordered_map<string, string> systemChannels;
     try {
         IterateDirByPattern(systemConfigsDir, ".conf", [&](const string& f) {
             auto cfg = Load(f, noDeviceNameSchema);
             for (const auto& ch: cfg["iio_channels"]) {
-                systemChannels.insert(ch["id"].asString());
+                systemChannels.emplace(ch["id"].asString(), GetDefaultTitle(ch));
             }
             return false;
         });
     } catch (const TNoDirError&) {
     }
 
-    Value config;
-    CharReaderBuilder readerBuilder;
-    String errs;
-
-    if (!parseFromStream(readerBuilder, cin, &config, &errs)) {
-        throw runtime_error("Failed to parse JSON:" + errs);
-    }
-
+    Value config(confedConfig);
     Value newChannels(arrayValue);
     for (auto& ch: config["iio_channels"]) {
         auto it = systemChannels.find(ch["id"].asString());
+        const auto defaultTitle = (it != systemChannels.end()) ? it->second : ch["id"].asString();
+        // Empty or default title means "not set", it is not saved to the config
+        if (ch.isMember("title") && ch["title"].isString() &&
+            (ch["title"].asString().empty() || ch["title"].asString() == defaultTitle))
+        {
+            ch.removeMember("title");
+        }
         if (it != systemChannels.end()) {
             for (const auto& pr: ProtectedProperties) {
                 ch.removeMember(pr);
@@ -216,7 +237,27 @@ void MakeConfigFromConfed(const string& systemConfigsDir, const string& schemaFi
         }
     }
     config["iio_channels"].swap(newChannels);
-    MakeWriter("  ", "None")->write(config, &cout);
+    return config;
+}
+
+void WriteJsonForConfed(const string& configFile,
+                        const string& systemConfigsDir,
+                        const string& schemaFile,
+                        ostream& out)
+{
+    MakeWriter("", "None")->write(MakeJsonForConfed(configFile, systemConfigsDir, schemaFile), &out);
+}
+
+void WriteConfigFromConfed(istream& in, const string& systemConfigsDir, const string& schemaFile, ostream& out)
+{
+    Value confedConfig;
+    CharReaderBuilder readerBuilder;
+    String errs;
+
+    if (!parseFromStream(readerBuilder, in, &confedConfig, &errs)) {
+        throw runtime_error("Failed to parse JSON:" + errs);
+    }
+    MakeWriter("  ", "None")->write(MakeConfigFromConfed(confedConfig, systemConfigsDir, schemaFile), &out);
 }
 
 void MakeSchemaForConfed(const string& systemConfigsDir, const string& schemaFile, const string& schemaForConfedFile)

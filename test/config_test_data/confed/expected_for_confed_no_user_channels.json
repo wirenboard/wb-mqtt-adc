@@ -1,0 +1,11 @@
+{
+  "device_name": "ADCs",
+  "debug": false,
+  "iio_channels": [
+    {
+      "id": "Vin",
+      "decimal_places": 2,
+      "title": "System title"
+    }
+  ]
+}

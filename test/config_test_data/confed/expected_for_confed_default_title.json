@@ -1,0 +1,18 @@
+{
+  "device_name": "ADCs",
+  "debug": false,
+  "iio_channels": [
+    {
+      "id": "Vin",
+      "title": "Vin",
+      "decimal_places": 2
+    },
+    {
+      "id": "A1",
+      "title": "A1",
+      "match_iio": "path1",
+      "channel_number": "voltage1",
+      "voltage_multiplier": 2
+    }
+  ]
+}
