@@ -1,0 +1,12 @@
+{
+  "device_name": "ADCs",
+  "debug": false,
+  "iio_channels": [
+    {
+      "id": "A1",
+      "match_iio": "path1",
+      "channel_number": "voltage1",
+      "voltage_multiplier": 2
+    }
+  ]
+}

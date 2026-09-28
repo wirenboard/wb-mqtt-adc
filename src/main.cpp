@@ -78,7 +78,7 @@ namespace
                     break;
                 case 'j':
                     try {
-                        MakeJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
+                        WriteJsonForConfed(CONFIG_FILE, SYSTEM_CONFIGS_DIR, SCHEMA_FILE, cout);
                         exit(0);
                     } catch (const std::exception& e) {
                         ErrorLogger.Log() << "FATAL: " << e.what();
@@ -86,7 +86,7 @@ namespace
                     }
                 case 'J':
                     try {
-                        MakeConfigFromConfed(SYSTEM_CONFIGS_DIR, SCHEMA_FILE);
+                        WriteConfigFromConfed(cin, SYSTEM_CONFIGS_DIR, SCHEMA_FILE, cout);
                         exit(0);
                     } catch (const std::exception& e) {
                         ErrorLogger.Log() << "FATAL: " << e.what();
