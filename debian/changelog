@@ -1,3 +1,13 @@
+wb-mqtt-adc (2.9.1) stable; urgency=medium
+
+  * Start the service after mosquitto
+  * Restart the service without a start rate limit, so it does not end up
+    failed when mosquitto starts late (it waits for network-online.target
+    on trixie)
+  * Increase the restart delay exponentially from 1 to 3 seconds
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Tue, 20 Oct 2026 05:54:45 +0000
+
 wb-mqtt-adc (2.9.0) stable; urgency=medium
 
   * Add optional "title" channel parameter, published as the control title

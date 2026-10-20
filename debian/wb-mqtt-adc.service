@@ -1,12 +1,15 @@
 [Unit]
 Description=MQTT Driver for ADC
 Wants=wb-hwconf-manager.service wb-modules.service
-After=network.target wb-hwconf-manager.service wb-modules.service
+After=network.target wb-hwconf-manager.service wb-modules.service mosquitto.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=1
+RestartSteps=3
+RestartMaxDelaySec=3
 User=root
 ExecStart=/usr/bin/wb-mqtt-adc
 ExecStartPre=/usr/lib/wb-mqtt-adc/generate-system-config.sh
