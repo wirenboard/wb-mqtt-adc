@@ -26,6 +26,7 @@ namespace
 
         Get(item, "id", channel.Id);
         Get(item, "title", channel.Title);
+        Get(item, "mqtt_type", channel.MqttType);
         Get(item, "averaging_window", channel.ReaderCfg.AveragingWindow);
         if (Get(item, "max_voltage", channel.ReaderCfg.MaxScaledVoltage))
             channel.ReaderCfg.MaxScaledVoltage *= 1000;

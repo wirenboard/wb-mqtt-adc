@@ -16,6 +16,9 @@ struct TADCChannelSettings
     //! Value of /devices/DRIVER_NAME/controls/ + Id + /meta title (empty - not set)
     std::string Title;
 
+    //! Value of /devices/DRIVER_NAME/controls/ + Id + /meta type
+    std::string MqttType = "voltage";
+
     //! Fnmatch-compatible pattern to match with iio:deviceN symlink target
     std::string MatchIIO;
 
