@@ -10,6 +10,7 @@ protected:
     std::string testRootDir;
     std::string schemaFile;
     std::string confDDir;
+    std::string mqttTypeSchemaFile;
 
     void SetUp()
     {
@@ -29,6 +30,7 @@ protected:
     void TearDown()
     {
         remove(schemaFile.c_str());
+        remove(mqttTypeSchemaFile.c_str());
     }
 };
 
@@ -138,6 +140,36 @@ TEST_F(TConfigTest, system_channel_title_override)
     // other properties are not affected
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.AveragingWindow, 1);
     ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 2);
+}
+
+TEST_F(TConfigTest, mqtt_type)
+{
+    // mqtt_type is "voltage" by default
+    TConfig defaultCfg =
+        LoadConfig(testRootDir + "/good1/wb-mqtt-adc.conf", "", confDDir, schemaFile, &InfoLogger, &WarnLogger);
+    ASSERT_FALSE(defaultCfg.Channels.empty());
+    for (const auto& ch: defaultCfg.Channels) {
+        ASSERT_EQ(ch.MqttType, "voltage");
+    }
+
+    // mqtt_type is taken from the system config and can't be overridden by the main config
+    const auto systemConfigsDir = testRootDir + "/conf.d_mqtt_type";
+    mqttTypeSchemaFile = testRootDir + "/wb-mqtt-adc-mqtt-type.schema.json";
+    MakeSchemaForConfed(systemConfigsDir,
+                        testRootDir + "/../../data/wb-mqtt-adc-template.schema.json",
+                        mqttTypeSchemaFile);
+    TConfig cfg = LoadConfig(testRootDir + "/good5/wb-mqtt-adc.conf",
+                             "",
+                             systemConfigsDir,
+                             mqttTypeSchemaFile,
+                             &InfoLogger,
+                             &WarnLogger);
+    ASSERT_EQ(cfg.Channels.size(), 2);
+    ASSERT_EQ(cfg.Channels[0].Id, "EXT1_A1");
+    ASSERT_EQ(cfg.Channels[0].MqttType, "current");
+    ASSERT_EQ(cfg.Channels[0].ReaderCfg.DecimalPlaces, 3);
+    ASSERT_EQ(cfg.Channels[1].Id, "EXT1_A3_A4");
+    ASSERT_EQ(cfg.Channels[1].MqttType, "voltage");
 }
 
 TEST_F(TConfigTest, make_config_from_confed)

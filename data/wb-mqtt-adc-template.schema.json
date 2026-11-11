@@ -193,6 +193,7 @@
             },
             "mqtt_type": {
               "type": "string",
+              "enum": ["voltage", "current"],
               "options": {
                 "hidden": true
               }
