@@ -1,3 +1,11 @@
+wb-mqtt-adc (2.9.3) stable; urgency=medium
+
+  * Update LICENSE: Automation Technologies, LLC (Wiren Board) as the copyright holder,
+    2014 as the first publication year, use restricted to Wiren Board equipment
+  * Fill debian/copyright in the DEP-5 format
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Thu, 12 Nov 2026 14:40:07 +0300
+
 wb-mqtt-adc (2.9.2) stable; urgency=medium
 
   * Publish control type from the "mqtt_type" channel parameter instead of
